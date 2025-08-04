@@ -39,8 +39,8 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${poppins.variable} antialiased overflow-x-hidden min-h-screen flex flex-col`}
       >
-        <Header />
         <Navbar />
+        <Header />
         <main className="flex-1">
           {children}
         </main>
