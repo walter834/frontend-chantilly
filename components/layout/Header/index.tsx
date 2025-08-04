@@ -16,11 +16,7 @@ const menuItems = [
 export default function Header() {
   return (
     <header className="bg-white shadow-sm border-b">
-      <div className="max-w-7xl mx-auto px-6 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-        </div>
-      </div>
-      <div className="overflow-x-auto flex justify-start gap-10 px-18 py-8 pt-12 border-b border-gray-200 bg-white shadow-lg">
+      <div className="overflow-x-auto flex justify-start gap-10 px-18 py-4 border-b border-gray-200 bg-white shadow-lg">
         {menuItems.map((item, index) => (
           <div
             key={index}
