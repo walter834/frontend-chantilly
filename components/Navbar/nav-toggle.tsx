@@ -35,8 +35,8 @@ export default function NavToggle() {
         </SheetTrigger>
         <SheetContent side="left" className="w-full sm:w-64 pt-12 bg-[#c41d1ada] backdrop-blur-3xl text-white " onClick={()=>setOpen(false) }>
           <SheetHeader>
-            <SheetTitle>
-              
+            <SheetTitle className="flex justify-center">
+              <img src="/logo.png" alt="logo" className="w-[300px]" />
             </SheetTitle>
             <SheetDescription></SheetDescription>
           </SheetHeader>

@@ -13,7 +13,7 @@ export default function useNavigationData() {
       id: 1,
       title: "NOVEDADES",
       active: pathname != '/about-me' && pathname != '/services' && pathname != '/portfolio' && pathname != '/testimonials',
-      link: "/news",
+      link: "/",
     },
     {
       id: 2,

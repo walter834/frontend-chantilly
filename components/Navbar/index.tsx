@@ -1,12 +1,15 @@
 import { ShoppingCart, User } from "lucide-react";
 import NavLinks from "./nav-links";
 import NavToggle from "./nav-toggle";
+import Image from "next/image";
 
 export default function Navbar() {
   return (
-    <header className="fixed bg-[#c41d1ada] text-white top-0 z-50 flex justify-between items-center px-5 lg:px-10 py-4 w-full lg:min-w-[950px]">
+
+    //fix
+    <header className="sticky bg-[#c41d1ada] text-white top-0 z-50 flex justify-between items-center px-5 lg:px-10 py-4 w-full lg:min-w-[950px]">
       <div className="lg:flex hidden gap-4 ">
-        <h1>LOGO</h1>
+        <img src="/logo.png" alt="logo" className="w-[180px]" />
       </div>
       <div className="lg:flex hidden lg:gap-6">
         <nav className="flex flex-row">
