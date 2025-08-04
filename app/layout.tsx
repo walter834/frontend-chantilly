@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Poppins} from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
+import Navbar from "@/components/Navbar";
 import Footer from "@/components/layout/Footer";
 
 const geistSans = Geist({
@@ -39,6 +40,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${poppins.variable} antialiased overflow-x-hidden min-h-screen flex flex-col`}
       >
         <Header />
+        <Navbar />
         <main className="flex-1">
           {children}
         </main>
