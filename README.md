@@ -1,36 +1,142 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Chantilly - Frontend
 
-## Getting Started
+Frontend de la aplicación web de productos artesanales Chantilly, desarrollado con Next.js 15 y TypeScript.
 
-First, run the development server:
+## 🚀 Tecnologías
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Next.js 15** - Framework de React
+- **TypeScript** - Tipado estático
+- **Tailwind CSS** - Framework de CSS
+- **Lucide React** - Iconos
+- **Swiper** - Carousel/Banner
+- **React Icons** - Iconos adicionales
+
+## 📁 Estructura del Proyecto
+
+```
+frontend-chantilly/
+├── app/                    # App Router de Next.js
+│   ├── (auth)/            # Rutas protegidas
+│   ├── (shop)/            # Rutas de la tienda
+│   ├── globals.css        # Estilos globales
+│   ├── layout.tsx         # Layout principal
+│   └── page.tsx           # Página de inicio
+├── components/            # Componentes React
+│   ├── common/            # Componentes reutilizables
+│   │   ├── Button/        # Botones
+│   │   ├── Card/          # Tarjetas
+│   │   └── Modal/         # Modales
+│   ├── layout/            # Componentes de estructura
+│   │   ├── Header/        # Encabezado
+│   │   ├── Footer/        # Pie de página
+│   │   └── Sidebar/       # Barra lateral
+│   ├── features/          # Componentes específicos
+│   │   ├── ProductCard/   # Tarjeta de producto
+│   │   ├── ProductGrid/   # Grilla de productos
+│   │   ├── HeroBanner/    # Banner principal
+│   │   └── ShoppingCart/  # Carrito de compras
+│   └── ui/                # Componentes de UI base
+├── hooks/                 # Custom hooks
+│   └── useCart.ts         # Hook del carrito
+├── lib/                   # Utilidades
+│   └── utils.ts           # Funciones utilitarias
+├── types/                 # Definiciones TypeScript
+│   └── index.ts           # Interfaces y tipos
+└── public/                # Archivos estáticos
+    └── images/            # Imágenes organizadas
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🎯 Características
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- ✅ **Arquitectura modular** - Componentes organizados por funcionalidad
+- ✅ **TypeScript** - Tipado estático para mejor desarrollo
+- ✅ **Responsive Design** - Diseño adaptativo
+- ✅ **Componentes reutilizables** - Sistema de componentes escalable
+- ✅ **Custom Hooks** - Lógica reutilizable
+- ✅ **SEO optimizado** - Metadatos y estructura semántica
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🛠️ Instalación
 
-## Learn More
+1. **Clonar el repositorio**
+   ```bash
+   git clone <repository-url>
+   cd frontend-chantilly
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+2. **Instalar dependencias**
+   ```bash
+   npm install
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. **Ejecutar en desarrollo**
+   ```bash
+   npm run dev
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+4. **Construir para producción**
+   ```bash
+   npm run build
+   ```
 
-## Deploy on Vercel
+## 📦 Scripts Disponibles
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `npm run dev` - Servidor de desarrollo con Turbopack
+- `npm run build` - Construcción para producción
+- `npm run start` - Servidor de producción
+- `npm run lint` - Linting del código
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🎨 Componentes Principales
+
+### Layout Components
+- **Header** - Navegación principal con carrito y búsqueda
+- **Footer** - Información de contacto y enlaces
+
+### Feature Components
+- **ProductCard** - Tarjeta individual de producto
+- **ProductGrid** - Grilla de productos con loading states
+- **HeroBanner** - Banner principal con carousel
+- **ShoppingCart** - Carrito de compras
+
+### Common Components
+- **Button** - Botones con diferentes variantes
+- **Card** - Tarjetas reutilizables
+- **Modal** - Modales y overlays
+
+## 🔧 Custom Hooks
+
+- **useCart** - Gestión del carrito de compras con localStorage
+
+## 📱 Responsive Design
+
+El proyecto está optimizado para:
+- 📱 Móviles (320px+)
+- 📱 Tablets (768px+)
+- 💻 Desktop (1024px+)
+- 🖥️ Pantallas grandes (1280px+)
+
+## 🚀 Próximas Características
+
+- [ ] Autenticación de usuarios
+- [ ] Filtros de productos
+- [ ] Búsqueda avanzada
+- [ ] Wishlist/Favoritos
+- [ ] Reviews y calificaciones
+- [ ] Checkout y pagos
+- [ ] Panel de administración
+
+## 🤝 Contribución
+
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para detalles.
+
+## 👥 Equipo
+
+- **Desarrollo Frontend** - Chantilly Team
+- **Backend** - Laravel (en desarrollo)

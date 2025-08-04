@@ -1,0 +1,91 @@
+'use client';
+import React from 'react';
+import Link from 'next/link';
+import { ShoppingCart, Search, User, Menu } from 'lucide-react';
+
+const menuItems = [
+  { icon: '/imgs/icons/iconos-05.png', label: 'INFANTILES' },
+  { icon: '/imgs/icons/iconos-03.png', label: 'MUJER' },
+  { icon: '/imgs/icons/iconos-04.png', label: 'HOMBRE' },
+  { icon: '/imgs/icons/iconos-07.png', label: 'BAUTIZO' },
+  { icon: '/imgs/icons/iconos-06.png', label: 'PROFESIONES' },
+  { icon: '/imgs/icons/iconos-13.png', label: 'ENAMORADOS' },
+  { icon: '/imgs/icons/iconos-10.png', label: 'BABYSHOWER' },
+];
+
+export default function Header() {
+  return (
+    <header className="bg-white shadow-sm border-b">
+      {/* Top Navigation */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <div className="flex-shrink-0">
+            <Link href="/" className="text-2xl font-bold text-gray-900">
+              Chantilly
+            </Link>
+          </div>
+
+          {/* Navigation */}
+          <nav className="hidden md:flex space-x-8">
+            <Link href="/" className="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium">
+              Inicio
+            </Link>
+            <Link href="/productos" className="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium">
+              Productos
+            </Link>
+            <Link href="/categorias" className="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium">
+              Categorías
+            </Link>
+            <Link href="/contacto" className="text-gray-700 hover:text-gray-900 px-3 py-2 text-sm font-medium">
+              Contacto
+            </Link>
+          </nav>
+
+          {/* Actions */}
+          <div className="flex items-center space-x-4">
+            <button className="p-2 text-gray-700 hover:text-gray-900">
+              <Search className="h-5 w-5" />
+            </button>
+            <button className="p-2 text-gray-700 hover:text-gray-900">
+              <User className="h-5 w-5" />
+            </button>
+            <button className="p-2 text-gray-700 hover:text-gray-900 relative">
+              <ShoppingCart className="h-5 w-5" />
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                0
+              </span>
+            </button>
+            <button className="md:hidden p-2 text-gray-700 hover:text-gray-900">
+              <Menu className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Category Menu - Estilo Original */}
+      <div className="overflow-x-auto flex justify-start gap-10 px-18 py-6 border-b border-gray-200 bg-white shadow-lg">
+        {menuItems.map((item, index) => (
+          <div
+            key={index}
+            className="group flex flex-col items-center min-w-fit cursor-pointer transition-all duration-200"
+          >
+            {/* Contenedor horizontal */}
+            <div className="flex items-center px-2 py-1 gap-3">
+              <img
+                src={item.icon}
+                alt={`Icono de ${item.label}`}
+                className="w-[35px] h-[35px] sm:w-[45px] sm:h-[45px] transition duration-300 group-hover:[filter:sepia(77%)_brightness(42%)_hue-rotate(314deg)_saturate(1000%)_contrast(104%)]"
+              />
+              <span className="text-[12px] sm:text-sm font-bold font-poppins text-[#828282] group-hover:text-[#c41c1a] transition whitespace-nowrap">
+                {item.label}
+              </span>
+            </div>
+            {/* Línea inferior al hacer hover */}
+            <div className="h-[3px] w-full transition-all duration-300 scale-x-0 group-hover:scale-x-100 bg-[#c41c1a] origin-center"></div>
+          </div>
+        ))}
+      </div>
+    </header>
+  );
+} 
