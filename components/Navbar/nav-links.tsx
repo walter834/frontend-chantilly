@@ -1,21 +1,24 @@
-"use client"
-
-import React from 'react'
-import { itemsNavbar } from './data'
-import { usePathname } from 'next/navigation'
-import Link from 'next/link';
+"use client";
+import Link from "next/link";
+import data from "./data";
 
 export default function NavLinks() {
+  const { routes, pathname } = data();
 
-  const router = usePathname();
-
-  return (
-    <div >
-      {itemsNavbar.map((item)=>(
-        <div key={item.id} className={`${router === item.link && "text-white bg-primary"} flex p-4  `}>
-          <Link href={item.link}>{item.title}</Link>
-        </div>
-      ))}
-    </div>
-  )
+  return routes.map((item) => {
+    return (
+      <div key={item.id}>
+        <Link
+          href={item.link}
+          className={`${
+            pathname === item.link
+              ? " text-yellow-300 lg:bg-transparent outline-yellow-300 outline-2 "
+              : " hover:outline-yellow-300 hover:outline-2 hover:text-yellow-300"
+          } flex items-center rounded-sm  px-2 py-4  text-sm  font-semibold  transition-all duration-100 ease-in-out `}
+        >
+          {item.title}
+        </Link>
+      </div>
+    );
+  });
 }
