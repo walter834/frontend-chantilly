@@ -14,6 +14,7 @@ export default function CakesOnline() {
           
           <input type="text" placeholder="Buscar productos" className="border-none outline-none bg-transparent"/>
           <Search  className="text-black/30 size-5" />
+          
         </div>
       </div>
     </div>
