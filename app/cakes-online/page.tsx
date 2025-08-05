@@ -10,7 +10,7 @@ export default function CakesOnline() {
         <p className="text-muted-foreground text-xl md:text-2xl">Las mejores tortas en la Casa del Chantilly, calidad y amor.</p>
       </div>
       <div className="flex md:justify-between justify-center mx-4 mt-4">
-        <p className="md:flex hidden">Mostrando 8 de 9 resultados</p>
+        <p className="md:flex hidden text-muted-foreground">Mostrando 8 de 9 resultados</p>
 
         <div className="flex w-full max-w-sm items-center border border-gray-300 rounded-lg px-2.5 py-1.5 mb-4">
           <svg
