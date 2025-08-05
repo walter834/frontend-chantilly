@@ -7,13 +7,13 @@ export default function Navbar() {
   return (
 
     //fix
-    <header className="sticky bg-[#c41d1ada] text-white top-0 z-50 flex justify-between items-center px-5 lg:px-10 py-4 w-full lg:min-w-[950px]">
-      <div className="lg:flex hidden gap-4 ">
-        <img src="/logo.png" alt="logo" className="w-[180px]" />
+    <header className="sticky overflow-x-hidden bg-[#c41d1ada] text-white top-0 z-50 flex justify-between items-center px-5 lg:px-10 py-4 w-full lg:min-w-[1024px] gap-12">
+      <div className="hidden xl:flex">
+        <img src="/logo.png" alt="logo" className="max-w-[180px]" />
       </div>
       <div className="lg:flex hidden lg:gap-6">
         <nav className="flex flex-row">
-          <ul className="flex flex-row gap-4">
+          <ul className="flex flex-row gap-4 items-center text-center">
             <NavLinks />
           </ul>
         </nav>
