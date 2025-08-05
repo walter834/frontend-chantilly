@@ -1,84 +1,55 @@
 import React from 'react';
-import Link from 'next/link';
-import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from 'lucide-react';
+import {
+  FaFacebook,
+  FaInstagram,
+  FaTwitter,
+  FaTiktok,
+  FaWhatsapp
+} from 'react-icons/fa6';
 
-export default function Footer() {
+export default function Footer({ empresa = 'COMAS' }) {
   return (
-    <footer className="bg-gray-900 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Información de la empresa */}
-          <div className="col-span-1 md:col-span-2">
-            <h3 className="text-2xl font-bold mb-4">Chantilly</h3>
-            <p className="text-gray-300 mb-4">
-              Los mejores productos artesanales con la más alta calidad y sabor único.
-            </p>
-            <div className="flex space-x-4">
-              <Link href="#" className="text-gray-300 hover:text-white">
-                <Facebook className="h-6 w-6" />
-              </Link>
-              <Link href="#" className="text-gray-300 hover:text-white">
-                <Instagram className="h-6 w-6" />
-              </Link>
-              <Link href="#" className="text-gray-300 hover:text-white">
-                <Twitter className="h-6 w-6" />
-              </Link>
-            </div>
-          </div>
+    <footer className="bg-[#c41c1a] text-white w-full py-6">
+      <div className="w-[90%] mx-auto grid grid-cols-1 md:grid-cols-3 gap-y-8 md:gap-x-12 items-start text-center">
+        {/* Nosotros */}
+        <div className="flex flex-col items-center space-y-2">
+          <h1 className="text-lg font-semibold">Nosotros</h1>
+          <p className="text-sm leading-relaxed font-light max-w-[250px]">
+            SOMOS CHANTILLY
+          </p>
+        </div>
 
-          {/* Enlaces rápidos */}
-          <div>
-            <h4 className="text-lg font-semibold mb-4">Enlaces Rápidos</h4>
-            <ul className="space-y-2">
-              <li>
-                <Link href="/productos" className="text-gray-300 hover:text-white">
-                  Productos
-                </Link>
-              </li>
-              <li>
-                <Link href="/categorias" className="text-gray-300 hover:text-white">
-                  Categorías
-                </Link>
-              </li>
-              <li>
-                <Link href="/ofertas" className="text-gray-300 hover:text-white">
-                  Ofertas
-                </Link>
-              </li>
-              <li>
-                <Link href="/nosotros" className="text-gray-300 hover:text-white">
-                  Nosotros
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Contacto */}
-          <div>
-            <h4 className="text-lg font-semibold mb-4">Contacto</h4>
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2">
-                <Phone className="h-4 w-4" />
-                <span className="text-gray-300">+51 999 999 999</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Mail className="h-4 w-4" />
-                <span className="text-gray-300">info@chantilly.com</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <MapPin className="h-4 w-4" />
-                <span className="text-gray-300">Lima, Perú</span>
-              </div>
-            </div>
+        {/* Redes Sociales */}
+        <div className="flex flex-col items-center space-y-4">
+          {/* Este ícono se oculta en pantallas móviles */}
+          <a href="#" className="hidden md:block">
+            <img
+              src="imgs/icons/icon-wthout-fondo.png"
+              alt="Logo Footer"
+              className="w-[20%] mx-auto"
+            />
+          </a>
+          <h1 className="text-lg font-semibold">Redes sociales</h1>
+          <div className="flex justify-center items-center gap-3 text-white text-xl">
+            {[FaFacebook, FaInstagram, FaTwitter, FaTiktok, FaWhatsapp].map((Icon, idx) => (
+              <a href="#" key={idx} target="_blank" rel="noreferrer">
+                <Icon className="w-7 h-7" />
+              </a>
+            ))}
           </div>
         </div>
 
-        <div className="border-t border-gray-800 mt-8 pt-8 text-center">
-          <p className="text-gray-300">
-            © 2024 Chantilly. Todos los derechos reservados.
-          </p>
+        {/* Métodos de Pago */}
+        <div className="flex flex-col items-center space-y-4">
+          <h1 className="text-lg font-semibold">Métodos de Pago</h1>
+          <div className="flex justify-center items-center gap-[3%] pt-2 flex-wrap">
+            <img src="imgs/icons/icon-plin.png" alt="Plin" className="w-[7%] min-w-[30px]" />
+            <img src="imgs/icons/icon-yape.png" alt="Yape" className="w-[7%] min-w-[30px]" />
+            <img src="imgs/icons/icon-mastercard.png" alt="MasterCard" className="w-[7%] min-w-[30px]" />
+            <img src="imgs/icons/icon-visa.png" alt="Visa" className="w-[7%] min-w-[30px]" />
+          </div>
         </div>
       </div>
     </footer>
   );
-} 
+}
