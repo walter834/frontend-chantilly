@@ -1,35 +1,35 @@
-import Image from "next/image";
-import { Button } from "../ui/button";
-import { BsWhatsapp } from "react-icons/bs";
+'use client';
+import { BsWhatsapp } from 'react-icons/bs';
 
 export default function CustomOrders() {
   return (
-    <section className="relative w-full h-[500px] md:h-[600px] overflow-hidden mt-10">
-      {/* Imagen de fondo */}
-      <Image
-        src="/banner2.jpg" // Asegúrate de poner la imagen en /public/images/
-        alt="Pedidos personalizados"
-        fill
-        priority
-        className="object-cover object-center"
+    <section className="w-full bg-cover bg-center bg-no-repeat mt-10 relative">
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat md:hidden"
+        style={{ backgroundImage: "url('/fondo-banner2.jpg')" }}
       />
-
-      {/* Contenido encima */}
-      <div className="relative z-20 items-center max-w-7xl w-full h-full px-6 md:px-12 mt-16">
-        {/* Texto a la izquierda */}
-        <div className="w-full text-white">
-          <h2 className="text-3xl md:text-7xl font-bold">
-            ¡Pedidos Personalizados!
-          </h2>
-          <p className="mb-20 text-gray-300 text-base md:text-4xl mt-10 font-semibold">
-            Personaliza tu producto con nosotros, mándanos tu diseño y
-            descripción de lo que necesites, nuestro equipo te ayudará con la
-            cotización del producto.
-          </p>
-          <Button className="bg-red-600 hover:bg-red-700 text-white font-semibold py-8 px-6 rounded inline-flex items-center text-sm   md:text-2xl">
-            <BsWhatsapp className="size-10" />
-            ¡Pide aquí!
-          </Button>
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat hidden md:block"
+        style={{ backgroundImage: "url('/banner2.jpg')" }}
+      />
+      <div className="relative z-10 w-full h-full px-4 sm:px-6 lg:px-8 xl:px-12 py-16 text-white">
+        <div className="w-[95%] mx-auto space-y-6">
+          <h1 className="text-3xl md:text-4xl font-bold">
+            ¡Pedidos Personalizados!!
+          </h1>
+          <h5 className="text-base md:text-xl font-light md:w-2/5">
+            Personaliza tu producto con nosotros, mándanos tu diseño y descripción de lo que necesites, nuestro equipo te ayudará con la cotización del producto.
+          </h5>
+          <button
+            onClick={() => {
+              window.location.href =
+                'https://api.whatsapp.com/send?phone=+51955122100&text=Quisiera%20hacer%20un%20pedido...';
+            }}
+            className="flex items-center justify-between gap-3 bg-[#c41c1a] hover:bg-[#a91917] text-white font-medium py-3 px-6 rounded-md text-sm md:text-lg w-fit"
+          >
+            <span>¡Pide aquí!</span>
+            <BsWhatsapp className="text-xl" />
+          </button>
         </div>
       </div>
     </section>

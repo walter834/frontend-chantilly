@@ -23,11 +23,10 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Chantilly - Productos Artesanales",
+  title: "LA CASA DEL CHANTILLY SAC",
   description: "Los mejores productos artesanales con la más alta calidad y sabor único",
   keywords: "productos artesanales, chantilly, calidad, sabor",
   authors: [{ name: "Chantilly Team" }],
-  viewport: "width=device-width, initial-scale=1",
 };
 
 export default function RootLayout({

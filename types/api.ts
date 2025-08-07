@@ -1,0 +1,165 @@
+// Interfaces para los datos de la API
+
+export interface ApiPage {
+  id: number;
+  name: string;
+  link_view: string;
+  orden: number;
+  status: boolean;
+}
+
+export interface ApiTheme {
+  id: number;
+  name: string;
+  image_url: string;
+}
+
+export interface ApiProductType {
+  id: number;
+  name: string;
+  status: number;
+}
+
+export interface ApiProduct {
+  id: number;
+  short_description: string;
+  large_description: string;
+  product_type_id: number;
+  category_id: number;
+  min_price: string;
+  max_price: string;
+  theme_id: number;
+  image: string;
+  status: boolean;
+  best_status: boolean;
+  theme: ApiTheme;
+  category: {
+    id: number;
+    name: string;
+  };
+  product_type: {
+    id: number;
+    name: string;
+    status: number;
+  };
+}
+
+export interface ApiProductsResponse {
+  data: ApiProduct[];
+  current_page: number;
+  per_page: number;
+  total: number;
+  last_page: number;
+  next_page_url: string | null;
+  prev_page_url: string | null;
+}
+
+// Interfaces para la transformación de datos
+export interface TransformedPage {
+  id: number;
+  name: string;
+  slug: string;
+  link: string;
+  orden: number;
+  status: boolean;
+}
+
+export interface TransformedTheme {
+  id: number;
+  name: string;
+  slug: string;
+  icon: string;
+  link: string;
+}
+
+export interface TransformedProductType {
+  id: number;
+  name: string;
+  slug: string;
+  status: number;
+}
+
+export interface TransformedProduct {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  originalPrice?: number;
+  image: string;
+  category: string;
+  theme?: string;
+  stock: number;
+  isBestSeller: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Función para convertir link_view a slug URL-friendly
+export function transformToSlug(linkView: string): string {
+  return linkView
+    .toLowerCase()
+    .replace(/([A-Z])/g, '-$1') // Convertir camelCase a kebab-case
+    .replace(/^-+|-+$/g, '') // Remover guiones al inicio y final
+    .replace(/-+/g, '-'); // Reemplazar múltiples guiones con uno solo
+}
+
+// Función para transformar páginas de la API
+export function transformPage(apiPage: ApiPage): TransformedPage {
+  const slug = transformToSlug(apiPage.link_view);
+  const link = apiPage.link_view === '' ? '/' : `/c/${slug}`;
+  
+  return {
+    id: apiPage.id,
+    name: apiPage.name,
+    slug,
+    link,
+    orden: apiPage.orden,
+    status: apiPage.status,
+  };
+}
+
+// Función para transformar temáticas de la API
+export function transformTheme(apiTheme: ApiTheme): TransformedTheme {
+  const slug = apiTheme.name.toLowerCase().replace(/\s+/g, '-');
+  
+  return {
+    id: apiTheme.id,
+    name: apiTheme.name,
+    slug,
+    icon: `/imgs/icons/${apiTheme.image_url}`,
+    link: `/c/tortas-tematicas/${slug}`,
+  };
+}
+
+// Función para transformar tipos de producto de la API
+export function transformProductType(apiProductType: ApiProductType): TransformedProductType {
+  const slug = apiProductType.name.toLowerCase().replace(/\s+/g, '-');
+  
+  return {
+    id: apiProductType.id,
+    name: apiProductType.name,
+    slug,
+    status: apiProductType.status,
+  };
+}
+
+// Función para transformar productos de la API
+export function transformProduct(apiProduct: ApiProduct): TransformedProduct {
+  const minPrice = parseFloat(apiProduct.min_price);
+  const maxPrice = parseFloat(apiProduct.max_price);
+  
+  return {
+    id: apiProduct.id,
+    name: apiProduct.short_description,
+    description: apiProduct.large_description,
+    price: minPrice,
+    originalPrice: maxPrice > minPrice ? maxPrice : undefined,
+    image: `/imgs/products/${apiProduct.image}`,
+    category: apiProduct.category.name,
+    theme: apiProduct.theme?.name,
+    stock: 10, // Valor por defecto, ajustar según la API
+    isBestSeller: apiProduct.best_status,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+} 

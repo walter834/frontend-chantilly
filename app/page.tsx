@@ -1,122 +1,84 @@
 'use client';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import HeroBanner from '@/components/features/HeroBanner';
-import ProductCard from '@/components/features/ProductCard';
-import { BannerSlide, Product } from '@/types';
+import CategoryPage from '@/components/features/CategoryPage';
+import { TransformedProduct } from '@/types/api';
+import { fetchProducts } from '@/lib/api-services';
+import Spinner from '@/components/ui/spinner';
 
-// Datos de ejemplo para el banner
-const bannerSlides: BannerSlide[] = [
+const bannerSlides = [
   {
     id: '1',
     image: '/imgs/banners/banner2.jpg',
-    title: 'Bienvenidos a Chantilly',
-    subtitle: 'Descubre nuestros productos artesanales con la más alta calidad',
-    ctaText: 'Ver Productos',
-    ctaLink: '/productos',
+    title: 'Banner 1',
+    subtitle: 'Descripción del banner 1',
+    ctaText: 'Ver más',
+    ctaLink: '/c/tortas',
     active: true,
   },
   {
     id: '2',
     image: '/imgs/banners/banner2.jpg',
-    title: 'Torta Selva Negra',
-    subtitle: 'El sabor auténtico que buscas',
-    ctaText: 'Comprar Ahora',
-    ctaLink: '/productos/torta-selva-negra',
-    active: true,
-  },
-  {
-    id: '3',
-    image: '/imgs/banners/banner2.jpg',
-    title: 'Descuento 20%',
-    subtitle: 'En toda nuestra línea de productos',
-    ctaText: 'Aprovechar Oferta',
-    ctaLink: '/ofertas',
-    active: true,
+    title: 'Banner 2',
+    subtitle: 'Descripción del banner 2',
+    ctaText: 'Ver más',
+    ctaLink: '/c/postres',
+    active: false,
   },
 ];
 
-const recommendedProducts: Product[] = [
-  {
-    id: '1',
-    name: 'CHEESCAKE DE MARACUYA',
-    description: 'Cheesecake de maracuya',
-    price: 50.00,
-    image: '/imgs/banners/banner2.jpg',
-    category: 'Postres',
-    stock: 10,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: '2',
-    name: 'BRAZO GITANO',
-    description: 'Brazo gitano',
-    price: 40.00,
-    image: '/imgs/banners/banner2.jpg',
-    category: 'Postres',
-    stock: 15,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: '3',
-    name: 'TORTA AMOR MEME - BUTTER CREAM',
-    description: 'Torta amor meme - butter cream',
-    price: 90.00,
-    originalPrice: 140.00,
-    image: '/imgs/banners/banner2.jpg',
-    category: 'Tortas',
-    stock: 5,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: '4',
-    name: 'TORTA PARA HOMBRE CON DEGRADADO – BUTTER CREAM',
-    description: 'Torta para hombre con degradado - butter cream',
-    price: 90.00,
-    originalPrice: 150.00,
-    image: '/imgs/banners/banner2.jpg',
-    category: 'Tortas',
-    stock: 8,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-];
+export default function HomePage() {
+  const [featuredProducts, setFeaturedProducts] = useState<TransformedProduct[]>([]);
+  const [loading, setLoading] = useState(true);
 
-export default function Home() {
+  useEffect(() => {
+    const loadFeaturedProducts = async () => {
+      try {
+        // Obtener productos destacados (best_status = true)
+        const result = await fetchProducts(1, undefined, undefined, undefined, undefined);
+        const bestProducts = result.products.filter(product => product.isBestSeller);
+        setFeaturedProducts(bestProducts.slice(0, 6)); // Mostrar máximo 6 productos
+      } catch (error) {
+        console.error('Error loading featured products:', error);
+        setFeaturedProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadFeaturedProducts();
+  }, []);
+
+  const handleAddToCart = (productId: string) => {
+    console.log('Agregar al carrito:', productId);
+  };
+
+  const handleToggleFavorite = (productId: string) => {
+    console.log('Toggle favorito:', productId);
+  };
+
   return (
     <div className="min-h-screen">
-      <section className="mb-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <HeroBanner slides={bannerSlides} />
+      <HeroBanner slides={bannerSlides} />
+      
+      {loading ? (
+        <div className="w-[95%] mx-auto px-2 sm:px-6 lg:px-8 xl:px-12 py-12">
+          <div className="text-center">
+            <Spinner size="lg" className="mb-4" />
+            <p className="text-gray-500">Cargando productos destacados...</p>
+          </div>
         </div>
-      </section>
-      <section className="max-w-7xl mx-auto px-4 py-12">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-black">Productos destacados</h2>
-          <p className="text-gray-500 mt-2">Los mejores postres en la Casa del Chantilly, calidad y amor.</p>
-        </div>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {recommendedProducts.map((product) => (
-            <ProductCard
-              key={product.id}
-              id={product.id}
-              name={product.name}
-              price={product.price}
-              originalPrice={product.originalPrice}
-              image={product.image}
-              onAddToCart={(productId) => {
-                console.log('Agregar al carrito:', productId);
-              }}
-              onToggleFavorite={(productId) => {
-                console.log('Toggle favorito:', productId);
-              }}
-            />
-          ))}
-        </div>
-      </section>
+      ) : (
+        <CategoryPage
+          title="Productos Destacados"
+          description="Los mejores productos seleccionados especialmente para ti"
+          products={featuredProducts}
+          totalResults={featuredProducts.length}
+          currentResults={featuredProducts.length}
+          onAddToCart={handleAddToCart}
+          onToggleFavorite={handleToggleFavorite}
+        />
+      )}
     </div>
   );
 }

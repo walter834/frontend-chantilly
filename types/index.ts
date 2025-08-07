@@ -1,6 +1,6 @@
 // Product Types
 export interface Product {
-  id: string;
+  id: string | number;
   name: string;
   description: string;
   price: number;
@@ -8,10 +8,12 @@ export interface Product {
   image: string;
   images?: string[];
   category: string;
+  theme?: string;
   rating?: number;
   reviewCount?: number;
   stock: number;
   isFavorite?: boolean;
+  isBestSeller?: boolean;
   tags?: string[];
   createdAt: Date;
   updatedAt: Date;
