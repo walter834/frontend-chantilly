@@ -27,18 +27,18 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 
 // Interfaz para el payload que se envía a la API (formato Laravel)
 interface RegisterPayload {
-  nombres: string;
-  apellidos: string;
-  document_type_id: number;
-  document_number: string;
-  celular: string;
-  email: string;
-  direccion?: string;
-  departamento: string;
-  provincia: string;
-  distrito: string;
-  password: string;
-  password_confirmation: string; // ✅ ESTE CAMPO ERA EL QUE FALTABA
+   email: string,
+  password: string,
+  id_document_type: number,
+  document_number: string,
+  name: string,
+  lastname: string,
+  address: string,
+  phone: string,
+  deparment: string,
+  province: string,
+  district: string,
+  password_confirmation: string
 }
 
 /**
@@ -97,18 +97,22 @@ export const register = async (formData: RegisterFormData) => {
 
     // Mapear los datos del formulario al formato que espera la API Laravel
     const payload: RegisterPayload = {
-      nombres: formData.nombres.trim(),
-      apellidos: formData.apellidos.trim(),
-      document_type_id: parseInt(formData.documentType), // Convertir a número
+    
+        email: formData.email.trim().toLowerCase(),
+        password: formData.password,
+      id_document_type: parseInt(formData.documentType),
       document_number: formData.documentNumber.trim(),
-      celular: formData.celular.trim(),
-      email: formData.email.trim().toLowerCase(),
-      direccion: formData.direccion?.trim() || undefined,
-      departamento: formData.departamento,
-      provincia: formData.provincia,
-      distrito: formData.distrito,
-      password: formData.password,
+        name: formData.nombres.trim(),
+      lastname: formData.apellidos.trim(),
+       address: formData.direccion?.trim() || "",
+      phone: formData.celular.trim(),
+      deparment: formData.departamento,
+      province: formData.provincia,
+      district: formData.distrito,
       password_confirmation: formData.confirmPassword, // ✅ AGREGAR ESTE CAMPO
+
+     
+
     };
 
     console.log("Payload enviado a la API:", payload); // Debug
