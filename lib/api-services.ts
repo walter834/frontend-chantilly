@@ -23,7 +23,7 @@ export async function fetchPages(): Promise<TransformedPage[]> {
   } catch (error) {
     console.error('Error fetching pages:', error);
     return [
-      { id: 1, name: 'NOVEDADES', slug: '', link: '/', orden: 1, status: true },
+      { id: 1, name: 'NOVEDADESssss', slug: '', link: '/', orden: 1, status: true },
       { id: 2, name: 'TORTAS EN LINEA', slug: 'tortas', link: '/c/tortas', orden: 2, status: true },
       { id: 3, name: 'POSTRES', slug: 'postres', link: '/c/postres', orden: 5, status: true },
       { id: 4, name: 'BOCADITOS', slug: 'bocaditos', link: '/c/bocaditos', orden: 6, status: true },
@@ -71,7 +71,6 @@ export async function fetchProducts(
   };
 }> {
   try {
-    // Construir query parameters
     const params = new URLSearchParams();
     params.append('page', page.toString());
     
@@ -88,13 +87,12 @@ export async function fetchProducts(
     }
     
     if (search) {
-      params.append('search', search);
+      params.append('name', search);
     }
 
     const endpoint = `${API_ROUTES.PRODUCTS}?${params.toString()}`;
     const response: ApiProductsResponse = await apiGet(endpoint);
-    
-    // Transformar productos
+  
     const transformedProducts = response.data.map(transformProduct);
     
     return {
@@ -110,7 +108,6 @@ export async function fetchProducts(
     };
   } catch (error) {
     console.error('Error fetching products:', error);
-    // Fallback a datos estáticos
     return {
       products: [],
       pagination: {
@@ -125,7 +122,6 @@ export async function fetchProducts(
   }
 }
 
-// Función para obtener una página específica por slug
 export async function getPageBySlug(slug: string): Promise<TransformedPage | null> {
   try {
     const pages = await fetchPages();
@@ -136,7 +132,6 @@ export async function getPageBySlug(slug: string): Promise<TransformedPage | nul
   }
 }
 
-// Función para obtener una temática específica por slug
 export async function getThemeBySlug(slug: string): Promise<TransformedTheme | null> {
   try {
     const themes = await fetchThemes();
@@ -147,7 +142,6 @@ export async function getThemeBySlug(slug: string): Promise<TransformedTheme | n
   }
 }
 
-// Función para obtener productos por categoría (product_type) - VERSIÓN SIMPLE
 export async function getProductsByCategory(
   categorySlug: string,
   page: number = 1,
@@ -164,12 +158,12 @@ export async function getProductsByCategory(
   };
 }> {
   try {
-    // Mapeo simple para categorías principales
     const categoryMap: Record<string, number> = {
-      'tortas': 1, // TORTA EN LINEA
-      'postres': 2, // POSTRES
-      'bocaditos': 3, // BOCADITOS
-      'promociones': 4, // PROMOCIONES
+      'tortas': 1,
+      'tortas-tematicas': 2,
+      'postres': 3,
+      'bocaditos': 4,
+      'promociones': 6,
     };
     
     const productTypeId = categoryMap[categorySlug];
@@ -194,7 +188,6 @@ export async function getProductsByCategory(
   }
 }
 
-// Función para obtener productos por temática - VERSIÓN SIMPLE (solo theme_id)
 export async function getProductsByTheme(
   themeSlug: string,
   page: number = 1,
@@ -218,7 +211,6 @@ export async function getProductsByTheme(
       throw new Error(`Theme not found: ${themeSlug}`);
     }
     
-    // Solo filtrar por theme_id (como funcionaba antes)
     return await fetchProducts(page, undefined, theme.id, undefined, search);
   } catch (error) {
     console.error('Error getting products by theme:', error);

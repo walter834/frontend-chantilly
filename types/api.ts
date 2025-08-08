@@ -1,5 +1,3 @@
-// Interfaces para los datos de la API
-
 export interface ApiPage {
   id: number;
   name: string;
@@ -54,7 +52,6 @@ export interface ApiProductsResponse {
   prev_page_url: string | null;
 }
 
-// Interfaces para la transformación de datos
 export interface TransformedPage {
   id: number;
   name: string;
@@ -94,16 +91,14 @@ export interface TransformedProduct {
   updatedAt: Date;
 }
 
-// Función para convertir link_view a slug URL-friendly
 export function transformToSlug(linkView: string): string {
   return linkView
     .toLowerCase()
-    .replace(/([A-Z])/g, '-$1') // Convertir camelCase a kebab-case
-    .replace(/^-+|-+$/g, '') // Remover guiones al inicio y final
-    .replace(/-+/g, '-'); // Reemplazar múltiples guiones con uno solo
+    .replace(/([A-Z])/g, '-$1')
+    .replace(/^-+|-+$/g, '')
+    .replace(/-+/g, '-');
 }
 
-// Función para transformar páginas de la API
 export function transformPage(apiPage: ApiPage): TransformedPage {
   const slug = transformToSlug(apiPage.link_view);
   const link = apiPage.link_view === '' ? '/' : `/c/${slug}`;
@@ -118,7 +113,6 @@ export function transformPage(apiPage: ApiPage): TransformedPage {
   };
 }
 
-// Función para transformar temáticas de la API
 export function transformTheme(apiTheme: ApiTheme): TransformedTheme {
   const slug = apiTheme.name.toLowerCase().replace(/\s+/g, '-');
   
@@ -131,7 +125,6 @@ export function transformTheme(apiTheme: ApiTheme): TransformedTheme {
   };
 }
 
-// Función para transformar tipos de producto de la API
 export function transformProductType(apiProductType: ApiProductType): TransformedProductType {
   const slug = apiProductType.name.toLowerCase().replace(/\s+/g, '-');
   
@@ -143,21 +136,19 @@ export function transformProductType(apiProductType: ApiProductType): Transforme
   };
 }
 
-// Función para transformar productos de la API
 export function transformProduct(apiProduct: ApiProduct): TransformedProduct {
   const minPrice = parseFloat(apiProduct.min_price);
-  const maxPrice = parseFloat(apiProduct.max_price);
-  
+  const maxPrice = parseFloat(apiProduct.max_price);  
   return {
     id: apiProduct.id,
     name: apiProduct.short_description,
     description: apiProduct.large_description,
     price: minPrice,
     originalPrice: maxPrice > minPrice ? maxPrice : undefined,
-    image: `/imgs/products/${apiProduct.image}`,
-    category: apiProduct.category.name,
-    theme: apiProduct.theme?.name,
-    stock: 10, // Valor por defecto, ajustar según la API
+    image: apiProduct.image,
+    category: apiProduct.product_type_id.name,
+    theme: apiProduct.theme_id?.name,
+    stock: 10,
     isBestSeller: apiProduct.best_status,
     createdAt: new Date(),
     updatedAt: new Date(),

@@ -17,7 +17,7 @@ export const API_HEADERS = {
 export async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
   
-  const response = await fetch(url, {
+  const response = await fetch(url, {    
     headers: {
       ...API_HEADERS,
       ...options.headers,
