@@ -23,7 +23,7 @@ export async function fetchPages(): Promise<TransformedPage[]> {
   } catch (error) {
     console.error('Error fetching pages:', error);
     return [
-      { id: 1, name: 'NOVEDADES', slug: '', link: '/', orden: 1, status: true },
+      { id: 1, name: 'NOVEDADESssss', slug: '', link: '/', orden: 1, status: true },
       { id: 2, name: 'TORTAS EN LINEA', slug: 'tortas', link: '/c/tortas', orden: 2, status: true },
       { id: 3, name: 'POSTRES', slug: 'postres', link: '/c/postres', orden: 5, status: true },
       { id: 4, name: 'BOCADITOS', slug: 'bocaditos', link: '/c/bocaditos', orden: 6, status: true },
@@ -86,15 +86,16 @@ export async function fetchProducts(
     if (productTypeId) {
       params.append('product_type_id', productTypeId.toString());
     }
+
+    console.log('tipo producto', productTypeId);
     
     if (search) {
-      params.append('search', search);
+      params.append('name', search);
     }
 
     const endpoint = `${API_ROUTES.PRODUCTS}?${params.toString()}`;
     const response: ApiProductsResponse = await apiGet(endpoint);
-    
-    // Transformar productos
+  
     const transformedProducts = response.data.map(transformProduct);
     
     return {
@@ -218,7 +219,6 @@ export async function getProductsByTheme(
       throw new Error(`Theme not found: ${themeSlug}`);
     }
     
-    // Solo filtrar por theme_id (como funcionaba antes)
     return await fetchProducts(page, undefined, theme.id, undefined, search);
   } catch (error) {
     console.error('Error getting products by theme:', error);

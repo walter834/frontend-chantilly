@@ -49,7 +49,7 @@ export default function CategoryPage({
     } else {
       params.delete('search');
     }
-    params.delete('page'); // Reset to page 1 when searching
+    params.delete('page');
     router.push(`?${params.toString()}`);
   };
 

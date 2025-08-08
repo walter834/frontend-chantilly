@@ -36,6 +36,7 @@ export default function HomePage() {
       try {
         // Obtener productos destacados (best_status = true)
         const result = await fetchProducts(1, undefined, undefined, undefined, undefined);
+        console.log('resultado',result);
         const bestProducts = result.products.filter(product => product.isBestSeller);
         setFeaturedProducts(bestProducts.slice(0, 6)); // Mostrar máximo 6 productos
       } catch (error) {

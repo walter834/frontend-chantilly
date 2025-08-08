@@ -2,8 +2,6 @@ import {
   tortasProducts, 
   tortasTematicasProducts, 
   postresProducts, 
-  bocaditosProducts, 
-  promocionesProducts 
 } from './products';
 import { fetchPages, fetchThemes } from './api-services';
 
@@ -124,9 +122,9 @@ export const categoryData: Record<string, CategoryInfo> = {
   'promociones': {
     title: 'PROMOCIONES',
     description: 'Ofertas especiales y descuentos en nuestros productos.',
-    products: promocionesProducts,
-    totalResults: promocionesProducts.length,
-    currentResults: promocionesProducts.length,
+    products: [],
+    totalResults: 0,
+    currentResults: 0,
     type: 'category'
   },
   'postres': {
@@ -140,9 +138,9 @@ export const categoryData: Record<string, CategoryInfo> = {
   'bocaditos': {
     title: 'BOCADITOS',
     description: 'Deliciosos bocaditos para cualquier ocasión.',
-    products: bocaditosProducts,
-    totalResults: bocaditosProducts.length,
-    currentResults: bocaditosProducts.length,
+    products: [],
+    totalResults: 0,
+    currentResults: 0,
     type: 'category'
   }
 };
@@ -197,6 +195,7 @@ export async function fetchProducts(categoryId?: string, themeId?: string): Prom
     if (categoryId) {
       return getCategoryInfo(categoryId)?.products || [];
     }
+    
     return [];
   } catch (error) {
     console.error('Error fetching products:', error);
