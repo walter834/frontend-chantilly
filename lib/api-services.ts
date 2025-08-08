@@ -71,7 +71,6 @@ export async function fetchProducts(
   };
 }> {
   try {
-    // Construir query parameters
     const params = new URLSearchParams();
     params.append('page', page.toString());
     
@@ -86,8 +85,6 @@ export async function fetchProducts(
     if (productTypeId) {
       params.append('product_type_id', productTypeId.toString());
     }
-
-    console.log('tipo producto', productTypeId);
     
     if (search) {
       params.append('name', search);
@@ -111,7 +108,6 @@ export async function fetchProducts(
     };
   } catch (error) {
     console.error('Error fetching products:', error);
-    // Fallback a datos estáticos
     return {
       products: [],
       pagination: {
@@ -126,7 +122,6 @@ export async function fetchProducts(
   }
 }
 
-// Función para obtener una página específica por slug
 export async function getPageBySlug(slug: string): Promise<TransformedPage | null> {
   try {
     const pages = await fetchPages();
@@ -137,7 +132,6 @@ export async function getPageBySlug(slug: string): Promise<TransformedPage | nul
   }
 }
 
-// Función para obtener una temática específica por slug
 export async function getThemeBySlug(slug: string): Promise<TransformedTheme | null> {
   try {
     const themes = await fetchThemes();
@@ -148,7 +142,6 @@ export async function getThemeBySlug(slug: string): Promise<TransformedTheme | n
   }
 }
 
-// Función para obtener productos por categoría (product_type) - VERSIÓN SIMPLE
 export async function getProductsByCategory(
   categorySlug: string,
   page: number = 1,
@@ -165,12 +158,12 @@ export async function getProductsByCategory(
   };
 }> {
   try {
-    // Mapeo simple para categorías principales
     const categoryMap: Record<string, number> = {
-      'tortas': 1, // TORTA EN LINEA
-      'postres': 2, // POSTRES
-      'bocaditos': 3, // BOCADITOS
-      'promociones': 4, // PROMOCIONES
+      'tortas': 1,
+      'tortas-tematicas': 2,
+      'postres': 3,
+      'bocaditos': 4,
+      'promociones': 6,
     };
     
     const productTypeId = categoryMap[categorySlug];
@@ -195,7 +188,6 @@ export async function getProductsByCategory(
   }
 }
 
-// Función para obtener productos por temática - VERSIÓN SIMPLE (solo theme_id)
 export async function getProductsByTheme(
   themeSlug: string,
   page: number = 1,
