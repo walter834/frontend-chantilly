@@ -17,14 +17,14 @@ export default function LoginForm() {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen} >
+    <Dialog open={isOpen} onOpenChange={setIsOpen}  >
       <DialogTrigger asChild>
         <Button variant="ghost" size="icon" className="size-10">
           <User size={30} />
         </Button>
       </DialogTrigger>
 
-      <DialogContent className=" max-w-[700px]">
+      <DialogContent className=" max-w-[900px] ">
         <DialogTitle></DialogTitle>
         {isRegister ? (
           <Register

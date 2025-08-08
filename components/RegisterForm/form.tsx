@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -22,21 +21,58 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Eye, EyeOff, X, Home } from "lucide-react";
-import Link from "next/link";
+import { Eye, EyeOff, Home, AlertCircle, CheckCircle } from "lucide-react";
 import { registerSchema } from "@/lib/validators/auth";
+import { getDocumentTypes, register } from "@/service/auth/authService";
+import { useUbigeo } from "@/hooks/useUbigeo";
 
 type FormData = z.infer<typeof registerSchema>;
 
 interface RegisterProps {
-  onBackToLogin?: () => void
-  onCloseDialog?: () => void
+  onBackToLogin?: () => void;
+  onCloseDialog?: () => void;
 }
 
-export default function Register({ onBackToLogin, onCloseDialog }: RegisterProps) {
+export default function Register({
+  onBackToLogin,
+  onCloseDialog,
+}: RegisterProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [submitError, setSubmitError] = useState<string>("");
+  const [submitSuccess, setSubmitSuccess] = useState<string>("");
+
+  const [documentTypes, setDocumentTypes] = useState<DocumentType[]>([]);
+  const [loadingDocs, setLoadingDocs] = useState(true);
+
+  // Hook para manejar ubigeo
+  const {
+    departments,
+    provinces,
+    districts,
+    loadingDepartments,
+    loadingProvinces,
+    loadingDistricts,
+    handleDepartmentChange,
+    handleProvinceChange,
+    resetProvinces, // Ahora usamos este.
+    resetDistricts, // Y este.
+  } = useUbigeo();
+
+  useEffect(() => {
+    const fetchDocumentTypes = async () => {
+      try {
+        const types = await getDocumentTypes();
+        setDocumentTypes(types);
+      } catch (error) {
+        console.error("Error cargando tipos de documento:", error);
+      } finally {
+        setLoadingDocs(false);
+      }
+    };
+    fetchDocumentTypes();
+  }, []);
 
   const form = useForm<FormData>({
     resolver: zodResolver(registerSchema),
@@ -48,6 +84,9 @@ export default function Register({ onBackToLogin, onCloseDialog }: RegisterProps
       celular: "",
       email: "",
       direccion: "",
+      departamento: "",
+      provincia: "",
+      distrito: "",
       password: "",
       confirmPassword: "",
     },
@@ -55,25 +94,45 @@ export default function Register({ onBackToLogin, onCloseDialog }: RegisterProps
 
   const onSubmit = async (data: FormData) => {
     setIsLoading(true);
+    setSubmitError("");
+    setSubmitSuccess("");
+    
     try {
-      console.log("Form submitted:", data);
-      // Aquí irían las llamadas a la API
-      await new Promise((resolve) => setTimeout(resolve, 2000)); // Simular carga
-    } catch (error) {
-      console.error("Error:", error);
+      console.log("Datos del formulario:", data);
+      
+      const response = await register(data);
+
+      console.log("Registro exitoso:", response.message);
+      setSubmitSuccess(response.message || "Usuario registrado exitosamente");
+      
+      // Esperar un poco antes de cerrar para mostrar el mensaje de éxito
+      setTimeout(() => {
+        onCloseDialog?.();
+      }, 2000);
+      
+    } catch (error: any) {
+      console.error("Error completo:", error);
+      
+      let errorMessage = "Error al registrar usuario";
+      
+      if (error.status === 422) {
+        errorMessage = error.message || "Error de validación. Revise los datos ingresados.";
+      } else if (error.status === 409) {
+        errorMessage = "El email o número de documento ya están registrados.";
+      } else if (error.status === 400) {
+        errorMessage = error.message || "Datos inválidos.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      setSubmitError(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Nueva función para manejar la apertura del login
-  const handleOpenLogin = () => {
-    onCloseDialog?.() // Cerrar el RegisterForm
-     // Abrir el LoginForm
-  }
-
   return (
-    <div className="w-full  rounded-lg  overflow-hidden">
+    <div className="w-full rounded-lg overflow-hidden">
       {/* Header */}
       <div className="bg-red-600 text-white px-6 py-4 -mt-2">
         <div className="flex items-center justify-between">
@@ -85,8 +144,24 @@ export default function Register({ onBackToLogin, onCloseDialog }: RegisterProps
       </div>
 
       {/* Form */}
-      <Form {...form}>
-        <div onSubmit={form.handleSubmit(onSubmit)} className="p-6 space-y-4">
+      <Form {...form} >
+        <form onSubmit={form.handleSubmit(onSubmit)} className="p-6 space-y-4 max-w-[900px]">
+          
+          {/* Mostrar mensajes de error/éxito */}
+          {submitError && (
+            <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded flex items-center gap-2">
+              <AlertCircle className="h-5 w-5" />
+              {submitError}
+            </div>
+          )}
+          
+          {submitSuccess && (
+            <div className="bg-green-50 border border-green-400 text-green-700 px-4 py-3 rounded flex items-center gap-2">
+              <CheckCircle className="h-5 w-5" />
+              {submitSuccess}
+            </div>
+          )}
+
           {/* Nombres */}
           <FormField
             control={form.control}
@@ -101,6 +176,7 @@ export default function Register({ onBackToLogin, onCloseDialog }: RegisterProps
                     placeholder="Ingrese su(s) Nombre(s)"
                     {...field}
                     maxLength={50}
+                    disabled={isLoading}
                   />
                 </FormControl>
                 <FormMessage />
@@ -122,6 +198,7 @@ export default function Register({ onBackToLogin, onCloseDialog }: RegisterProps
                     placeholder="Ingrese sus Apellidos"
                     {...field}
                     maxLength={50}
+                    disabled={isLoading}
                   />
                 </FormControl>
                 <FormMessage />
@@ -137,22 +214,24 @@ export default function Register({ onBackToLogin, onCloseDialog }: RegisterProps
               render={({ field }) => (
                 <FormItem className="col-span-1">
                   <FormLabel className="text-sm font-medium text-gray-700">
-                    Documento
+                    Documento <span className="text-red-500">*</span>
                   </FormLabel>
                   <Select
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    value={field.value}
+                    disabled={isLoading || loadingDocs}
                   >
                     <FormControl className="w-full">
                       <SelectTrigger>
-                        <SelectValue placeholder="DNI" />
+                        <SelectValue placeholder={loadingDocs ? "Cargando..." : "Tipo"} />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent >
-                      <SelectItem value="dni">DNI</SelectItem>
-                      <SelectItem value="passport">C.EXT</SelectItem>
-                      <SelectItem value="ce">PAS</SelectItem>
-                      <SelectItem value="ca">PTP</SelectItem>
+                    <SelectContent>
+                      {documentTypes.map((doc) => (
+                        <SelectItem key={doc.id} value={String(doc.id)}>
+                          {doc.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -173,6 +252,7 @@ export default function Register({ onBackToLogin, onCloseDialog }: RegisterProps
                       placeholder="Número de documento"
                       {...field}
                       maxLength={15}
+                      disabled={isLoading}
                     />
                   </FormControl>
                   <FormMessage />
@@ -196,6 +276,7 @@ export default function Register({ onBackToLogin, onCloseDialog }: RegisterProps
                     placeholder="Ingrese su Celular"
                     {...field}
                     maxLength={12}
+                    disabled={isLoading}
                   />
                 </FormControl>
                 <FormMessage />
@@ -217,6 +298,7 @@ export default function Register({ onBackToLogin, onCloseDialog }: RegisterProps
                     type="email"
                     placeholder="Ingrese su correo electrónico"
                     {...field}
+                    disabled={isLoading}
                   />
                 </FormControl>
                 <FormMessage />
@@ -234,12 +316,136 @@ export default function Register({ onBackToLogin, onCloseDialog }: RegisterProps
                   Dirección
                 </FormLabel>
                 <FormControl>
-                  <Input placeholder="Ingrese su Dirección" {...field} />
+                  <Input 
+                    placeholder="Ingrese su Dirección" 
+                    {...field} 
+                    disabled={isLoading}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
+
+          {/* Ubigeo: Departamento, Provincia, Distrito */}
+          <div className="grid grid-cols-3 gap-2">
+            {/* Departamento */}
+            <FormField
+              control={form.control}
+              name="departamento"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">
+                    Departamento <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <Select
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      handleDepartmentChange(value);
+                      // Resetea provincia y distrito en el formulario y en el hook
+                      form.setValue("provincia", "");
+                      form.setValue("distrito", "");
+                      resetProvinces(); // Agregado para sincronizar el hook
+                    }}
+                    value={field.value}
+                    disabled={isLoading || loadingDepartments}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder={loadingDepartments ? "Cargando..." : "Seleccionar"} />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {departments.map((dept) => (
+                        <SelectItem key={dept.id} value={dept.id}>
+                          {dept.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Provincia */}
+            <FormField
+              control={form.control}
+              name="provincia"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">
+                    Provincia <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <Select
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      handleProvinceChange(value);
+                      // Resetea distrito en el formulario y en el hook
+                      form.setValue("distrito", "");
+                      resetDistricts(); // Agregado para sincronizar el hook
+                    }}
+                    value={field.value}
+                    disabled={isLoading || loadingProvinces || provinces.length === 0}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder={
+                          loadingProvinces ? "Cargando..." : 
+                          provinces.length === 0 ? "Seleccione departamento" : 
+                          "Seleccionar"
+                        } />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {provinces.map((prov) => (
+                        <SelectItem key={prov.id} value={prov.id}>
+                          {prov.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Distrito */}
+            <FormField
+              control={form.control}
+              name="distrito"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">
+                    Distrito <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    disabled={isLoading || loadingDistricts || districts.length === 0}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder={
+                          loadingDistricts ? "Cargando..." : 
+                          districts.length === 0 ? "Seleccione provincia" : 
+                          "Seleccionar"
+                        } />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {districts.map((dist) => (
+                        <SelectItem key={dist.id} value={dist.id}>
+                          {dist.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
           {/* Password fields */}
           <div className="grid grid-cols-2 gap-3">
@@ -258,6 +464,7 @@ export default function Register({ onBackToLogin, onCloseDialog }: RegisterProps
                         placeholder="Contraseña"
                         {...field}
                         className="pr-10"
+                        disabled={isLoading}
                       />
                       <Button
                         type="button"
@@ -265,6 +472,7 @@ export default function Register({ onBackToLogin, onCloseDialog }: RegisterProps
                         size="sm"
                         className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                         onClick={() => setShowPassword(!showPassword)}
+                        disabled={isLoading}
                       >
                         {showPassword ? (
                           <EyeOff className="h-4 w-4 text-gray-400" />
@@ -294,6 +502,7 @@ export default function Register({ onBackToLogin, onCloseDialog }: RegisterProps
                         placeholder="Confirmar"
                         {...field}
                         className="pr-10"
+                        disabled={isLoading}
                       />
                       <Button
                         type="button"
@@ -303,6 +512,7 @@ export default function Register({ onBackToLogin, onCloseDialog }: RegisterProps
                         onClick={() =>
                           setShowConfirmPassword(!showConfirmPassword)
                         }
+                        disabled={isLoading}
                       >
                         {showConfirmPassword ? (
                           <EyeOff className="h-4 w-4 text-gray-400" />
@@ -323,25 +533,32 @@ export default function Register({ onBackToLogin, onCloseDialog }: RegisterProps
             type="submit"
             className="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-3 mt-6"
             disabled={isLoading}
-            onClick={form.handleSubmit(onSubmit)}
           >
-            {isLoading ? "Registrando..." : "Registrarse"}
+            {isLoading ? (
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Registrando...
+              </div>
+            ) : (
+              "Registrarse"
+            )}
           </Button>
 
           {/* Sign in link */}
           <div className="text-center mt-4">
-          <p className="text-sm text-gray-600">
-        ¿Ya tienes una cuenta?{" "}
-        <button
-          type="button"
-          onClick={onBackToLogin}
-          className="text-purple-600 hover:text-purple-800 font-medium"
-        >
-          Inicia sesión aquí
-        </button>
-      </p>
+            <p className="text-sm text-gray-600">
+              ¿Ya tienes una cuenta?{" "}
+              <button
+                type="button"
+                onClick={onBackToLogin}
+                className="text-purple-600 hover:text-purple-800 font-medium"
+                disabled={isLoading}
+              >
+                Inicia sesión aquí
+              </button>
+            </p>
           </div>
-        </div>
+        </form>
       </Form>
     </div>
   );

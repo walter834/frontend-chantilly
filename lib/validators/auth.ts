@@ -1,19 +1,25 @@
-import z from "zod";
+import * as z from "zod";
 
 export const registerSchema = z.object({
-  nombres: z.string().min(2, "Los nombres deben tener al menos 2 caracteres").max(50, "Máximo 50 caracteres"),
-  apellidos: z.string().min(2, "Los apellidos deben tener al menos 2 caracteres").max(50, "Máximo 50 caracteres"),
+  nombres: z.string().min(2, "Los nombres son requeridos").max(50, "Máximo 50 caracteres"),
+  apellidos: z.string().min(2, "Los apellidos son requeridos").max(50, "Máximo 50 caracteres"),
   documentType: z.string().min(1, "Seleccione un tipo de documento"),
-  documentNumber: z.string().min(8, "El documento debe tener al menos 8 caracteres").max(15, "Máximo 15 caracteres"),
-  celular: z.string().min(9, "El celular debe tener al menos 9 dígitos").regex(/^\d+$/, "Solo números"),
-  email: z.string().email("Ingrese un email válido"),
+  documentNumber: z.string().min(8, "Mínimo 8 dígitos").max(15, "Máximo 15 dígitos"),
+  celular: z.string().min(9, "Mínimo 9 dígitos").max(12, "Máximo 12 dígitos"),
+  email: z.string().email("Email inválido"),
   direccion: z.string().optional(),
-  password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
-  confirmPassword: z.string().min(6, "Confirme su contraseña")
+  
+  // Campos de ubigeo
+  departamento: z.string().min(1, "Seleccione un departamento"),
+  provincia: z.string().min(1, "Seleccione una provincia"), 
+  distrito: z.string().min(1, "Seleccione un distrito"),
+  
+  password: z.string().min(8, "Mínimo 8 caracteres"),
+  confirmPassword: z.string().min(8, "Confirme su contraseña"),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Las contraseñas no coinciden",
-  path: ["confirmPassword"]
-})
+  path: ["confirmPassword"],
+});
 
 export const loginSchema = z.object({
   email: z
