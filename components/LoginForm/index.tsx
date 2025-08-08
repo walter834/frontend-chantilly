@@ -1,51 +1,43 @@
-import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { User } from "lucide-react"
+"use client";
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { User } from "lucide-react";
+import Register from "../RegisterForm/form"; // Importa directamente el form real
+import Login from "./form";
 
 export default function LoginForm() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isRegister, setIsRegister] = useState(false);
+
+  const handleClose = () => {
+    setIsOpen(false);
+    setIsRegister(false);
+  };
+
   return (
-    <Dialog>
-      <form>
-        <DialogTrigger asChild>
-          <Button variant="ghost" size="icon" className="size-10"> <User size={30}/></Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Edit profile</DialogTitle>
-            <DialogDescription>
-              Make changes to your profile here. Click save when you&apos;re
-              done.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4">
-            <div className="grid gap-3">
-              <Label htmlFor="name-1">Name</Label>
-              <Input id="name-1" name="name" defaultValue="Pedro Duarte" />
-            </div>
-            <div className="grid gap-3">
-              <Label htmlFor="username-1">Username</Label>
-              <Input id="username-1" name="username" defaultValue="@peduarte" />
-            </div>
-          </div>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </DialogClose>
-            <Button type="submit">Save changes</Button>
-          </DialogFooter>
-        </DialogContent>
-      </form>
+    <Dialog open={isOpen} onOpenChange={setIsOpen} >
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="icon" className="size-10">
+          <User size={30} />
+        </Button>
+      </DialogTrigger>
+
+      <DialogContent className=" max-w-[700px]">
+        <DialogTitle></DialogTitle>
+        {isRegister ? (
+          <Register
+            onBackToLogin={() => setIsRegister(false)}
+            onCloseDialog={handleClose}
+          />
+        ) : (
+          <Login
+            onCloseDialog={handleClose}
+            onOpenRegister={() => setIsRegister(true)}
+          />
+        )}
+      </DialogContent>
     </Dialog>
-  )
+  );
 }
