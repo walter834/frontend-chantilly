@@ -20,8 +20,8 @@ interface ThemePageProps {
 export default function ThemePage({ params, searchParams }: ThemePageProps) {
   const { category, theme } = React.use(params);
   const { page = '1', search = '' } = React.use(searchParams);
-  const themeInfo = getThemeProducts(category, theme);
   
+  const [themeInfo, setThemeInfo] = useState<{ title: string; description: string } | null>(null);
   const [products, setProducts] = useState<TransformedProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({
@@ -34,9 +34,13 @@ export default function ThemePage({ params, searchParams }: ThemePageProps) {
   });
 
   useEffect(() => {
-    const loadProducts = async () => {
+    const loadData = async () => {
       setLoading(true);
       try {
+        // Resolver la información del tema
+        const resolvedThemeInfo = await getThemeProducts(category, theme);
+        setThemeInfo(resolvedThemeInfo);
+        
         const currentPage = parseInt(page) || 1;
         const searchTerm = search || '';
         
@@ -61,8 +65,8 @@ export default function ThemePage({ params, searchParams }: ThemePageProps) {
       }
     };
 
-    loadProducts();
-  }, [theme, page, search]);
+    loadData();
+  }, [category, theme, page, search]);
 
   if (!themeInfo) {
     return (
@@ -80,7 +84,7 @@ export default function ThemePage({ params, searchParams }: ThemePageProps) {
     );
   }
 
-  if (loading) {
+  if (loading || !themeInfo) {
     return (
       <div className="w-[95%] mx-auto px-2 sm:px-6 lg:px-8 xl:px-12 py-12">
         <div className="text-center">
@@ -93,8 +97,8 @@ export default function ThemePage({ params, searchParams }: ThemePageProps) {
 
   return (
     <CategoryPage
-      title={themeInfo.title}
-      description={themeInfo.description}
+      title={themeInfo?.title || 'Cargando...'}
+      description={themeInfo?.description || 'Cargando descripción...'}
       products={products}
       totalResults={pagination.total}
       currentResults={products.length}

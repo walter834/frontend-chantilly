@@ -2,6 +2,7 @@ import { apiGet, API_ROUTES } from './api-config';
 import { 
   ApiPage, 
   ApiTheme, 
+  ApiProduct,
   ApiProductsResponse,
   TransformedPage, 
   TransformedTheme, 
@@ -100,19 +101,6 @@ export async function fetchProducts(
     const endpoint = `${API_ROUTES.PRODUCTS}?${params.toString()}`;
     const response: ApiProductsResponse = await apiGet(endpoint);
 
-    if(response.message){
-      return {
-        products: [],
-        pagination: {
-          currentPage: 1,
-          perPage: 8,
-          total: 0,
-          lastPage: 1,
-          hasNextPage: false,
-          hasPrevPage: false,
-        }
-      };
-    }
     const transformedProducts = response.data.map(transformProduct);
     
     return {
@@ -264,8 +252,8 @@ hasPrevPage: false,
 
 export async function getProductById(id: string): Promise<TransformedProduct | null> {
   try {
-    const response: any = await apiGet(`${API_ROUTES.PRODUCTS}/${id}`);
-    return transformProduct(response);
+    const response: unknown = await apiGet(`${API_ROUTES.PRODUCTS}/${id}`);
+    return transformProduct(response as ApiProduct);
   } catch (error) {
     console.error('Error fetching product by ID:', error);
     return null;

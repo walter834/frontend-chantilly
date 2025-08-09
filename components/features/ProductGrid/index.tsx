@@ -1,19 +1,10 @@
 'use client';
 import React from 'react';
 import ProductCard from '../ProductCard';
-
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  originalPrice?: number;
-  image: string;
-  rating?: number;
-  isFavorite?: boolean;
-}
+import { TransformedProduct } from '@/types/api';
 
 interface ProductGridProps {
-  products: Product[];
+  products: TransformedProduct[];
   onAddToCart?: (id: string) => void;
   onToggleFavorite?: (id: string) => void;
   loading?: boolean;
@@ -60,9 +51,11 @@ export default function ProductGrid({
       {products.map((product) => (
         <ProductCard
           key={product.id}
-          {...product}
-          onAddToCart={onAddToCart}
-          onToggleFavorite={onToggleFavorite}
+          id={product.id.toString()}
+          name={product.name}
+          price={product.price}
+          originalPrice={product.originalPrice}
+          image={product.image}
         />
       ))}
     </div>

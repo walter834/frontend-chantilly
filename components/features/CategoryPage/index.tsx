@@ -3,12 +3,12 @@ import React, { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import ProductGrid from '../ProductGrid';
 import Paginations from '@/components/Paginations';
-import { Product } from '@/types';
+import { TransformedProduct } from '@/types/api';
 
 interface CategoryPageProps {
   title: string;
   description: string;
-  products: Product[];
+  products: TransformedProduct[];
   totalResults?: number;
   currentResults?: number;
   onAddToCart?: (productId: string) => void;
@@ -113,8 +113,6 @@ export default function CategoryPage({
       <div className="mt-6">
         <ProductGrid
           products={products}
-          onAddToCart={onAddToCart}
-          onToggleFavorite={onToggleFavorite}
         />
       </div>
     </div>

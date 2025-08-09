@@ -3,12 +3,12 @@ import React, { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import ProductGrid from '../ProductGrid';
 import Paginations from '@/components/Paginations';
-import { Product } from '@/types';
+import { TransformedProduct } from '@/types/api';
 
 interface SubcategoryPageProps {
   title: string;
   description: string;
-  products: Product[];
+  products: TransformedProduct[];
   totalResults?: number;
   currentResults?: number;
   categoryName?: string;
@@ -126,8 +126,6 @@ export default function SubcategoryPage({
       <div className="mt-6">
         <ProductGrid
           products={products}
-          onAddToCart={onAddToCart}
-          onToggleFavorite={onToggleFavorite}
         />
       </div>
     </div>
