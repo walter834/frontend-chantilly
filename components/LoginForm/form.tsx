@@ -17,7 +17,7 @@ import {
 import { Eye, EyeOff, X, Home } from "lucide-react";
 import Link from "next/link";
 import { loginSchema } from "@/lib/validators/auth";
-import { loginGoogle, loginUser } from "@/service/auth/authService";
+import { loginUser, loginWithGoogle } from "@/service/auth/authService";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -63,13 +63,13 @@ export default function Login({ onCloseDialog, onOpenRegister }: LoginProps) {
     setIsGoogleLoading(true);
     try {
       console.log("Google sign in clicked");
-      // Aquí iría la lógica de Google OAuth
-      await loginGoogle();
+      loginWithGoogle();
+
     } catch (error) {
       console.error("Error en Google Sign In:", error);
-    } finally {
-      setIsGoogleLoading(false);
+      setIsGoogleLoading(false); // Solo en caso de error
     }
+    // NO poner finally aquí porque la redirección interrumpe la ejecución
   };
 
   // Nueva función para manejar la apertura del registro

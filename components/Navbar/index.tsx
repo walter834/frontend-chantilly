@@ -35,7 +35,7 @@ export default function Navbar() {
         <NavToggle />
 
         <div className="flex gap-4 items-center">
-          <LoginForm/>
+          <LoginForm />
           <ShoppingCart size={26}/>
         </div>
       </div>

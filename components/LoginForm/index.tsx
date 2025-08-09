@@ -24,7 +24,7 @@ export default function LoginForm() {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className=" max-w-[900px] ">
+      <DialogContent className=" ">
         <DialogTitle></DialogTitle>
         {isRegister ? (
           <Register
