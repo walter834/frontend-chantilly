@@ -223,27 +223,51 @@ export async function getProductsByTheme(
     hasPrevPage: boolean;
   };
 }> {
+try {
+const themes = await fetchThemes();
+const theme = themes.find(t => t.slug === themeSlug);
+  
+if (!theme) {
+throw new Error(`Theme with slug "${themeSlug}" not found`);
+}
+
+const response: ApiProductsResponse = await apiGet(
+`${API_ROUTES.PRODUCTS}?page=${page}&theme_id=${theme.id}${search ? `&search=${encodeURIComponent(search)}` : ''}`
+);
+
+return {
+products: response.data.map(transformProduct),
+pagination: {
+currentPage: response.current_page,
+perPage: response.per_page,
+total: response.total,
+lastPage: response.last_page,
+hasNextPage: response.current_page < response.last_page,
+hasPrevPage: response.current_page > 1,
+},
+};
+} catch (error) {
+console.error('Error fetching products by theme:', error);
+return {
+products: [],
+pagination: {
+currentPage: 1,
+perPage: 10,
+total: 0,
+lastPage: 1,
+hasNextPage: false,
+hasPrevPage: false,
+},
+};
+}
+}
+
+export async function getProductById(id: string): Promise<TransformedProduct | null> {
   try {
-    const themes = await fetchThemes();
-    const theme = themes.find(t => t.slug === themeSlug);
-    
-    if (!theme) {
-      throw new Error(`Theme not found: ${themeSlug}`);
-    }
-    
-    return await fetchProducts(page, undefined, theme.id, undefined, search);
+    const response: any = await apiGet(`${API_ROUTES.PRODUCTS}/${id}`);
+    return transformProduct(response);
   } catch (error) {
-    console.error('Error getting products by theme:', error);
-    return {
-      products: [],
-      pagination: {
-        currentPage: 1,
-        perPage: 8,
-        total: 0,
-        lastPage: 1,
-        hasNextPage: false,
-        hasPrevPage: false,
-      }
-    };
+    console.error('Error fetching product by ID:', error);
+    return null;
   }
-} 
+}

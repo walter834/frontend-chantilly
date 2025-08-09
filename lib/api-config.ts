@@ -1,11 +1,10 @@
-export const API_BASE_URL = 'http://192.168.18.28:8000';
-
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 export const API_ROUTES = {
-  PAGES: '/api/pages',
-  THEMES: '/api/theme',
-  PRODUCTS: '/api/products',
-  PRODUCT_TYPES: '/api/product-types',
-  CATEGORIES: '/api/categories',
+  PAGES: '/pages',
+  THEMES: '/theme',
+  PRODUCTS: '/products',
+  PRODUCT_TYPES: '/product-types',
+  CATEGORIES: '/categories',
 } as const;
 
 export const API_HEADERS = {
@@ -34,14 +33,14 @@ export async function apiGet<T>(endpoint: string): Promise<T> {
   return apiRequest<T>(endpoint, { method: 'GET' });
 }
 
-export async function apiPost<T>(endpoint: string, data: any): Promise<T> {
+export async function apiPost<T>(endpoint: string, data: Record<string, unknown>): Promise<T> {
   return apiRequest<T>(endpoint, {
     method: 'POST',
     body: JSON.stringify(data),
   });
 }
 
-export async function apiPut<T>(endpoint: string, data: any): Promise<T> {
+export async function apiPut<T>(endpoint: string, data: Record<string, unknown>): Promise<T> {
   return apiRequest<T>(endpoint, {
     method: 'PUT',
     body: JSON.stringify(data),
