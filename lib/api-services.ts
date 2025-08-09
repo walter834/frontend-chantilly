@@ -264,8 +264,8 @@ hasPrevPage: false,
 
 export async function getProductById(id: string): Promise<TransformedProduct | null> {
   try {
-    const response: any = await apiGet(`${API_ROUTES.PRODUCTS}/${id}`);
-    return transformProduct(response);
+    const response: unknown = await apiGet(`${API_ROUTES.PRODUCTS}/${id}`);
+    return transformProduct(response as any);
   } catch (error) {
     console.error('Error fetching product by ID:', error);
     return null;
