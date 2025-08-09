@@ -27,18 +27,18 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 
 // Interfaz para el payload que se envía a la API (formato Laravel)
 interface RegisterPayload {
-   email: string,
-  password: string,
-  id_document_type: number,
-  document_number: string,
-  name: string,
-  lastname: string,
-  address: string,
-  phone: string,
-  deparment: string,
-  province: string,
-  district: string,
-  password_confirmation: string
+  email: string;
+  password: string;
+  id_document_type: number;
+  document_number: string;
+  name: string;
+  lastname: string;
+  address: string;
+  phone: string;
+  deparment: string;
+  province: string;
+  district: string;
+  password_confirmation: string;
 }
 
 /**
@@ -48,7 +48,7 @@ export const loginUser = async (
   identifier: string,
   password: string,
   remember: boolean = false
-) => {
+): Promise<LoginResponse> => {
   try {
     const payload = identifier.includes("@")
       ? { email: identifier, password }
@@ -57,20 +57,42 @@ export const loginUser = async (
     const response = await api.post<LoginResponse>("/login", payload);
     const { token, user } = response.data;
 
+    // Validar que tengamos los datos necesarios
+    if (!token || !user) {
+      throw new Error("Respuesta del servidor incompleta - faltan token o datos de usuario");
+    }
+
     setCookie("token", token, 1);
     store.dispatch(login({ user, remember }));
-    
+
     return response.data;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error en login:", error);
     throw error;
   }
 };
 
 /**
+ * Función para hacer login con Google
+ */
+export const loginGoogle = (): void => {
+  try {
+    // Construir la URL completa del endpoint
+    const baseURL = api.defaults.baseURL || '';
+    const googleAuthURL = `${baseURL}/auth/google/redirect`;
+    
+    // Redirigir al usuario al endpoint de Google OAuth
+    window.location.href = googleAuthURL;
+  } catch (error: unknown) {
+    console.error("Error al iniciar login con Google:", error);
+    throw new Error("No se pudo iniciar el proceso de autenticación con Google");
+  }
+};
+
+/**
  * Función para hacer logout de usuario
  */
-export const logoutUser = async () => {
+export const logoutUser = async (): Promise<void> => {
   try {
     await api.post("/logout");
   } catch (error) {
@@ -97,22 +119,18 @@ export const register = async (formData: RegisterFormData) => {
 
     // Mapear los datos del formulario al formato que espera la API Laravel
     const payload: RegisterPayload = {
-    
-        email: formData.email.trim().toLowerCase(),
-        password: formData.password,
+      email: formData.email.trim().toLowerCase(),
+      password: formData.password,
       id_document_type: parseInt(formData.documentType),
       document_number: formData.documentNumber.trim(),
-        name: formData.nombres.trim(),
+      name: formData.nombres.trim(),
       lastname: formData.apellidos.trim(),
-       address: formData.direccion?.trim() || "",
+      address: formData.direccion?.trim() || "",
       phone: formData.celular.trim(),
       deparment: formData.departamento,
       province: formData.provincia,
       district: formData.distrito,
       password_confirmation: formData.confirmPassword, // ✅ AGREGAR ESTE CAMPO
-
-     
-
     };
 
     console.log("Payload enviado a la API:", payload); // Debug
@@ -129,23 +147,23 @@ export const register = async (formData: RegisterFormData) => {
       message,
       user,
     };
-
   } catch (error: any) {
     console.error("Error en registro completo:", error);
-    
+
     // Manejar errores específicos de Laravel
     let errorMessage = "Error al registrar usuario";
     let validationErrors = {};
-    
+
     if (error.response?.status === 422) {
       // Errores de validación de Laravel
-      errorMessage = error.response?.data?.message || "Datos de validación incorrectos";
+      errorMessage =
+        error.response?.data?.message || "Datos de validación incorrectos";
       validationErrors = error.response?.data?.errors || {};
-      
+
       // Formatear errores de validación para mostrar
       const errorMessages = Object.values(validationErrors).flat();
       if (errorMessages.length > 0) {
-        errorMessage = errorMessages.join(', ');
+        errorMessage = errorMessages.join(", ");
       }
     } else if (error.response?.status === 409) {
       errorMessage = "El usuario ya existe";
@@ -155,7 +173,7 @@ export const register = async (formData: RegisterFormData) => {
       // Error personalizado que lanzamos arriba
       errorMessage = error.message;
     }
-    
+
     throw {
       success: false,
       message: errorMessage,
@@ -182,14 +200,14 @@ export const getDocumentTypes = async (): Promise<DocumentType[]> => {
 /**
  * Función para obtener el usuario actual
  */
-export const getCurrentUser = async () => {
+export const getCurrentUser = async (): Promise<User | null> => {
   try {
     const response = await api.get<{ user: User }>("/user");
     const user = response.data.user;
-    
+
     console.log("getCurrentUser response:", user);
     store.dispatch(login({ user, remember: true }));
-    
+
     return user;
   } catch (error) {
     console.log("Error fetching current user:", error);
@@ -214,23 +232,26 @@ export const validateToken = async (): Promise<boolean> => {
 /**
  * Función para cambiar contraseña
  */
-export const changePassword = async (currentPassword: string, newPassword: string) => {
+export const changePassword = async (
+  currentPassword: string,
+  newPassword: string
+) => {
   try {
     const response = await api.post("/change-password", {
       current_password: currentPassword,
       new_password: newPassword,
     });
-    
+
     return {
       success: true,
       message: response.data.message || "Contraseña cambiada exitosamente",
     };
   } catch (error: any) {
     console.error("Error al cambiar contraseña:", error);
-    
-    const errorMessage = error.response?.data?.message || 
-                        "Error al cambiar contraseña";
-    
+
+    const errorMessage =
+      error.response?.data?.message || "Error al cambiar contraseña";
+
     throw {
       success: false,
       message: errorMessage,
@@ -245,17 +266,19 @@ export const changePassword = async (currentPassword: string, newPassword: strin
 export const forgotPassword = async (email: string) => {
   try {
     const response = await api.post("/forgot-password", { email });
-    
+
     return {
       success: true,
-      message: response.data.message || "Se ha enviado un correo para recuperar tu contraseña",
+      message:
+        response.data.message ||
+        "Se ha enviado un correo para recuperar tu contraseña",
     };
   } catch (error: any) {
     console.error("Error en recuperación de contraseña:", error);
-    
-    const errorMessage = error.response?.data?.message || 
-                        "Error al enviar correo de recuperación";
-    
+
+    const errorMessage =
+      error.response?.data?.message || "Error al enviar correo de recuperación";
+
     throw {
       success: false,
       message: errorMessage,

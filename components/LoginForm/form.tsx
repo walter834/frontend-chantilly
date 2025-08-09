@@ -17,6 +17,9 @@ import {
 import { Eye, EyeOff, X, Home } from "lucide-react";
 import Link from "next/link";
 import { loginSchema } from "@/lib/validators/auth";
+import { loginGoogle, loginUser } from "@/service/auth/authService";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
@@ -29,6 +32,7 @@ export default function Login({ onCloseDialog, onOpenRegister }: LoginProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const router = useRouter();
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -43,16 +47,13 @@ export default function Login({ onCloseDialog, onOpenRegister }: LoginProps) {
     try {
       console.log("Login submitted:", data);
       // Aquí irían las llamadas a la API de login
-      await new Promise((resolve) => setTimeout(resolve, 2000)); // Simular carga
-
-      // Simulación de respuesta exitosa
-      // router.push('/dashboard') // Redireccionar después del login
+      await loginUser(data.email, data.password);
+      router.push("/"); // Redireccionar después del login
+      toast.success("Usuario registrado");
     } catch (error) {
       console.error("Error en login:", error);
-      // Aquí podrías manejar errores específicos
-      form.setError("root", {
-        message: "Credenciales inválidas. Verifique su email y contraseña.",
-      });
+
+      toast.error("Credenciales inválidas. Verifique su email y contraseña.");
     } finally {
       setIsLoading(false);
     }
@@ -63,7 +64,7 @@ export default function Login({ onCloseDialog, onOpenRegister }: LoginProps) {
     try {
       console.log("Google sign in clicked");
       // Aquí iría la lógica de Google OAuth
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await loginGoogle();
     } catch (error) {
       console.error("Error en Google Sign In:", error);
     } finally {
@@ -91,13 +92,8 @@ export default function Login({ onCloseDialog, onOpenRegister }: LoginProps) {
 
       {/* Form */}
       <Form {...form}>
-        <div className="p-6 space-y-6">
+        <form className="p-6 space-y-6 " onSubmit={form.handleSubmit(onSubmit)}>
           {/* Error general del formulario */}
-          {form.formState.errors.root && (
-            <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
-              {form.formState.errors.root.message}
-            </div>
-          )}
 
           {/* Email */}
           <FormField
@@ -239,7 +235,7 @@ export default function Login({ onCloseDialog, onOpenRegister }: LoginProps) {
               </button>
             </p>
           </div>
-        </div>
+        </form>
       </Form>
     </div>
   );
