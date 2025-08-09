@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Poppins} from "next/font/google";
+import { Geist, Geist_Mono, Poppins } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/layout/Footer";
 import CustomOrders from "@/components/CustomOrders";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,14 +18,15 @@ const geistMono = Geist_Mono({
 });
 
 const poppins = Poppins({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-poppins',
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-poppins",
 });
 
 export const metadata: Metadata = {
   title: "LA CASA DEL CHANTILLY SAC",
-  description: "Los mejores productos artesanales con la más alta calidad y sabor único",
+  description:
+    "Los mejores productos artesanales con la más alta calidad y sabor único",
   keywords: "productos artesanales, chantilly, calidad, sabor",
   authors: [{ name: "Chantilly Team" }],
 };
@@ -41,10 +43,9 @@ export default function RootLayout({
       >
         <Navbar />
         <Header />
-        <main className="flex-1">
-          {children}
-        </main>
-        <CustomOrders/>
+        <main className="flex-1">{children}</main>
+        <Toaster />
+        <CustomOrders />
         <Footer />
       </body>
     </html>

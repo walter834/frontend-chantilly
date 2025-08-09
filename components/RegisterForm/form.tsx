@@ -50,14 +50,10 @@ export default function Register({
   const {
     departments,
     provinces,
-    districts,
-    loadingDepartments,
-    loadingProvinces,
-    loadingDistricts,
+    districts, // Y este.
     handleDepartmentChange,
     handleProvinceChange,
-    resetProvinces, // Ahora usamos este.
-    resetDistricts, // Y este.
+    handleDistrictChange,
   } = useUbigeo();
 
   useEffect(() => {
@@ -96,27 +92,27 @@ export default function Register({
     setIsLoading(true);
     setSubmitError("");
     setSubmitSuccess("");
-    
+
     try {
       console.log("Datos del formulario:", data);
-      
+
       const response = await register(data);
 
       console.log("Registro exitoso:", response.message);
       setSubmitSuccess(response.message || "Usuario registrado exitosamente");
-      
+
       // Esperar un poco antes de cerrar para mostrar el mensaje de éxito
       setTimeout(() => {
         onCloseDialog?.();
       }, 2000);
-      
     } catch (error: any) {
       console.error("Error completo:", error);
-      
+
       let errorMessage = "Error al registrar usuario";
-      
+
       if (error.status === 422) {
-        errorMessage = error.message || "Error de validación. Revise los datos ingresados.";
+        errorMessage =
+          error.message || "Error de validación. Revise los datos ingresados.";
       } else if (error.status === 409) {
         errorMessage = "El email o número de documento ya están registrados.";
       } else if (error.status === 400) {
@@ -124,7 +120,7 @@ export default function Register({
       } else if (error.message) {
         errorMessage = error.message;
       }
-      
+
       setSubmitError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -144,9 +140,11 @@ export default function Register({
       </div>
 
       {/* Form */}
-      <Form {...form} >
-        <form onSubmit={form.handleSubmit(onSubmit)} className="p-6 space-y-4 max-w-[900px]">
-          
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="p-6 space-y-4 max-w-[900px]"
+        >
           {/* Mostrar mensajes de error/éxito */}
           {submitError && (
             <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded flex items-center gap-2">
@@ -154,7 +152,7 @@ export default function Register({
               {submitError}
             </div>
           )}
-          
+
           {submitSuccess && (
             <div className="bg-green-50 border border-green-400 text-green-700 px-4 py-3 rounded flex items-center gap-2">
               <CheckCircle className="h-5 w-5" />
@@ -223,7 +221,9 @@ export default function Register({
                   >
                     <FormControl className="w-full">
                       <SelectTrigger>
-                        <SelectValue placeholder={loadingDocs ? "Cargando..." : "Tipo"} />
+                        <SelectValue
+                          placeholder={loadingDocs ? "Cargando..." : "Tipo"}
+                        />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -316,9 +316,9 @@ export default function Register({
                   Dirección
                 </FormLabel>
                 <FormControl>
-                  <Input 
-                    placeholder="Ingrese su Dirección" 
-                    {...field} 
+                  <Input
+                    placeholder="Ingrese su Dirección"
+                    {...field}
                     disabled={isLoading}
                   />
                 </FormControl>
@@ -341,23 +341,24 @@ export default function Register({
                   <Select
                     onValueChange={(value) => {
                       field.onChange(value);
-                      handleDepartmentChange(value);
+
                       // Resetea provincia y distrito en el formulario y en el hook
                       form.setValue("provincia", "");
                       form.setValue("distrito", "");
-                      resetProvinces(); // Agregado para sincronizar el hook
+
+                      handleDepartmentChange(value);
+                      // Agregado para sincronizar el hook
                     }}
                     value={field.value}
-                    disabled={isLoading || loadingDepartments}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder={loadingDepartments ? "Cargando..." : "Seleccionar"} />
+                        <SelectValue placeholder={"Seleccionar"} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {departments.map((dept) => (
-                        <SelectItem key={dept.id} value={dept.id}>
+                        <SelectItem key={dept.code} value={dept.code}>
                           {dept.name}
                         </SelectItem>
                       ))}
@@ -380,26 +381,21 @@ export default function Register({
                   <Select
                     onValueChange={(value) => {
                       field.onChange(value);
-                      handleProvinceChange(value);
-                      // Resetea distrito en el formulario y en el hook
+
                       form.setValue("distrito", "");
-                      resetDistricts(); // Agregado para sincronizar el hook
+
+                      handleProvinceChange(value);
                     }}
                     value={field.value}
-                    disabled={isLoading || loadingProvinces || provinces.length === 0}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder={
-                          loadingProvinces ? "Cargando..." : 
-                          provinces.length === 0 ? "Seleccione departamento" : 
-                          "Seleccionar"
-                        } />
+                        <SelectValue placeholder="Seleccionar" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {provinces.map((prov) => (
-                        <SelectItem key={prov.id} value={prov.id}>
+                        <SelectItem key={prov.code} value={prov.code}>
                           {prov.name}
                         </SelectItem>
                       ))}
@@ -420,22 +416,20 @@ export default function Register({
                     Distrito <span className="text-red-500">*</span>
                   </FormLabel>
                   <Select
-                    onValueChange={field.onChange}
+                    onValueChange={(value) => {
+                      field.onChange(value);
+                      handleDistrictChange(value); // ← si quieres guardar en el hook también
+                    }}
                     value={field.value}
-                    disabled={isLoading || loadingDistricts || districts.length === 0}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder={
-                          loadingDistricts ? "Cargando..." : 
-                          districts.length === 0 ? "Seleccione provincia" : 
-                          "Seleccionar"
-                        } />
+                        <SelectValue placeholder={"Seleccionar"} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {districts.map((dist) => (
-                        <SelectItem key={dist.id} value={dist.id}>
+                        <SelectItem key={dist.code} value={dist.code}>
                           {dist.name}
                         </SelectItem>
                       ))}
