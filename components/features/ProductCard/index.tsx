@@ -1,7 +1,6 @@
 'use client';
 import React from 'react';
 import Image from 'next/image';
-import { Heart, ShoppingCart } from 'lucide-react';
 
 interface ProductCardProps {
   id: string;
@@ -9,10 +8,11 @@ interface ProductCardProps {
   price: number;
   originalPrice?: number;
   image: string;
-  rating?: number;
-  isFavorite?: boolean;
-  onAddToCart?: (id: string) => void;
-  onToggleFavorite?: (id: string) => void;
+  DetailsProduct?: (id: string) => void;
+}
+
+const DetailsProduct = (id: string) => {
+  console.log(id);
 }
 
 export default function ProductCard({
@@ -21,10 +21,6 @@ export default function ProductCard({
   price,
   originalPrice,
   image,
-  rating = 0,
-  isFavorite = false,
-  onAddToCart,
-  onToggleFavorite
 }: ProductCardProps) {
   return (
     <div className="text-center group">
@@ -47,10 +43,8 @@ export default function ProductCard({
           <span className="text-lg font-bold text-gray-900">S/ {price.toFixed(2)}</span>
           <span className="text-lg font-bold text-gray-900"> - S/ {originalPrice?.toFixed(2)}</span>
         </div>
-
-        {/* Add to Cart Button */}
         <button
-          onClick={() => onAddToCart?.(id)}
+          onClick={() => DetailsProduct(id)}
           className="mt-4 bg-[#c41c1a] text-white py-2 px-6 rounded-md hover:bg-[#a01818] transition-colors flex items-center justify-center space-x-2 mx-auto"
         >
           <span>Ver opciones</span>

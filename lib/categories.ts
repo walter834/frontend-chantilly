@@ -34,43 +34,40 @@ export interface ThemePageInfo {
 const categoryData: Record<string, Omit<CategoryInfo, 'products' | 'totalResults' | 'currentResults'>> = {
   'tortas': {
     title: 'TORTAS EN LÍNEA',
-    description: 'Deliciosas tortas frescas disponibles para entrega inmediata.',
+    description: 'Las mejores tortas en la Casa del Chantilly, calidad y amor.',
     type: 'category'
   },
   'tortas-tematicas': {
     title: 'TORTAS TEMÁTICAS',
-    description: 'Tortas personalizadas con temáticas especiales para cada ocasión.',
+    description: 'Las mejores tortas temáticas en la Casa del Chantilly, calidad y amor.',
     type: 'category'
   },
   'promociones': {
     title: 'PROMOCIONES',
-    description: 'Ofertas especiales y descuentos en nuestros productos.',
+    description: 'Las mejores promociones en la Casa del Chantilly, calidad y amor.',
     type: 'category'
   },
   'postres': {
     title: 'POSTRES',
-    description: 'Exquisitos postres para endulzar tu día.',
+    description: 'Los mejores postres en la Casa del Chantilly, calidad y amor.',
     type: 'category'
   },
   'bocaditos': {
     title: 'BOCADITOS',
-    description: 'Deliciosos bocaditos para cualquier ocasión.',
+    description: 'Los mejores bocaditos en la Casa del Chantilly, calidad y amor.',
     type: 'category'
   }
 };
 
-// Función síncrona para obtener metadatos básicos de categoría (sin productos)
 export function getCategoryInfo(id: string): Omit<CategoryInfo, 'products' | 'totalResults' | 'currentResults'> | null {
   return categoryData[id] || null;
 }
 
-// Función async para obtener categoría completa con productos
 export async function getCategoryWithProducts(id: string): Promise<CategoryInfo | null> {
   try {
     const category = categoryData[id];
     if (!category) return null;
 
-    // Obtener productos dinámicamente de la API
     const result = await apiFetchProducts(1, undefined, undefined, undefined, undefined);
     
     return {
@@ -95,7 +92,6 @@ export async function getCategoryWithProducts(id: string): Promise<CategoryInfo 
 
 export async function getThemeProducts(category: string, theme: string): Promise<ThemePageInfo | null> {
   try {
-    // Obtener productos dinámicamente por tema
     const themes = await fetchThemes();
     const themeData = themes.find(t => t.slug === theme);
     
@@ -153,7 +149,6 @@ export async function fetchCategories(): Promise<CategoryInfo[]> {
     return categories;
   } catch (error) {
     console.error('Error fetching categories:', error);
-    // Fallback con datos vacíos
     return Object.keys(categoryData).map(key => ({
       ...categoryData[key],
       products: [],
