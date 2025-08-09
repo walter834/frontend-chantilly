@@ -6,6 +6,7 @@ import { registerSchema } from "@/lib/validators/auth";
 import { setCookie } from "@/lib/utils/cookies";
 import { store } from "@/store/store";
 import { login, logout } from "@/store/slices/authSlice";
+import { setLocalStorage } from "@/lib/utils/localStorage";
 
 // Interfaces de respuesta
 interface LoginResponse {
@@ -65,6 +66,7 @@ export const loginUser = async (
     }
 
     setCookie("token", token, 1);
+    setLocalStorage("token", token);
     store.dispatch(login({ user, remember }));
 
     return response.data;
@@ -77,34 +79,27 @@ export const loginUser = async (
 // Función principal para login con Google (redirección completa)
 export const loginWithGoogle = () => {
   try {
-    const baseURL = api.defaults.baseURL;
+    const baseURL = api.defaults.baseURL; // http://192.168.18.28:8000/api
 
     if (!baseURL) {
       throw new Error("baseURL no está configurado en la instancia de api");
     }
 
-    // Guardar la URL actual para redirigir después del login (opcional)
     localStorage.setItem("redirectAfterLogin", window.location.href);
 
-    // Construir la URL con parámetro de redirección
-    // En googleLogin.js, cambiar esta línea:
-    const redirectURL = encodeURIComponent(
-      `${baseURL}/auth/google/callback`
-    );
+    const redirectURL = encodeURIComponent(`${baseURL}/auth/google/callback`);
     const googleAuthURL = `${baseURL}/auth/google/redirect?redirect_uri=${redirectURL}`;
 
-    // Redirigir al usuario al endpoint de Google OAuth
     window.location.href = googleAuthURL;
   } catch (error) {
     console.error("Error al iniciar login con Google:", error);
-    throw new Error(
-      "No se pudo iniciar el proceso de autenticación con Google"
-    );
+    throw new Error("No se pudo iniciar el proceso de autenticación con Google");
   }
 };
 
 // Función para manejar el callback después del login
-export const handleAuthCallback = () => {
+// En tu authService.ts - Función handleAuthCallback actualizada
+export const handleAuthCallback = async () => {
   try {
     // Obtener token de la URL
     const urlParams = new URLSearchParams(window.location.search);
@@ -113,17 +108,29 @@ export const handleAuthCallback = () => {
 
     if (error) {
       console.error("Error en autenticación:", error);
-      // Redirigir al login con mensaje de error
       window.location.href = `/login?error=${encodeURIComponent(error)}`;
       return;
     }
 
     if (token) {
-      // Guardar token en cookie (como lo usa tu configuración)
-      setCookie("token", token, 7); // 7 días de expiración
+      // Guardar token en cookie
+      setCookie("token", token, 7);
 
       // Limpiar URL de parámetros
       window.history.replaceState({}, document.title, window.location.pathname);
+
+      // IMPORTANTE: Obtener datos del usuario con el token
+      try {
+        const user = await getCurrentUser();
+        
+        if (user) {
+          // El usuario ya se guarda en Redux dentro de getCurrentUser()
+          console.log("Usuario autenticado con Google:", user);
+        }
+      } catch (userError) {
+        console.error("Error obteniendo datos del usuario:", userError);
+        // Continuar de todas formas, el token es válido
+      }
 
       // Obtener URL de redirección guardada o ir al home
       const redirectUrl = localStorage.getItem("redirectAfterLogin") || "/";

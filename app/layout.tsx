@@ -6,6 +6,9 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/layout/Footer";
 import CustomOrders from "@/components/CustomOrders";
 import { Toaster } from "@/components/ui/sonner";
+import { Provider } from "react-redux";
+import { store } from "@/store/store";
+import { StoreProvider } from "@/components/Providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,12 +44,14 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${poppins.variable} antialiased overflow-x-hidden min-h-screen flex flex-col min-w-[350px]`}
       >
-        <Navbar />
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Toaster />
-        <CustomOrders />
-        <Footer />
+        <StoreProvider>
+          <Navbar />
+          <Header />
+          <main className="flex-1">{children}</main>
+          <Toaster />
+          <CustomOrders />
+          <Footer />
+        </StoreProvider>
       </body>
     </html>
   );

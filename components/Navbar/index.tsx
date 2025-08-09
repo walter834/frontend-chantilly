@@ -1,10 +1,14 @@
-import { ShoppingCart, User } from "lucide-react";
+"use client"
+import { ShoppingCart
+ } from "lucide-react";
 import NavLinks from "./nav-links";
 import NavToggle from "./nav-toggle";
 import Image from "next/image";
 import LoginForm from "../LoginForm";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Navbar() {
+  const { user, isAuthenticated, logoutUser } = useAuth();
   return (
 
     //fix
@@ -27,7 +31,13 @@ export default function Navbar() {
       </div>
 
       <div className="lg:flex hidden gap-4 ">
-       <LoginForm/>
+       {isAuthenticated ? (
+        <h1>aea</h1>
+       ):(
+               <LoginForm/>
+       )}
+       
+
         <ShoppingCart size={26}/>
       </div>
 

@@ -14,7 +14,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Eye, EyeOff, X, Home } from "lucide-react";
+import { Eye, EyeOff, Home } from "lucide-react";
 import Link from "next/link";
 import { loginSchema } from "@/lib/validators/auth";
 import { loginUser, loginWithGoogle } from "@/service/auth/authService";
@@ -28,7 +28,7 @@ interface LoginProps {
   onOpenRegister?: () => void; // Nueva prop para abrir el register
 }
 
-export default function Login({ onCloseDialog, onOpenRegister }: LoginProps) {
+export default function Login({  onOpenRegister }: LoginProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -72,11 +72,7 @@ export default function Login({ onCloseDialog, onOpenRegister }: LoginProps) {
     // NO poner finally aquí porque la redirección interrumpe la ejecución
   };
 
-  // Nueva función para manejar la apertura del registro
-  const handleOpenRegister = () => {
-    onCloseDialog?.(); // Cerrar el LoginForm
-    onOpenRegister?.(); // Abrir el RegisterForm
-  };
+  
 
   return (
     <div className="w-full max-w-md overflow-hidden">
