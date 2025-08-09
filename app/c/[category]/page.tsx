@@ -68,7 +68,7 @@ export default function CategoryPageComponent({ params }: CategoryPageProps) {
         <div className="text-center">
           <h2 className="text-3xl font-bold text-black">Categoría no encontrada</h2>
           <p className="text-gray-500 mt-2">
-            La categoría "{category}" no existe.
+            La categoría &quot;{category}&quot; no existe.
           </p>
           <p className="text-sm text-gray-400 mt-4">
             Categorías disponibles: tortas, tortas-tematicas, postres, bocaditos, promociones

@@ -70,7 +70,7 @@ export default function ThemePage({ params, searchParams }: ThemePageProps) {
         <div className="text-center">
           <h2 className="text-3xl font-bold text-black">Temática no encontrada</h2>
           <p className="text-gray-500 mt-2">
-            La temática "{theme}" en la categoría "{category}" no existe.
+            La temática &quot;{theme}&quot; en la categoría &quot;{category}&quot; no existe.
           </p>
           <p className="text-sm text-gray-400 mt-4">
             Temáticas disponibles para tortas-tematicas: infantiles, mujer, hombre, bautizo, profesiones, enamorados, babyshower

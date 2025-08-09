@@ -3,19 +3,19 @@ import Image from 'next/image';
 import {
   FaFacebook,
   FaInstagram,
-  FaTwitter,
+  FaXTwitter,
   FaTiktok,
   FaWhatsapp
 } from 'react-icons/fa6';
 
-export default function Footer({ empresa = 'COMAS' }) {
+export default function Footer({ empresa = 'CHANTILLY' }) {
   return (
     <footer className="bg-[#c41c1a] text-white w-full py-6 pt-10">
       <div className="w-[95%] mx-auto grid grid-cols-1 md:grid-cols-3 gap-y-8 md:gap-x-12 items-start text-center">
         <div className="flex flex-col items-center space-y-2">
           <h1 className="text-lg font-semibold">Nosotros</h1>
           <p className="text-sm leading-relaxed font-light max-w-[250px]">
-            SOMOS CHANTILLY
+            SOMOS {empresa}
           </p>
         </div>
         <div className="flex flex-col items-center space-y-4">
@@ -30,7 +30,7 @@ export default function Footer({ empresa = 'COMAS' }) {
           </a>
           <h1 className="text-lg font-semibold">Redes sociales</h1>
           <div className="flex justify-center items-center gap-3 text-white text-xl">
-            {[FaFacebook, FaInstagram, FaTwitter, FaTiktok, FaWhatsapp].map((Icon, idx) => (
+            {[FaFacebook, FaInstagram, FaXTwitter, FaTiktok, FaWhatsapp].map((Icon, idx) => (
               <a href="#" key={idx} target="_blank" rel="noreferrer">
                 <Icon className="w-7 h-7" />
               </a>

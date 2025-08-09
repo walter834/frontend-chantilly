@@ -19,7 +19,7 @@ interface SubcategoryPageProps {
   };
   onAddToCart?: (productId: string) => void;
   onToggleFavorite?: (productId: string) => void;
-  onFilterChange?: (filters: any) => void;
+  onFilterChange?: (filters: Record<string, unknown>) => void;
   pagination?: {
     currentPage: number;
     perPage: number;

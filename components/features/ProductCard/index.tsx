@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import Image from 'next/image';
-import { Heart, ShoppingCart } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface ProductCardProps {
   id: string;
@@ -9,10 +9,6 @@ interface ProductCardProps {
   price: number;
   originalPrice?: number;
   image: string;
-  rating?: number;
-  isFavorite?: boolean;
-  onAddToCart?: (id: string) => void;
-  onToggleFavorite?: (id: string) => void;
 }
 
 export default function ProductCard({
@@ -20,12 +16,14 @@ export default function ProductCard({
   name,
   price,
   originalPrice,
-  image,
-  rating = 0,
-  isFavorite = false,
-  onAddToCart,
-  onToggleFavorite
+  image
 }: ProductCardProps) {
+  const router = useRouter();
+
+  const handleViewDetails = () => {
+    // Navegación segura: solo pasamos el ID
+    router.push(`/detalle/${id}`);
+  };
   return (
     <div className="text-center group">
       <div className="relative mb-4 overflow-hidden rounded-lg">
@@ -47,10 +45,8 @@ export default function ProductCard({
           <span className="text-lg font-bold text-gray-900">S/ {price.toFixed(2)}</span>
           <span className="text-lg font-bold text-gray-900"> - S/ {originalPrice?.toFixed(2)}</span>
         </div>
-
-        {/* Add to Cart Button */}
         <button
-          onClick={() => onAddToCart?.(id)}
+          onClick={handleViewDetails}
           className="mt-4 bg-[#c41c1a] text-white py-2 px-6 rounded-md hover:bg-[#a01818] transition-colors flex items-center justify-center space-x-2 mx-auto"
         >
           <span>Ver opciones</span>

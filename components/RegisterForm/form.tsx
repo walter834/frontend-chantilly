@@ -105,20 +105,22 @@ export default function Register({
       setTimeout(() => {
         onCloseDialog?.();
       }, 2000);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error completo:", error);
 
       let errorMessage = "Error al registrar usuario";
 
-      if (error.status === 422) {
-        errorMessage =
-          error.message || "Error de validación. Revise los datos ingresados.";
-      } else if (error.status === 409) {
-        errorMessage = "El email o número de documento ya están registrados.";
-      } else if (error.status === 400) {
-        errorMessage = error.message || "Datos inválidos.";
-      } else if (error.message) {
-        errorMessage = error.message;
+      if (error && typeof error === 'object') {
+        const err = error as { status?: number; message?: string };
+        if (err.status === 422) {
+          errorMessage = err.message || "Error de validación. Revise los datos ingresados.";
+        } else if (err.status === 409) {
+          errorMessage = "El email o número de documento ya están registrados.";
+        } else if (err.status === 400) {
+          errorMessage = err.message || "Datos inválidos.";
+        } else if (err.message) {
+          errorMessage = err.message;
+        }
       }
 
       setSubmitError(errorMessage);
