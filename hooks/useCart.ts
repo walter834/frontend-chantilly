@@ -28,11 +28,11 @@ export function useCart() {
 
   const addToCart = (product: Product, quantity: number = 1) => {
     setCart(prevCart => {
-      const existingItem = prevCart.items.find(item => item.productId === product.id);
+      const existingItem = prevCart.items.find(item => item.productId === product.id.toString());
       
       if (existingItem) {
         const updatedItems = prevCart.items.map(item =>
-          item.productId === product.id
+          item.productId === product.id.toString()
             ? { ...item, quantity: item.quantity + quantity }
             : item
         );
@@ -41,7 +41,7 @@ export function useCart() {
       } else {
         const newItem: CartItem = {
           id: `${product.id}-${Date.now()}`,
-          productId: product.id,
+          productId: product.id.toString(),
           product,
           quantity,
           price: product.price,
