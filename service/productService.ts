@@ -1,3 +1,5 @@
+import { toast } from "sonner";
+
 export async function getProductById(id: string): Promise<TransformedProduct | null> {
   try {
     const endpoint = `${API_ROUTES.PRODUCTS}/${id}`;
@@ -59,6 +61,7 @@ export async function getProductsByCategory(
     hasPrevPage: boolean;
   };
 }> {
+ console.log('here1')
   const categoryId = CATEGORY_SLUG_TO_ID[categorySlug];
   return fetchProducts(page, categoryId, undefined, undefined, search);
 }
@@ -95,9 +98,23 @@ export async function fetchProducts(
     if (themeId) params.append('theme_id', themeId.toString());
     if (search) params.append('name', search);
     if (bestStatus) params.append('best_status', bestStatus);
-    console.log('Fetching products with params:', params.toString());
     const endpoint = `${API_ROUTES.PRODUCTS}?${params.toString()}`;
     const { data: response } = await api.get<ApiProductsResponse>(endpoint);
+        console.log('data', response.data)
+    if (!response.data || !Array.isArray(response.data)) {
+        toast.error("No se encotraron productos", {position: "top-right"});
+        return {
+            products: [],
+            pagination: {
+                currentPage: 1,
+                perPage: 12,
+                total: 0,
+                lastPage: 1,
+                hasNextPage: false,
+                hasPrevPage: false,
+            },
+        }
+    };
 
     const transformedProducts = response.data.map(transformProduct);
 
@@ -112,6 +129,7 @@ export async function fetchProducts(
         hasPrevPage: !!response.prev_page_url,
       },
     };
+
   } catch (error) {
     console.error('Error fetching products:', error);
     return {

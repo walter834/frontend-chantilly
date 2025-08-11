@@ -1,8 +1,6 @@
 
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
-import { fetchPages } from "@/lib/api-services";
-
 export default function useNavigationData() {
   const pathname = usePathname();
 

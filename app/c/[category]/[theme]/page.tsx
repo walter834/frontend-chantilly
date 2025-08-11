@@ -34,39 +34,40 @@ export default function ThemePage({ params, searchParams }: ThemePageProps) {
   });
 
   useEffect(() => {
+    let cancelled = false;
     const loadData = async () => {
       setLoading(true);
       try {
-        // Resolver la información del tema
-        const resolvedThemeInfo = await getThemeProducts(category, theme);
-        setThemeInfo(resolvedThemeInfo);
-        
         const currentPage = parseInt(page) || 1;
         const searchTerm = search || '';
-        
-        // Usar la versión simple que funcionaba antes
         const result = await getProductsByTheme(theme, currentPage, searchTerm);
-        
-        setProducts(result.products);
-        setPagination(result.pagination);
+        if (!cancelled) {
+          setProducts(result.products);
+          setPagination(result.pagination);
+          setThemeInfo({
+            title: theme.toUpperCase(),
+            description: `Tortas temáticas de ${theme.toLowerCase()}`
+          });
+        }
       } catch (error) {
-        console.error('Error loading products:', error);
-        setProducts([]);
-        setPagination({
-          currentPage: 1,
-          perPage: 8,
-          total: 0,
-          lastPage: 1,
-          hasNextPage: false,
-          hasPrevPage: false,
-        });
+        if (!cancelled) {
+          setProducts([]);
+          setPagination({
+            currentPage: 1,
+            perPage: 8,
+            total: 0,
+            lastPage: 1,
+            hasNextPage: false,
+            hasPrevPage: false,
+          });
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
-
     loadData();
-  }, [category, theme, page, search]);
+    return () => { cancelled = true; };
+  }, [theme, page, search]);
 
   if (!themeInfo) {
     return (
