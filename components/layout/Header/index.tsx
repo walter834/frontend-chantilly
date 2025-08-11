@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { fetchThemes } from '@/lib/api-services';
+import { fetchThemes } from '@/service/themeService';
 import { TransformedTheme } from '@/types/api';
 
 export default function Header() {

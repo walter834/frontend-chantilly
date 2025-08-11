@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import CategoryPage from '@/components/features/CategoryPage';
 import { getCategoryInfo } from '@/lib/categories';
-import { getProductsByCategory } from '@/lib/api-services';
+import { getProductsByCategory } from '@/service/productService';
 import { TransformedProduct } from '@/types/api';
 import Spinner from '@/components/ui/spinner';
 

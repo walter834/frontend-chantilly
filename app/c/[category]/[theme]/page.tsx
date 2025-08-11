@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import CategoryPage from '@/components/features/CategoryPage';
 import { getThemeProducts } from '@/lib/categories';
-import { getProductsByTheme } from '@/lib/api-services';
+import { getProductsByTheme } from '@/service/productService';
 import { TransformedProduct } from '@/types/api';
 import Spinner from '@/components/ui/spinner';
 

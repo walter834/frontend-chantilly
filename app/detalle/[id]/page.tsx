@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import ProductDetail from '../../../components/features/ProductDetail';
-import { getProductById } from '../../../lib/api-services';
+import { getProductById } from '../../../service/productService';
 import { TransformedProduct } from '../../../types/api';
 
 export default function DetallePage() {
