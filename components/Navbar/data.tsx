@@ -1,6 +1,8 @@
 
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
+
+
 export default function useNavigationData() {
   const pathname = usePathname();
 

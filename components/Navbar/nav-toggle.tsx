@@ -9,10 +9,11 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Ghost, Menu } from "lucide-react";
+import {  Menu } from "lucide-react";
 import NavLinks from "./nav-links";
 import { useEffect, useState } from "react";
 import useBreakpointer from "@/hooks/useBreakpointer";
+import Image from "next/image";
 
 export default function NavToggle() {
   const [open, setOpen] = useState(false);
@@ -36,7 +37,7 @@ export default function NavToggle() {
         <SheetContent side="left" className="w-full sm:w-64 pt-12 bg-[#c41d1ada] backdrop-blur-3xl text-white " onClick={()=>setOpen(false) }>
           <SheetHeader>
             <SheetTitle className="flex justify-center">
-              <img src="/logo.png" alt="logo" className="w-[300px]" />
+              <Image src="/logo.png" alt="logo" className="max-w-[300px]" width={300} height={50}/>
             </SheetTitle>
             <SheetDescription></SheetDescription>
           </SheetHeader>
