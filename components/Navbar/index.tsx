@@ -5,9 +5,10 @@ import Image from "next/image";
 import LoginForm from "../LoginForm";
 import { useAuth } from "@/hooks/useAuth";
 import Shopping from "../Shopping";
+import UserDrop from "../UserDrop";
 
 export default function Navbar() {
-  const { name, isAuthenticated, logoutUser } = useAuth();
+  const { isAuthenticated } = useAuth();
   return (
     //fix
     <header className="sticky overflow-x-hidden bg-[#c41d1ada] backdrop-blur-3xl text-white top-0 z-50 flex justify-between items-center px-5 lg:px-10 py-4 w-full lg:min-w-[1024px] gap-12">
@@ -29,7 +30,7 @@ export default function Navbar() {
       </div>
 
       <div className="lg:flex hidden gap-4 ">
-        {isAuthenticated ? <h1>{name}</h1> : <LoginForm />}
+        {isAuthenticated ? <UserDrop/> : <LoginForm />}
 
         <Shopping />
       </div>
