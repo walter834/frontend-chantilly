@@ -3,11 +3,12 @@ import { store } from "@/store/store";
 import { logout } from "@/store/slices/authSlice"; // Cambia la importación
 
 export const API_ROUTES = {
-  PAGES: "/pages",
-  THEMES: "/theme",
-  PRODUCTS: "/products",
-  PRODUCT_TYPES: "/product-types",
-  CATEGORIES: "/categories",
+  PAGES: '/pages',
+  THEMES: '/theme',
+  PRODUCTS: '/products',
+  PRODUCT_TYPES: '/product-types',
+  CATEGORIES: '/categories',
+  PRODUCTS_VARIANT: '/products-variant',
 } as const;
 
 const api = axios.create({

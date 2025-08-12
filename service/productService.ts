@@ -10,6 +10,18 @@ export async function getProductById(id: string): Promise<TransformedProduct | n
     return null;
   }
 }
+
+export async function getProductVariantById(id: string, portion: string): Promise<TransformedProductVariant | null> {
+  try {
+    const endpoint = `${API_ROUTES.PRODUCTS_VARIANT}/${id}?portion_name=${portion}`;
+    const { data } = await api.get<ApiProductVariant>(endpoint);
+    return transformProductVariant(data);
+  } catch (error) {
+    console.error('Error fetching product variant by id:', error);
+    return null;
+  }
+}
+
 const THEME_SLUG_TO_ID: Record<string, number> = {
   'infantiles': 1,
   'mujer': 2,
@@ -69,8 +81,11 @@ import api, { API_ROUTES } from './api';
 import {
   ApiProduct,
   ApiProductsResponse,
+  ApiProductVariant,
   TransformedProduct,
+  TransformedProductVariant,
   transformProduct,
+  transformProductVariant,
 } from '@/types/api';
 
 export async function fetchProducts(
@@ -100,7 +115,6 @@ export async function fetchProducts(
     if (bestStatus) params.append('best_status', bestStatus);
     const endpoint = `${API_ROUTES.PRODUCTS}?${params.toString()}`;
     const { data: response } = await api.get<ApiProductsResponse>(endpoint);
-        console.log('data', response.data)
     if (!response.data || !Array.isArray(response.data)) {
         toast.error("No se encotraron productos", {position: "top-right"});
         return {
@@ -145,3 +159,5 @@ export async function fetchProducts(
     };
   }
 }
+
+
