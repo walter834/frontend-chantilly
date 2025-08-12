@@ -4,15 +4,21 @@ import axios from "axios";
 import { store } from "@/store/store";
 import { logout } from "@/store/slices/authSlice"; // Cambia la importación
 
+export const API_ROUTES = {
+  PAGES: '/pages',
+  THEMES: '/theme',
+  PRODUCTS: '/products',
+  PRODUCT_TYPES: '/product-types',
+  CATEGORIES: '/categories',
+} as const;
+
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
 });
 
 api.interceptors.request.use(
   (config) => {
-    const token = getCookie("token");
-    console.log("toke",token);
-    
+    const token = getCookie("token");    
     if (token) {
       config.headers["Authorization"] = `Bearer ${token}`;
     }

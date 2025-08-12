@@ -1,4 +1,6 @@
-import { fetchPages, fetchThemes, fetchProducts as apiFetchProducts } from './api-services';
+import { fetchPages } from '@/service/pageService';
+import { fetchThemes } from '@/service/themeService';
+import { fetchProducts as apiFetchProducts } from '@/service/productService';
 import { TransformedProduct } from '@/types/api';
 
 export interface CategoryInfo {

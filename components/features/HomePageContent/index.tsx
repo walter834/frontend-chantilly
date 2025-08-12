@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import ProductGrid from '@/components/features/ProductGrid';
 import Paginations from '@/components/Paginations';
 import { TransformedProduct } from '@/types/api';
-import { fetchProducts } from '@/lib/api-services';
+import { fetchProducts } from '@/service/productService';
 import Spinner from '@/components/ui/spinner';
 
 export default function HomePageContent() {

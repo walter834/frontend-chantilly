@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import CategoryPage from '@/components/features/CategoryPage';
 import { getCategoryInfo } from '@/lib/categories';
-import { getProductsByCategory } from '@/lib/api-services';
+import { getProductsByCategory } from '@/service/productService';
 import { TransformedProduct } from '@/types/api';
 import Spinner from '@/components/ui/spinner';
 
@@ -33,33 +33,36 @@ export default function CategoryPageComponent({ params }: CategoryPageProps) {
   });
 
   useEffect(() => {
+    let cancelled = false;
     const loadProducts = async () => {
       setLoading(true);
       try {
         const currentPage = parseInt(page) || 1;
         const searchTerm = search || '';
-        
         const result = await getProductsByCategory(category, currentPage, searchTerm);
-        
-        setProducts(result.products);
-        setPagination(result.pagination);
+        if (!cancelled) {
+          setProducts(result.products);
+          setPagination(result.pagination);
+        }
       } catch (error) {
-        console.error('Error loading products:', error);
-        setProducts([]);
-        setPagination({
-          currentPage: 1,
-          perPage: 8,
-          total: 0,
-          lastPage: 1,
-          hasNextPage: false,
-          hasPrevPage: false,
-        });
+        if (!cancelled) {
+          console.error('Error loading products:', error);
+          setProducts([]);
+          setPagination({
+            currentPage: 1,
+            perPage: 8,
+            total: 0,
+            lastPage: 1,
+            hasNextPage: false,
+            hasPrevPage: false,
+          });
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
-
     loadProducts();
+    return () => { cancelled = true; };
   }, [category, page, search]);
 
   if (!categoryInfo) {

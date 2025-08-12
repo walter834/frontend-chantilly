@@ -26,12 +26,13 @@ export default function ProductCard({
   };
   return (
     <div className="text-center group">
-      <div className="relative mb-4 overflow-hidden rounded-lg">
+      <div className="relative mb-4 overflow-hidden rounded-lg cursor-pointer">
         <Image
           src={image}
           alt={name}
           width={300}
           height={300}
+          onClick={handleViewDetails}
           className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-105"
         />
       </div>
@@ -47,7 +48,7 @@ export default function ProductCard({
         </div>
         <button
           onClick={handleViewDetails}
-          className="mt-4 bg-[#c41c1a] text-white py-2 px-6 rounded-md hover:bg-[#a01818] transition-colors flex items-center justify-center space-x-2 mx-auto"
+          className="mt-4 bg-[#c41c1a] text-white py-2 px-6 rounded-md hover:bg-[#a01818] transition-colors flex items-center justify-center space-x-2 mx-auto cursor-pointer"
         >
           <span>Ver opciones</span>
         </button>

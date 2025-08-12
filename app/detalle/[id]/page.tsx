@@ -2,8 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import ProductDetail from '../../../components/features/ProductDetail';
-import { getProductById } from '../../../lib/api-services';
+import { getProductById } from '../../../service/productService';
 import { TransformedProduct } from '../../../types/api';
+import Spinner from '@/components/ui/spinner';
 
 export default function DetallePage() {
   const params = useParams();
@@ -16,7 +17,7 @@ export default function DetallePage() {
       try {
         setLoading(true);
         const productData = await getProductById(params.id as string);
-        
+        console.log('Product data:', productData);
         if (!productData) {
           throw new Error('Producto no encontrado');
         }
@@ -36,10 +37,10 @@ export default function DetallePage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-center items-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#c41c1a]"></div>
-        </div>
+      <div className="w-[95%] mx-auto px-2 sm:px-6 lg:px-8 xl:px-12 py-12">
+              <div className="text-center">
+                <Spinner size="lg" className="mb-4" />
+            </div>
       </div>
     );
   }
