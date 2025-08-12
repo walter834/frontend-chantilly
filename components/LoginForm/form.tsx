@@ -75,7 +75,7 @@ export default function Login({ onOpenRegister }: LoginProps) {
   };
 
   return (
-    <div className="w-full max-w-md overflow-hidden">
+    <div className="w-full  justify-center  overflow-hidden">
       {/* Header */}
       <div className="bg-red-600 text-white px-6 py-4 -mt-2">
         <div className="flex items-center justify-between">
