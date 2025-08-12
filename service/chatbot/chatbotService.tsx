@@ -80,7 +80,7 @@ export const chatbotService = {
       console.log("Enviando a URL:", process.env.CHATBOT_API_URL);
       
       const response = await axios.post(
-        process.env.CHATBOT_API_URL || "",
+        process.env.CHATBOT_API_URL|| "http://192.168.18.28:5678/webhook/84328b06-1473-4e77-b100-9fb12b6abace/chat",
         requestData,
         {
           headers: {
