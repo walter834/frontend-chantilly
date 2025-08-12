@@ -10,6 +10,7 @@ export const API_ROUTES = {
   PRODUCTS: '/products',
   PRODUCT_TYPES: '/product-types',
   CATEGORIES: '/categories',
+  PRODUCTS_VARIANT: '/products-variant',
 } as const;
 
 const api = axios.create({

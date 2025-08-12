@@ -3,8 +3,9 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { capitalizeFirstLetter } from '@/lib/utils';
-import { fetchProducts } from '@/service/productService';
-import { TransformedProduct } from '@/types/api';
+import { fetchProducts, getProductVariantById } from '@/service/productService';
+import { TransformedProduct, TransformedProductVariant } from '@/types/api';
+import { portionsOptions } from './data';
 
 interface ProductDetailProps {
   id: string;
@@ -16,13 +17,16 @@ interface ProductDetailProps {
 
 const ProductDetail = ({ id, name, price, originalPrice, image }: ProductDetailProps) => {
   const router = useRouter();
-  const [portions, setPortions] = useState('');
+  const [selectedPortion, setSelectedPortion] = useState('');
   const [pickupDate, setPickupDate] = useState('');
   const [dedication, setDedication] = useState('');
   const [accessories, setAccessories] = useState<TransformedProduct[]>([]);
   const [bocaditos, setBocaditos] = useState<TransformedProduct[]>([]);
   const [loadingAccessories, setLoadingAccessories] = useState(true);
   const [loadingBocaditos, setLoadingBocaditos] = useState(true);
+  const [productVariant, setProductVariant] = useState<TransformedProductVariant | null>(null);
+  const [priceProduct, setPriceProduct] = useState<string>('0.00');
+  const [imageProduct, setImageProduct] = useState<string>('');
 
   useEffect(() => {
     const fetchCategoryProducts = async () => {
@@ -44,13 +48,30 @@ const ProductDetail = ({ id, name, price, originalPrice, image }: ProductDetailP
     fetchCategoryProducts();
   }, []);
 
+  useEffect(() => {
+    const fetchProductVariant = async () => {
+      try {
+        const productVariantResponse = await getProductVariantById(id, selectedPortion);
+        setProductVariant(productVariantResponse);
+        setPriceProduct(productVariantResponse?.price || '0.00');
+        setImageProduct(productVariantResponse?.image || '');
+        } catch (error) {
+        console.error('Error fetching product variant:', error);
+      }
+    };
+  
+    if (selectedPortion) {
+      fetchProductVariant();
+    }
+  }, [selectedPortion, id]);  
+
   return (
     <div className="mx-auto">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-4">
           <div className="aspect-square overflow-hidden rounded-lg bg-gray-100">
             <Image
-              src={image}
+              src={(imageProduct || image)}
               alt={name}
               width={400}
               height={400}
@@ -82,37 +103,68 @@ const ProductDetail = ({ id, name, price, originalPrice, image }: ProductDetailP
             </p>
           </div>
           <div className="space-y-4">
-            <div className="flex items-center gap-4">
-              <label className="text-sm font-medium text-black w-32 flex-shrink-0">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+              <label className="text-sm font-medium text-black sm:w-32 sm:flex-shrink-0">
                 Porciones
               </label>
               <select
-                value={portions}
-                onChange={(e) => setPortions(e.target.value)}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#c41c1a] focus:border-[#c41c1a]"
+                value={selectedPortion}
+                onChange={(e) => setSelectedPortion(e.target.value)}
+                className="w-full sm:flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#c41c1a] focus:border-[#c41c1a]"
               >
-                <option value="">Elige una opción</option>
-                <option value="8">8 porciones</option>
-                <option value="12">12 porciones</option>
-                <option value="16">16 porciones</option>
-                <option value="20">20 porciones</option>
+                {Object.entries(portionsOptions).map(([key, value]) => (
+                  <option key={key} value={key}>
+                    {key}
+                  </option>
+                ))}
               </select>
             </div>
-
-            <div className="flex items-center gap-4">
-              <label className="text-sm font-medium text-black w-32 flex-shrink-0">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+              <label className="text-sm font-medium text-black sm:w-32 sm:flex-shrink-0">
+                Opciones de cake
+              </label>
+              <select
+                value={selectedPortion}
+                onChange={(e) => setSelectedPortion(e.target.value)}
+                className="w-full sm:flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#c41c1a] focus:border-[#c41c1a]"
+              >
+                {Object.entries(portionsOptions).map(([key, value]) => (
+                  <option key={key} value={key}>
+                    {key}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+              <label className="text-sm font-medium text-black sm:w-32 sm:flex-shrink-0">
+                Opciones de relleno
+              </label>
+              <select
+                value={selectedPortion}
+                onChange={(e) => setSelectedPortion(e.target.value)}
+                className="w-full sm:flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#c41c1a] focus:border-[#c41c1a]"
+              >
+                {Object.entries(portionsOptions).map(([key, value]) => (
+                  <option key={key} value={key}>
+                    {key}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+              <label className="text-sm font-medium text-black sm:w-32 sm:flex-shrink-0">
                 Día de recojo
               </label>
               <input
                 type="date"
                 value={pickupDate}
                 onChange={(e) => setPickupDate(e.target.value)}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#c41c1a] focus:border-[#c41c1a]"
+                className="w-full sm:flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#c41c1a] focus:border-[#c41c1a]"
               />
             </div>
 
-            <div className="flex items-start gap-4">
-              <label className="text-sm font-medium text-black w-32 flex-shrink-0 pt-2">
+            <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
+              <label className="text-sm font-medium text-black sm:w-32 sm:flex-shrink-0 sm:pt-2">
                 Nombre o Dedicatoria
               </label>
               <textarea
@@ -120,14 +172,14 @@ const ProductDetail = ({ id, name, price, originalPrice, image }: ProductDetailP
                 onChange={(e) => setDedication(e.target.value)}
                 placeholder="Escribe tu dedicatoria"
                 rows={3}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#c41c1a] focus:border-[#c41c1a] resize-none"
+                className="w-full sm:flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#c41c1a] focus:border-[#c41c1a] resize-none"
               />
             </div>
-            <div className="flex items-center gap-4">
-              <div className="text-2xl font-bold text-[#c41c1a] w-32 flex-shrink-0">
-                S/0.00
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="text-3xl font-bold text-[#c41c1a] sm:w-32 sm:flex-shrink-0 text-center sm:text-left">
+                S/ {priceProduct} {/* precio del producto */}
               </div>
-              <button className="flex-1 bg-[#c41c1a] text-white py-3 px-6 rounded-md hover:bg-[#a01818] transition-colors font-medium cursor-pointer">
+              <button className="w-full sm:flex-1 bg-[#c41c1a] text-white py-3 px-6 rounded-md hover:bg-[#a01818] transition-colors font-medium cursor-pointer">
                 Agregar al carrito
               </button>
             </div>
@@ -136,32 +188,35 @@ const ProductDetail = ({ id, name, price, originalPrice, image }: ProductDetailP
         <div className="lg:col-span-3">
           <div className="border-2 border-black rounded-lg p-6 bg-white">
             <h3 className="font-bold text-center text-black mb-4">ACCESORIOS</h3>
-            <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-2 overflow-y-scroll h-[500px] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-track]:bg-neutral-700 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500">
               {loadingAccessories ? (
                 <div className="text-center text-gray-500">Cargando...</div>
               ) : (
                 accessories.map((accessory, index) => (
                   <div key={accessory.id || index} className="flex items-center justify-between">
                     <div className="flex-1">
-                      <div className="w-8 h-8 bg-gray-200 rounded mb-1 overflow-hidden">
+                      <div className="bg-gray-200 rounded mb-1 overflow-hidden">
                         {accessory.image && (
                           <Image
                             src={accessory.image}
                             alt={accessory.name}
-                            width={32}
-                            height={32}
+                            width={128}
+                            height={128}
                             className="w-full h-full object-cover"
                           />
                         )}
                       </div>
-                      <p className="text-xs text-black leading-tight">
+                      <p className="text-sm text-[#c41c1a] font-bold text-center">
                         {accessory.name}
                       </p>
-                    </div>
-                    <div className="ml-2">
-                      <span className="bg-[#c41c1a] text-white text-xs px-2 py-1 rounded">
-                        S/ {accessory.price.toFixed(2)}
-                      </span>
+                      <div className="flex items-center gap-2 justify-center">
+                        <div className="font-bold text-[14px]">
+                          S/ {accessory.price.toFixed(2)}
+                        </div>
+                        <button className="bg-[#c41c1a] text-white text-xs px-2 py-1 rounded cursor-pointer hover:bg-[#a01818] transition-colors">
+                          Agregar
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))
