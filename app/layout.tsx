@@ -9,6 +9,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { Provider } from "react-redux";
 import { store } from "@/store/store";
 import { StoreProvider } from "@/components/Providers";
+import ChatWidget from "@/components/Chatbot";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -51,6 +52,7 @@ export default function RootLayout({
           <Toaster />
           <CustomOrders />
           <Footer />
+          <ChatWidget />
         </StoreProvider>
       </body>
     </html>
