@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import Shopping from "../Shopping";
 
 export default function Navbar() {
-  const { user, isAuthenticated, logoutUser } = useAuth();
+  const { name, isAuthenticated, logoutUser } = useAuth();
   return (
     //fix
     <header className="sticky overflow-x-hidden bg-[#c41d1ada] backdrop-blur-3xl text-white top-0 z-50 flex justify-between items-center px-5 lg:px-10 py-4 w-full lg:min-w-[1024px] gap-12">
@@ -29,7 +29,7 @@ export default function Navbar() {
       </div>
 
       <div className="lg:flex hidden gap-4 ">
-        {isAuthenticated ? <h1>{`${user}`}</h1> : <LoginForm />}
+        {isAuthenticated ? <h1>{name}</h1> : <LoginForm />}
 
         <Shopping />
       </div>

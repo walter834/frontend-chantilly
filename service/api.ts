@@ -1,40 +1,55 @@
-// service/api.ts
-import { getCookie, removeCookie } from "@/lib/utils/cookies";
 import axios from "axios";
 import { store } from "@/store/store";
 import { logout } from "@/store/slices/authSlice"; // Cambia la importación
 
 export const API_ROUTES = {
-  PAGES: '/pages',
-  THEMES: '/theme',
-  PRODUCTS: '/products',
-  PRODUCT_TYPES: '/product-types',
-  CATEGORIES: '/categories',
+  PAGES: "/pages",
+  THEMES: "/theme",
+  PRODUCTS: "/products",
+  PRODUCT_TYPES: "/product-types",
+  CATEGORIES: "/categories",
 } as const;
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
+  
+   headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  },
 });
 
+// Interceptor para incluir token automáticamente en todas las peticiones
 api.interceptors.request.use(
   (config) => {
-    const token = getCookie("token");    
+    const state = store.getState();
+    const token = state.auth.token;
+    
     if (token) {
-      config.headers["Authorization"] = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token}`;
     }
+    
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    return Promise.reject(error);
+  }
 );
 
+// Interceptor para manejar errores de autenticación
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      removeCookie("token");
+      // Token expirado o inválido, hacer logout automáticamente
       store.dispatch(logout());
-      //window.location.href = "/login";
+      
+      // Redirigir a login si no estamos ya ahí
+      if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+        window.location.href = '/login';
+      }
     }
+    
     return Promise.reject(error);
   }
 );
