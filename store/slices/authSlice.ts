@@ -1,110 +1,82 @@
+// store/slices/authSlice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import {
-  getLocalStorage,
-  setLocalStorage,
-  removeLocalStorage,
-} from "@/lib/utils/localStorage";
-import { getCookie } from "@/lib/utils/cookies";
-import { removeCookie } from "@/lib/utils/cookies";
-import { getSessionStorage, removeSessionStorage, setSessionStorage } from "@/lib/utils/sessionStorage";
 
-interface Auth {
-  user: User | null;
-  isAuthenticated: boolean;
+// Interfaces - CORREGIDAS para coincidir con la respuesta de la API
+interface User {
+  id?: number;
+  name: string;        // ✅ Cambiado de 'nombres' a 'name'
+  lastname: string;    // ✅ Cambiado de 'apellidos' a 'lastname'
+  email: string;
+  id_document_type?: number; // ✅ Cambiado para coincidir con la respuesta
+  document_number?: string;
+  phone?: string;      // ✅ Cambiado de 'celular' a 'phone'
+  address?: string;    // ✅ Cambiado de 'direccion' a 'address'
+  deparment?: string;
+  province?: string;
+  district?: string;
+  status?: number;
+  google_id?: string | null;
 }
 
-// Helper function to safely parse JSON
-const safeJSONParse = (value: string | null): any => {
-  if (!value || value === "null" || value === "undefined") {
-    return null;
-  }
-  try {
-    return JSON.parse(value);
-  } catch (error) {
-    console.warn("Failed to parse JSON:", value);
-    return null;
-  }
-};
+interface AuthState {
+  isAuthenticated: boolean;
+  name: string | null;
+  token: string | null;
+}
 
-// Helper function to get user from storage safely
-const getUserFromStorage = (): User | null => {
-  // Try localStorage first
-  const localUser = getLocalStorage("user");
-  if (localUser) {
-    const parsedLocalUser = safeJSONParse(localUser);
-    if (parsedLocalUser) return parsedLocalUser;
-  }
+interface LoginPayload {
+  customer: User; // ✅ Mantenemos customer como es consistente
+  token: string;
+}
 
-  // Try sessionStorage if localStorage fails
-  const sessionUser = getSessionStorage("user");
-  if (sessionUser) {
-    const parsedSessionUser = safeJSONParse(sessionUser);
-    if (parsedSessionUser) return parsedSessionUser;
-  }
-
-  return null;
-};
-
-// Helper function to check if authenticated
-const getAuthStatus = (): boolean => {
-  const hasToken = !!getCookie("token");
-  const localAuth = getLocalStorage("isAuthenticated") === "true";
-  const sessionAuth = getSessionStorage("isAuthenticated") === "true";
+// Función helper para extraer el nombre completo del usuario - CORREGIDA
+const extractUserName = (user: User): string => {
+  const firstName = user.name?.trim() || '';      // ✅ Cambiado de 'nombres' a 'name'
+  const lastName = user.lastname?.trim() || '';   // ✅ Cambiado de 'apellidos' a 'lastname'
+  const fullName = `${firstName} ${lastName}`.trim();
   
-  return hasToken && (localAuth || sessionAuth);
+  // Si no hay nombres/apellidos, usar la parte antes del @ del email
+  return fullName || user.email.split('@')[0];
 };
 
-const initialState: Auth = {
-  isAuthenticated: getAuthStatus(),
-  user: getUserFromStorage(),
+// Estado inicial - Redux Persist se encarga de restaurar desde localStorage
+const initialState: AuthState = {
+  isAuthenticated: false,
+  name: null,
+  token: null,
 };
 
 export const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    login: (state, action: PayloadAction<{ user: User; remember: boolean }>) => {
+    // Acción principal para login exitoso
+    loginSuccess: (state, action: PayloadAction<LoginPayload>) => {
       state.isAuthenticated = true;
-      state.user = action.payload.user;
-
-      if (action.payload.remember) {
-        // Clear session storage first
-        removeSessionStorage("isAuthenticated");
-        removeSessionStorage("user");
-        
-        // Set localStorage
-        setLocalStorage("isAuthenticated", "true");
-        setLocalStorage("user", JSON.stringify(action.payload.user));
-      } else {
-        // Clear localStorage first
-        removeLocalStorage("isAuthenticated");
-        removeLocalStorage("user");
-        
-        // Set sessionStorage
-        setSessionStorage("isAuthenticated", "true");
-        setSessionStorage("user", JSON.stringify(action.payload.user));
-      }
-    },
-    logout: (state) => {
-      state.isAuthenticated = false;
-      state.user = null;
-
-      // Limpiar todo el almacenamiento y cookies
-      removeSessionStorage("isAuthenticated");
-      removeSessionStorage("user");
-      removeLocalStorage("isAuthenticated");
-      removeLocalStorage("user");
-      removeCookie("token");
-      removeLocalStorage("vite-ui-theme");
+      state.name = extractUserName(action.payload.customer); // ✅ Usar customer
+      state.token = action.payload.token;
+      // Redux Persist automáticamente guarda esto en localStorage
     },
     
-    // NUEVA ACCIÓN: Para limpiar solo el estado sin tocar almacenamiento
-    clearAuthState: (state) => {
+    // Acción para logout
+    logout: (state) => {
       state.isAuthenticated = false;
-      state.user = null;
+      state.name = null;
+      state.token = null;
+      // Redux Persist automáticamente limpia localStorage
     },
+    
+    // Acción para actualizar solo el nombre (si necesitas)
+    updateUserName: (state, action: PayloadAction<string>) => {
+      state.name = action.payload;
+    },
+    
+    // Acción para actualizar solo el token (si necesitas)
+    updateToken: (state, action: PayloadAction<string>) => {
+      state.token = action.payload;
+    }
   },
 });
 
-export const { login, logout, clearAuthState } = authSlice.actions;
+export const { loginSuccess, logout, updateUserName, updateToken } = authSlice.actions;
 export default authSlice.reducer;

@@ -32,3 +32,11 @@ export const loginSchema = z.object({
     .min(6, "La contraseña debe tener al menos 6 caracteres")
 })
 
+// Schema de validación
+export const forgotPasswordSchema = z.object({
+  email: z
+    .string()
+    .min(1, "El correo electrónico es requerido")
+    .email("Ingresa un correo electrónico válido")
+    .toLowerCase(),
+});

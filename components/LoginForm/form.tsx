@@ -28,7 +28,7 @@ interface LoginProps {
   onOpenRegister?: () => void; // Nueva prop para abrir el register
 }
 
-export default function Login({  onOpenRegister }: LoginProps) {
+export default function Login({ onOpenRegister }: LoginProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -47,7 +47,10 @@ export default function Login({  onOpenRegister }: LoginProps) {
     try {
       console.log("Login submitted:", data);
       // Aquí irían las llamadas a la API de login
-      await loginUser(data.email, data.password);
+      const result = await loginUser({
+        email: data.email,
+        password: data.password,
+      });
       router.push("/"); // Redireccionar después del login
       toast.success("Usuario registrado");
     } catch (error) {
@@ -64,15 +67,12 @@ export default function Login({  onOpenRegister }: LoginProps) {
     try {
       console.log("Google sign in clicked");
       loginWithGoogle();
-
     } catch (error) {
       console.error("Error en Google Sign In:", error);
       setIsGoogleLoading(false); // Solo en caso de error
     }
     // NO poner finally aquí porque la redirección interrumpe la ejecución
   };
-
-  
 
   return (
     <div className="w-full max-w-md overflow-hidden">

@@ -1,32 +1,48 @@
-// service/auth/authService.ts
-
+// service/auth/authService.ts - VERSIÓN OPTIMIZADA SIN /customer
 import api from "../api";
 import { z } from "zod";
 import { registerSchema } from "@/lib/validators/auth";
-import { setCookie } from "@/lib/utils/cookies";
 import { store } from "@/store/store";
-import { login, logout } from "@/store/slices/authSlice";
-import { setLocalStorage } from "@/lib/utils/localStorage";
+import { loginSuccess, logout } from "@/store/slices/authSlice";
 
 // Interfaces de respuesta
 interface LoginResponse {
   message: string;
-  user: User;
+  customer: User;
   token: string;
-  type: string;
+  token_type: string;
 }
 
 interface RegisterResponse {
   message: string;
-  user: User;
+  user: User; // Para registro sigue siendo user
   token: string;
   type: string;
 }
 
-// Tipos para el formulario
+interface User {
+  id?: number;
+  name: string;
+  lastname: string;
+  email: string;
+  id_document_type?: number;
+  document_number?: string;
+  phone?: string;
+  address?: string;
+  deparment?: string;
+  province?: string;
+  district?: string;
+  status?: number;
+  google_id?: string | null;
+}
+
+interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
 type RegisterFormData = z.infer<typeof registerSchema>;
 
-// Interfaz para el payload que se envía a la API (formato Laravel)
 interface RegisterPayload {
   email: string;
   password: string;
@@ -46,46 +62,63 @@ interface RegisterPayload {
  * Función para hacer login de usuario
  */
 export const loginUser = async (
-  identifier: string,
-  password: string,
-  remember: boolean = false
-): Promise<LoginResponse> => {
+  credentials: LoginCredentials
+): Promise<{ success: boolean; message: string; customer?: User }> => {
   try {
-    const payload = identifier.includes("@")
-      ? { email: identifier, password }
-      : { user: identifier, password };
+    const response = await api.post<LoginResponse>("/login", credentials);
+    const { token, customer, message } = response.data;
 
-    const response = await api.post<LoginResponse>("/login", payload);
-    const { token, user } = response.data;
-
-    // Validar que tengamos los datos necesarios
-    if (!token || !user) {
-      throw new Error(
-        "Respuesta del servidor incompleta - faltan token o datos de usuario"
-      );
-    }
-
-    setCookie("token", token, 1);
-    setLocalStorage("token", token);
-    store.dispatch(login({ user, remember }));
-
-    return response.data;
-  } catch (error: unknown) {
+    // Guardar en Redux (Redux Persist automáticamente guarda en localStorage)
+    store.dispatch(loginSuccess({ customer, token }));
+    
+    return {
+      success: true,
+      message: message || "Login exitoso",
+      customer // Devolver también los datos del customer
+    };
+    
+  } catch (error: any) {
     console.error("Error en login:", error);
-    throw error;
+    
+    const errorMessage = error.response?.data?.message || "Error al iniciar sesión";
+    
+    return {
+      success: false,
+      message: errorMessage
+    };
   }
 };
 
-// Función principal para login con Google (redirección completa)
+/**
+ * Función para hacer logout de usuario
+ */
+export const logoutUser = async (): Promise<void> => {
+  try {
+    // Intentar cerrar sesión en el backend
+    await api.post("/logout");
+  } catch (error) {
+    console.warn("Error during logout API call:", error);
+  } finally {
+    // Redux Persist automáticamente limpia localStorage
+    store.dispatch(logout());
+  }
+};
+
+/**
+ * Función principal para login con Google
+ */
 export const loginWithGoogle = () => {
   try {
-    const baseURL = api.defaults.baseURL; // http://192.168.18.28:8000/api
+    const baseURL = api.defaults.baseURL;
 
     if (!baseURL) {
       throw new Error("baseURL no está configurado en la instancia de api");
     }
 
-    localStorage.setItem("redirectAfterLogin", window.location.href);
+    // Solo usar sessionStorage para redirection (es temporal)
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("redirectAfterLogin", window.location.href);
+    }
 
     const redirectURL = encodeURIComponent(`${baseURL}/auth/google/callback`);
     const googleAuthURL = `${baseURL}/auth/google/redirect?redirect_uri=${redirectURL}`;
@@ -97,11 +130,61 @@ export const loginWithGoogle = () => {
   }
 };
 
-// Función para manejar el callback después del login
-// En tu authService.ts - Función handleAuthCallback actualizada
-export const handleAuthCallback = async () => {
+/**
+ * Función para manejar el callback después del login con Google
+ * OPCIÓN 1: Si tu backend envía los datos del customer en la URL
+ */
+export const handleAuthCallbackWithData = async () => {
   try {
-    // Obtener token de la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get("token");
+    const error = urlParams.get("error");
+    
+    // Obtener datos del customer si vienen en los parámetros
+    const customerDataParam = urlParams.get("customer");
+
+    if (error) {
+      console.error("Error en autenticación:", error);
+      window.location.href = `/login?error=${encodeURIComponent(error)}`;
+      return;
+    }
+
+    if (token && customerDataParam) {
+      // Limpiar URL de parámetros
+      window.history.replaceState({}, document.title, window.location.pathname);
+
+      try {
+        // Decodificar datos del customer
+        const customer = JSON.parse(decodeURIComponent(customerDataParam));
+        store.dispatch(loginSuccess({ customer, token }));
+      } catch (parseError) {
+        console.error("Error procesando datos del usuario:", parseError);
+        window.location.href = "/login?error=parse_error";
+        return;
+      }
+
+      // Obtener URL de redirección guardada o ir al home
+      const redirectUrl = sessionStorage.getItem("redirectAfterLogin") || "/";
+      sessionStorage.removeItem("redirectAfterLogin");
+
+      // Redirigir
+      window.location.href = redirectUrl;
+    } else {
+      console.error("No se recibió token o datos del customer");
+      window.location.href = "/login?error=missing_data";
+    }
+  } catch (error) {
+    console.error("Error procesando callback:", error);
+    window.location.href = "/login?error=callback_error";
+  }
+};
+
+/**
+ * OPCIÓN 2: Si tu backend tiene un endpoint especial para obtener datos después de Google Auth
+ * Por ejemplo: GET /auth/google/user con el token
+ */
+export const handleAuthCallbackWithEndpoint = async () => {
+  try {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get("token");
     const error = urlParams.get("error");
@@ -113,28 +196,26 @@ export const handleAuthCallback = async () => {
     }
 
     if (token) {
-      // Guardar token en cookie
-      setCookie("token", token, 7);
-
       // Limpiar URL de parámetros
       window.history.replaceState({}, document.title, window.location.pathname);
 
-      // IMPORTANTE: Obtener datos del usuario con el token
       try {
-        const user = await getCurrentUser();
+        // Hacer llamada a endpoint específico para Google auth
+        const response = await api.get<{ customer: User }>("/auth/google/user", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
         
-        if (user) {
-          // El usuario ya se guarda en Redux dentro de getCurrentUser()
-          console.log("Usuario autenticado con Google:", user);
-        }
-      } catch (userError) {
-        console.error("Error obteniendo datos del usuario:", userError);
-        // Continuar de todas formas, el token es válido
+        const customer = response.data.customer;
+        store.dispatch(loginSuccess({ customer, token }));
+      } catch (apiError) {
+        console.error("Error obteniendo datos del usuario:", apiError);
+        window.location.href = "/login?error=user_fetch_error";
+        return;
       }
 
       // Obtener URL de redirección guardada o ir al home
-      const redirectUrl = localStorage.getItem("redirectAfterLogin") || "/";
-      localStorage.removeItem("redirectAfterLogin");
+      const redirectUrl = sessionStorage.getItem("redirectAfterLogin") || "/";
+      sessionStorage.removeItem("redirectAfterLogin");
 
       // Redirigir
       window.location.href = redirectUrl;
@@ -148,21 +229,11 @@ export const handleAuthCallback = async () => {
   }
 };
 
-/**
- * Función para hacer logout de usuario
- */
-export const logoutUser = async (): Promise<void> => {
-  try {
-    await api.post("/logout");
-  } catch (error) {
-    console.warn("Error during logout API call:", error);
-  } finally {
-    store.dispatch(logout());
-  }
-};
+// Alias para la función que vayas a usar
+export const handleAuthCallback = handleAuthCallbackWithData; // O handleAuthCallbackWithEndpoint
 
 /**
- * Función para registrar un nuevo usuario - CORREGIDA
+ * Función para registrar un nuevo usuario
  */
 export const register = async (formData: RegisterFormData) => {
   try {
@@ -189,17 +260,14 @@ export const register = async (formData: RegisterFormData) => {
       deparment: formData.departamento,
       province: formData.provincia,
       district: formData.distrito,
-      password_confirmation: formData.confirmPassword, // ✅ AGREGAR ESTE CAMPO
+      password_confirmation: formData.confirmPassword,
     };
-
-    console.log("Payload enviado a la API:", payload); // Debug
 
     const response = await api.post<RegisterResponse>("/customers", payload);
     const { token, user, message } = response.data;
 
-    // Guardar token y usuario en el estado global
-    setCookie("token", token, 1);
-    store.dispatch(login({ user, remember: true }));
+    // Para registro usamos user como customer
+    store.dispatch(loginSuccess({ customer: user, token }));
 
     return {
       success: true,
@@ -214,12 +282,9 @@ export const register = async (formData: RegisterFormData) => {
     let validationErrors = {};
 
     if (error.response?.status === 422) {
-      // Errores de validación de Laravel
-      errorMessage =
-        error.response?.data?.message || "Datos de validación incorrectos";
+      errorMessage = error.response?.data?.message || "Datos de validación incorrectos";
       validationErrors = error.response?.data?.errors || {};
 
-      // Formatear errores de validación para mostrar
       const errorMessages = Object.values(validationErrors).flat();
       if (errorMessages.length > 0) {
         errorMessage = errorMessages.join(", ");
@@ -229,7 +294,6 @@ export const register = async (formData: RegisterFormData) => {
     } else if (error.response?.status === 400) {
       errorMessage = error.response?.data?.message || "Datos inválidos";
     } else if (error.message && !error.response) {
-      // Error personalizado que lanzamos arriba
       errorMessage = error.message;
     }
 
@@ -257,28 +321,17 @@ export const getDocumentTypes = async (): Promise<DocumentType[]> => {
 };
 
 /**
- * Función para obtener el usuario actual
- */
-export const getCurrentUser = async (): Promise<User | null> => {
-  try {
-    const response = await api.get<{ user: User }>("/user");
-    const user = response.data.user;
-
-    console.log("getCurrentUser response:", user);
-    store.dispatch(login({ user, remember: true }));
-
-    return user;
-  } catch (error) {
-    console.log("Error fetching current user:", error);
-    return null;
-  }
-};
-
-/**
  * Función para validar si el token es válido
  */
 export const validateToken = async (): Promise<boolean> => {
   try {
+    const state = store.getState();
+    const token = state.auth.token;
+    
+    if (!token) {
+      return false;
+    }
+
     await api.get("/validate-token");
     return true;
   } catch (error) {
@@ -286,6 +339,26 @@ export const validateToken = async (): Promise<boolean> => {
     store.dispatch(logout());
     return false;
   }
+};
+
+/**
+ * Función para obtener los datos del usuario logueado desde Redux
+ * (sin hacer llamada a la API)
+ */
+export const getCurrentUserFromState = (): User | null => {
+  const state = store.getState();
+  
+  if (!state.auth.isAuthenticated || !state.auth.token || !state.auth.name) {
+    return null;
+  }
+
+  // Como no tenemos todos los datos del user en el state, 
+  // solo podemos devolver lo básico
+  return {
+    name: state.auth.name.split(' ')[0] || state.auth.name,
+    lastname: state.auth.name.split(' ').slice(1).join(' ') || '',
+    email: '', // No lo tenemos en el state
+  };
 };
 
 /**
@@ -308,8 +381,7 @@ export const changePassword = async (
   } catch (error: any) {
     console.error("Error al cambiar contraseña:", error);
 
-    const errorMessage =
-      error.response?.data?.message || "Error al cambiar contraseña";
+    const errorMessage = error.response?.data?.message || "Error al cambiar contraseña";
 
     throw {
       success: false,
@@ -328,15 +400,12 @@ export const forgotPassword = async (email: string) => {
 
     return {
       success: true,
-      message:
-        response.data.message ||
-        "Se ha enviado un correo para recuperar tu contraseña",
+      message: response.data.message || "Se ha enviado un correo para recuperar tu contraseña",
     };
   } catch (error: any) {
     console.error("Error en recuperación de contraseña:", error);
 
-    const errorMessage =
-      error.response?.data?.message || "Error al enviar correo de recuperación";
+    const errorMessage = error.response?.data?.message || "Error al enviar correo de recuperación";
 
     throw {
       success: false,
@@ -345,3 +414,6 @@ export const forgotPassword = async (email: string) => {
     };
   }
 };
+
+// Tipos para exportar
+export type { User, LoginCredentials, RegisterFormData };
