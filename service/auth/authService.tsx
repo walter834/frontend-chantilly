@@ -15,9 +15,9 @@ interface LoginResponse {
 
 interface RegisterResponse {
   message: string;
-  user: User; // Para registro sigue siendo user
-  token: string;
-  type: string;
+  customer: User; // Cambiado de 'user' a 'customer'
+  token?: string; // Opcional porque no parece venir en la respuesta
+  type?: string; // Opcional
 }
 
 interface User {
@@ -70,21 +70,21 @@ export const loginUser = async (
 
     // Guardar en Redux (Redux Persist automáticamente guarda en localStorage)
     store.dispatch(loginSuccess({ customer, token }));
-    
+
     return {
       success: true,
       message: message || "Login exitoso",
-      customer // Devolver también los datos del customer
+      customer, // Devolver también los datos del customer
     };
-    
   } catch (error: any) {
     console.error("Error en login:", error);
-    
-    const errorMessage = error.response?.data?.message || "Error al iniciar sesión";
-    
+
+    const errorMessage =
+      error.response?.data?.message || "Error al iniciar sesión";
+
     return {
       success: false,
-      message: errorMessage
+      message: errorMessage,
     };
   }
 };
@@ -126,7 +126,9 @@ export const loginWithGoogle = () => {
     window.location.href = googleAuthURL;
   } catch (error) {
     console.error("Error al iniciar login con Google:", error);
-    throw new Error("No se pudo iniciar el proceso de autenticación con Google");
+    throw new Error(
+      "No se pudo iniciar el proceso de autenticación con Google"
+    );
   }
 };
 
@@ -139,7 +141,7 @@ export const handleAuthCallbackWithData = async () => {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get("token");
     const error = urlParams.get("error");
-    
+
     // Obtener datos del customer si vienen en los parámetros
     const customerDataParam = urlParams.get("customer");
 
@@ -201,10 +203,13 @@ export const handleAuthCallbackWithEndpoint = async () => {
 
       try {
         // Hacer llamada a endpoint específico para Google auth
-        const response = await api.get<{ customer: User }>("/auth/google/user", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        
+        const response = await api.get<{ customer: User }>(
+          "/auth/google/user",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
         const customer = response.data.customer;
         store.dispatch(loginSuccess({ customer, token }));
       } catch (apiError) {
@@ -264,15 +269,14 @@ export const register = async (formData: RegisterFormData) => {
     };
 
     const response = await api.post<RegisterResponse>("/customers", payload);
-    const { token, user, message } = response.data;
+    const { customer, message } = response.data;
 
     // Para registro usamos user como customer
-    store.dispatch(loginSuccess({ customer: user, token }));
 
     return {
       success: true,
       message,
-      user,
+      customer,
     };
   } catch (error: any) {
     console.error("Error en registro completo:", error);
@@ -282,7 +286,8 @@ export const register = async (formData: RegisterFormData) => {
     let validationErrors = {};
 
     if (error.response?.status === 422) {
-      errorMessage = error.response?.data?.message || "Datos de validación incorrectos";
+      errorMessage =
+        error.response?.data?.message || "Datos de validación incorrectos";
       validationErrors = error.response?.data?.errors || {};
 
       const errorMessages = Object.values(validationErrors).flat();
@@ -327,7 +332,7 @@ export const validateToken = async (): Promise<boolean> => {
   try {
     const state = store.getState();
     const token = state.auth.token;
-    
+
     if (!token) {
       return false;
     }
@@ -347,17 +352,17 @@ export const validateToken = async (): Promise<boolean> => {
  */
 export const getCurrentUserFromState = (): User | null => {
   const state = store.getState();
-  
+
   if (!state.auth.isAuthenticated || !state.auth.token || !state.auth.name) {
     return null;
   }
 
-  // Como no tenemos todos los datos del user en el state, 
+  // Como no tenemos todos los datos del user en el state,
   // solo podemos devolver lo básico
   return {
-    name: state.auth.name.split(' ')[0] || state.auth.name,
-    lastname: state.auth.name.split(' ').slice(1).join(' ') || '',
-    email: '', // No lo tenemos en el state
+    name: state.auth.name.split(" ")[0] || state.auth.name,
+    lastname: state.auth.name.split(" ").slice(1).join(" ") || "",
+    email: "", // No lo tenemos en el state
   };
 };
 
@@ -381,7 +386,8 @@ export const changePassword = async (
   } catch (error: any) {
     console.error("Error al cambiar contraseña:", error);
 
-    const errorMessage = error.response?.data?.message || "Error al cambiar contraseña";
+    const errorMessage =
+      error.response?.data?.message || "Error al cambiar contraseña";
 
     throw {
       success: false,
@@ -400,12 +406,15 @@ export const forgotPassword = async (email: string) => {
 
     return {
       success: true,
-      message: response.data.message || "Se ha enviado un correo para recuperar tu contraseña",
+      message:
+        response.data.message ||
+        "Se ha enviado un correo para recuperar tu contraseña",
     };
   } catch (error: any) {
     console.error("Error en recuperación de contraseña:", error);
 
-    const errorMessage = error.response?.data?.message || "Error al enviar correo de recuperación";
+    const errorMessage =
+      error.response?.data?.message || "Error al enviar correo de recuperación";
 
     throw {
       success: false,
