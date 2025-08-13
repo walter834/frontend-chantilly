@@ -9,12 +9,13 @@ export const API_ROUTES = {
   PRODUCT_TYPES: '/product-types',
   CATEGORIES: '/categories',
   PRODUCTS_VARIANT: '/products-variant',
+  CAKE_FLAVORS: '/cake-flavors',
 } as const;
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
   
-   headers: {
+  headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   },

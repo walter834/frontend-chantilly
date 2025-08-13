@@ -1,25 +1,25 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { capitalizeFirstLetter } from '@/lib/utils';
-import { fetchProducts, getProductVariantById } from '@/service/productService';
-import { TransformedProduct, TransformedProductVariant } from '@/types/api';
-import { portionsOptions } from './data';
+import { fetchProducts, getCakeFlavors, getProductVariantById } from '@/service/productService';
+import { TransformedProduct, TransformedProductVariant, TransformedCakeFlavor } from '@/types/api';
+import FormCart from '@/components/formCart';
 
 interface ProductDetailProps {
   id: string;
   name: string;
   price: number;
   originalPrice?: number;
-  image: string;
+  theme?: string | null;
+  image: string; 
+ 
 }
 
-const ProductDetail = ({ id, name, price, originalPrice, image }: ProductDetailProps) => {
-  const router = useRouter();
-  const [selectedPortion, setSelectedPortion] = useState('');
-  const [pickupDate, setPickupDate] = useState('');
-  const [dedication, setDedication] = useState('');
+const ProductDetail = ({ id, name, price, originalPrice, theme, image}: ProductDetailProps) => {
+console.log('Product detail:', id, name, price, originalPrice, theme, image);
+  const [cakeFlavors, setCakeFlavors] = useState<TransformedCakeFlavor[]>([]);
+  const [selectedCake, setSelectedCake] = useState(''); 
   const [accessories, setAccessories] = useState<TransformedProduct[]>([]);
   const [bocaditos, setBocaditos] = useState<TransformedProduct[]>([]);
   const [loadingAccessories, setLoadingAccessories] = useState(true);
@@ -27,6 +27,27 @@ const ProductDetail = ({ id, name, price, originalPrice, image }: ProductDetailP
   const [productVariant, setProductVariant] = useState<TransformedProductVariant | null>(null);
   const [priceProduct, setPriceProduct] = useState<string>('0.00');
   const [imageProduct, setImageProduct] = useState<string>('');
+
+  const handlePortionChange = async (portion: string) => {
+    if (!portion) {
+      setPriceProduct('0.00');
+      setImageProduct(image);
+      setProductVariant(null);
+      return;
+    }
+    try {
+      const variant = await getProductVariantById(id, portion);
+      if (variant) {
+        setProductVariant(variant);
+        setPriceProduct(variant.price);
+        setImageProduct(variant.image);
+      }
+    } catch (error) {
+      console.error('Error fetching product variant:', error);
+      setPriceProduct(price.toFixed(2));
+      setImageProduct(image);
+    }
+  };
 
   useEffect(() => {
     const fetchCategoryProducts = async () => {
@@ -48,22 +69,33 @@ const ProductDetail = ({ id, name, price, originalPrice, image }: ProductDetailP
     fetchCategoryProducts();
   }, []);
 
+
+
+  useEffect(() => {
+    const fetchCakeFlavors = async () => {
+      try {
+        const cakeFlavorResponse = await getCakeFlavors();
+        setCakeFlavors(cakeFlavorResponse);
+      } catch (error) {
+        console.error('Error fetching cake flavors:', error);
+      }
+    };
+    
+    fetchCakeFlavors();
+  }, []);
+
   useEffect(() => {
     const fetchProductVariant = async () => {
       try {
-        const productVariantResponse = await getProductVariantById(id, selectedPortion);
-        setProductVariant(productVariantResponse);
-        setPriceProduct(productVariantResponse?.price || '0.00');
-        setImageProduct(productVariantResponse?.image || '');
-        } catch (error) {
+        const variantResponse = await getProductVariantById(id, '');
+        setProductVariant(variantResponse);
+      } catch (error) {
         console.error('Error fetching product variant:', error);
       }
     };
-  
-    if (selectedPortion) {
-      fetchProductVariant();
-    }
-  }, [selectedPortion, id]);  
+    
+    fetchProductVariant();
+  }, [id]);
 
   return (
     <div className="mx-auto">
@@ -83,10 +115,12 @@ const ProductDetail = ({ id, name, price, originalPrice, image }: ProductDetailP
         <div className="lg:col-span-5">
           <div className="mb-4 border-2 border-black rounded-lg p-6 bg-white">
             <div className="flex flex-col-2 justify-between">
-              <h1 className="text-xl font-bold text-[#c41c1a] uppercase mb-2">
-                {capitalizeFirstLetter(name)}
-              </h1>
-              <div className="flex items-center gap-4 mb-4">
+              <div className="ml-2">
+                <h1 className="text-[20px] font-bold text-[#c41c1a] uppercase mb-2">
+                  {capitalizeFirstLetter(name)}
+                </h1>
+              </div>
+              <div className="flex items-center gap-2 mb-4">
                 <span className="text-2xl font-bold text-[#c41c1a]">
                   S/ {price.toFixed(2)}
                 </span>
@@ -102,88 +136,15 @@ const ProductDetail = ({ id, name, price, originalPrice, image }: ProductDetailP
               <span className="text-[#c41c1a]"></span> Tiempo elaboración: - horas
             </p>
           </div>
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-              <label className="text-sm font-medium text-black sm:w-32 sm:flex-shrink-0">
-                Porciones
-              </label>
-              <select
-                value={selectedPortion}
-                onChange={(e) => setSelectedPortion(e.target.value)}
-                className="w-full sm:flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#c41c1a] focus:border-[#c41c1a]"
-              >
-                {Object.entries(portionsOptions).map(([key, value]) => (
-                  <option key={key} value={key}>
-                    {key}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-              <label className="text-sm font-medium text-black sm:w-32 sm:flex-shrink-0">
-                Opciones de cake
-              </label>
-              <select
-                value={selectedPortion}
-                onChange={(e) => setSelectedPortion(e.target.value)}
-                className="w-full sm:flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#c41c1a] focus:border-[#c41c1a]"
-              >
-                {Object.entries(portionsOptions).map(([key, value]) => (
-                  <option key={key} value={key}>
-                    {key}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-              <label className="text-sm font-medium text-black sm:w-32 sm:flex-shrink-0">
-                Opciones de relleno
-              </label>
-              <select
-                value={selectedPortion}
-                onChange={(e) => setSelectedPortion(e.target.value)}
-                className="w-full sm:flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#c41c1a] focus:border-[#c41c1a]"
-              >
-                {Object.entries(portionsOptions).map(([key, value]) => (
-                  <option key={key} value={key}>
-                    {key}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-              <label className="text-sm font-medium text-black sm:w-32 sm:flex-shrink-0">
-                Día de recojo
-              </label>
-              <input
-                type="date"
-                value={pickupDate}
-                onChange={(e) => setPickupDate(e.target.value)}
-                className="w-full sm:flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#c41c1a] focus:border-[#c41c1a]"
-              />
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
-              <label className="text-sm font-medium text-black sm:w-32 sm:flex-shrink-0 sm:pt-2">
-                Nombre o Dedicatoria
-              </label>
-              <textarea
-                value={dedication}
-                onChange={(e) => setDedication(e.target.value)}
-                placeholder="Escribe tu dedicatoria"
-                rows={3}
-                className="w-full sm:flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#c41c1a] focus:border-[#c41c1a] resize-none"
-              />
-            </div>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-              <div className="text-3xl font-bold text-[#c41c1a] sm:w-32 sm:flex-shrink-0 text-center sm:text-left">
-                S/ {priceProduct} {/* precio del producto */}
-              </div>
-              <button className="w-full sm:flex-1 bg-[#c41c1a] text-white py-3 px-6 rounded-md hover:bg-[#a01818] transition-colors font-medium cursor-pointer">
-                Agregar al carrito
-              </button>
-            </div>
-          </div>
+          <FormCart 
+            productId={id}
+            initialPrice={price}
+            productVariant={productVariant}
+            cakeFlavors={cakeFlavors}
+            onPortionChange={handlePortionChange}
+            theme={theme}
+            imageProduct={imageProduct}
+          />
         </div>
         <div className="lg:col-span-3">
           <div className="border-2 border-black rounded-lg p-6 bg-white">
@@ -225,8 +186,8 @@ const ProductDetail = ({ id, name, price, originalPrice, image }: ProductDetailP
           </div>
         </div>
       </div>
-      <div className="mt-12">
-        <h2 className="text-2xl font-bold text-center text-black mb-8">
+      <div className="mt-12 border-t-2 border-[#c41c1a]">
+        <h2 className="text-4xl font-bold text-center text-black mb-8 pt-3">
           Bocaditos para acompañar
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">

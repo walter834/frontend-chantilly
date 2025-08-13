@@ -64,12 +64,14 @@ export default function DetallePage() {
   }
 
   return (
+    console.log('theme_id',product),
     <div className="container mx-auto px-4 py-8">
       <ProductDetail
         id={product.id.toString()}
         name={product.name}
         price={product.price}
         originalPrice={product.originalPrice}
+        theme={product.theme_id}
         image={product.image}
       />
     </div>

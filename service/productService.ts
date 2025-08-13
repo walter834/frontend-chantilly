@@ -1,4 +1,17 @@
 import { toast } from "sonner";
+import api, { API_ROUTES } from './api';
+import { 
+  ApiProduct, 
+  ApiProductsResponse, 
+  ApiProductVariant, 
+  ApiCakeFlavor, 
+  TransformedProduct, 
+  TransformedProductVariant, 
+  TransformedCakeFlavor, 
+  transformProduct, 
+  transformProductVariant, 
+  transformCakeFlavor 
+} from '@/types/api';
 
 export async function getProductById(id: string): Promise<TransformedProduct | null> {
   try {
@@ -13,12 +26,26 @@ export async function getProductById(id: string): Promise<TransformedProduct | n
 
 export async function getProductVariantById(id: string, portion: string): Promise<TransformedProductVariant | null> {
   try {
+    if(portion === "Elige una opción"){
+      return null;
+    }
     const endpoint = `${API_ROUTES.PRODUCTS_VARIANT}/${id}?portion_name=${portion}`;
     const { data } = await api.get<ApiProductVariant>(endpoint);
     return transformProductVariant(data);
   } catch (error) {
     console.error('Error fetching product variant by id:', error);
     return null;
+  }
+}
+
+export async function getCakeFlavors(): Promise<TransformedCakeFlavor[]> {
+  try {
+    const endpoint = `${API_ROUTES.CAKE_FLAVORS}`;
+    const { data } = await api.get<ApiCakeFlavor[]>(endpoint);
+    return data.map(transformCakeFlavor);
+  } catch (error) {
+    console.error('Error fetching cake flavors:', error);
+    return [];
   }
 }
 
@@ -50,6 +77,7 @@ export async function getProductsByTheme(
   const themeId = THEME_SLUG_TO_ID[themeSlug];
   return fetchProducts(page, undefined, themeId, undefined, search);
 }
+
 const CATEGORY_SLUG_TO_ID: Record<string, number> = {
     'tortas': 1,
     'tortas-tematicas': 2,
@@ -73,20 +101,9 @@ export async function getProductsByCategory(
     hasPrevPage: boolean;
   };
 }> {
- console.log('here1')
   const categoryId = CATEGORY_SLUG_TO_ID[categorySlug];
   return fetchProducts(page, categoryId, undefined, undefined, search);
 }
-import api, { API_ROUTES } from './api';
-import {
-  ApiProduct,
-  ApiProductsResponse,
-  ApiProductVariant,
-  TransformedProduct,
-  TransformedProductVariant,
-  transformProduct,
-  transformProductVariant,
-} from '@/types/api';
 
 export async function fetchProducts(
   page: number = 1,

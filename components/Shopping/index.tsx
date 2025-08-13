@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import ShoppingList from "@/components/ShoppingList";
 import {
   Sheet,
   SheetContent,
@@ -10,7 +11,6 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { ShoppingCart } from "lucide-react";
-import Image from "next/image";
 
 export default function Shopping() {
   /* const [open, setOpen] = useState(false);
@@ -27,19 +27,18 @@ export default function Shopping() {
     <div className="">
       <Sheet>
         <SheetTrigger asChild>
-          <Button variant="ghost" className="">
+          <Button variant="ghost" className="cursor-pointer">
             <ShoppingCart size={26} />
           </Button>
         </SheetTrigger>
         <SheetContent
           side="right"
-          className="w-full sm:w-64 pt-12 bg-[#c41d1ada] backdrop-blur-3xl text-white "
         >
-          <SheetHeader>
-            <SheetTitle className="flex justify-center"></SheetTitle>
-            <SheetDescription></SheetDescription>
+          <SheetHeader className="bg-[#c41c1a]">
+            <SheetTitle className="text-white text-center">MI CARRITO</SheetTitle>
+            <SheetDescription ></SheetDescription>
           </SheetHeader>
-          aea
+          <ShoppingList />
         </SheetContent>
       </Sheet>
     </div>

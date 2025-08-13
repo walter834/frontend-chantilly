@@ -129,6 +129,27 @@ export interface TransformedProductType {
   status: number;
 }
 
+export interface ApiCakeFilling {
+  id: number;
+  name: string;
+  status: boolean;
+}
+
+export interface ApiCakeFlavor {
+  id: number;
+  name: string;
+  status: boolean;
+  filling_id: number;
+  filling: ApiCakeFilling;
+}
+
+export interface TransformedCakeFlavor {
+  id: number;
+  name: string;
+  fillingId: number;
+  fillingName: string;
+}
+
 export interface TransformedProduct {
   id: number;
   name: string;
@@ -137,7 +158,7 @@ export interface TransformedProduct {
   originalPrice?: number;
   image: string;
   category: string;
-  theme?: string;
+  theme_id?: string;
   stock: number;
   isBestSeller: boolean;
   createdAt: Date;
@@ -200,7 +221,7 @@ export function transformProduct(apiProduct: ApiProduct): TransformedProduct {
     originalPrice: maxPrice > minPrice ? maxPrice : undefined,
     image: apiProduct.image,
     category: apiProduct.product_type_id.toString(),
-    theme: apiProduct.theme_id?.toString(),
+    theme_id: apiProduct.theme_id?.id?.toString(),
     stock: 10,
     isBestSeller: apiProduct.best_status,
     createdAt: new Date(),
@@ -210,15 +231,25 @@ export function transformProduct(apiProduct: ApiProduct): TransformedProduct {
 }
 
 export function transformProductVariant(apiProductVariant: ApiProductVariant): TransformedProductVariant {
+  const variant = apiProductVariant.data[0];
   return {
-    id: apiProductVariant.data[0].id,
-    cod_fav: apiProductVariant.data[0].cod_fav,
-    description: apiProductVariant.data[0].description,
-    portion: apiProductVariant.data[0].portion,
-    size_portion: apiProductVariant.data[0].size_portion,
-    price: apiProductVariant.data[0].price,
-    hours: apiProductVariant.data[0].hours,
-    sort: apiProductVariant.data[0].sort,
-    image: apiProductVariant.data[0].image,
+    id: variant.id,
+    cod_fav: variant.cod_fav,
+    description: variant.description,
+    portion: variant.portion,
+    size_portion: variant.size_portion,
+    price: variant.price,
+    hours: variant.hours,
+    sort: variant.sort,
+    image: variant.image,
   };
-}   
+}
+
+export function transformCakeFlavor(apiCakeFlavor: ApiCakeFlavor): TransformedCakeFlavor {
+  return {
+    id: apiCakeFlavor.id,
+    name: apiCakeFlavor.name,
+    fillingId: apiCakeFlavor.filling_id,
+    fillingName: apiCakeFlavor.filling.name,
+  };
+}
