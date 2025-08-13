@@ -424,5 +424,59 @@ export const forgotPassword = async (email: string) => {
   }
 };
 
+export const ResetPassword = async (resetData: {
+  token: string;
+  email: string;
+  password: string;
+  password_confirmation: string;
+}) => {
+  try {
+    // 🔥 Agregar logs para debug
+    console.log("🔍 Datos enviados al reset-password:", resetData);
+    console.log("🔍 URL base de la API:", api.defaults.baseURL);
+
+    // Asegurar que los datos estén limpios y coincidan exactamente con tu API
+    const payload = {
+      token: resetData.token.trim(),
+      email: resetData.email.trim().toLowerCase(),
+      password: resetData.password,
+      password_confirmation: resetData.password_confirmation,
+    };
+
+    console.log("🔍 Payload limpio:", payload);
+
+    const response = await api.post("/reset-password", payload, {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    });
+
+    console.log("✅ Respuesta exitosa:", response.data);
+
+    return {
+      success: true,
+      message: response.data.message || "Contraseña restablecida exitosamente",
+      data: response.data,
+    };
+  } catch (error: any) {
+    // 🔥 Logs detallados del error
+    console.error("❌ Error completo:", error);
+    console.error("❌ Response data:", error.response?.data);
+    console.error("❌ Response status:", error.response?.status);
+    console.error("❌ Request config:", error.config);
+
+    const errorMessage =
+      error.response?.data?.message || "Error al restablecer la contraseña";
+
+    throw {
+      success: false,
+      message: errorMessage,
+      status: error.response?.status,
+      errors: error.response?.data?.errors,
+    };
+  }
+};
+
 // Tipos para exportar
 export type { User, LoginCredentials, RegisterFormData };

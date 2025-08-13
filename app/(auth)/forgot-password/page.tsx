@@ -1,4 +1,4 @@
-import ForgotPasswordCard from "./ForgotPasswordCard";
+import ForgotPasswordCard from "./components/ForgotPasswordCard";
 
 
 

@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/
 import { User } from "lucide-react";
 import Register from "../RegisterForm/form"; // Importa directamente el form real
 import Login from "./form";
+import Link from "next/link";
 
 export default function LoginForm() {
   const [isOpen, setIsOpen] = useState(false);
@@ -15,6 +16,8 @@ export default function LoginForm() {
     setIsOpen(false);
     setIsRegister(false);
   };
+
+
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}  >
@@ -37,6 +40,8 @@ export default function LoginForm() {
             onOpenRegister={() => setIsRegister(true)}
           />
         )}
+
+        
       </DialogContent>
     </Dialog>
   );

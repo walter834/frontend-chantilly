@@ -1,138 +1,169 @@
 "use client";
-import React, { useState, useRef, useEffect, FormEvent, ChangeEvent } from 'react';
-import { useChatbot } from '@/hooks/useChatbot';
-import type { ChatMessage } from '@/types/chatbot';
+import { useEffect } from "react";
+import "@n8n/chat/style.css";
+import { createChat } from "@n8n/chat";
 
-const ChatWidget: React.FC = () => {
-  const [inputMessage, setInputMessage] = useState<string>('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  
-  const {
-    messages,
-    isLoading,
-    error,
-    isOpen,
-    unreadCount,
-    sendMessage,
-    toggleChatWindow,
-    markMessagesAsRead,
-  } = useChatbot();
-
-  const scrollToBottom = (): void => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
+export default function N8nChat() {
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    let observer;
+    let titleProcessed = false;
 
-  const handleSendMessage = (e: FormEvent<HTMLFormElement>): void => {
-    e.preventDefault();
-    if (inputMessage.trim()) {
-      sendMessage(inputMessage.trim());
-      setInputMessage('');
-    }
-  };
+    createChat({
+      webhookUrl:
+        "https://pruebas-automatizacion.app.n8n.cloud/webhook/b45adfae-0350-4ef9-bc2f-13faf9456306/chat",
+      target: "#n8n-chat",
+      mode: "window",
+      showWelcomeScreen: false,
+      initialMessages: ['¡Hola! 😊 Soy María, tu asistente de "La Casa del Chantilly". ¿En qué puedo ayudarte hoy? Estoy aquí para brindarte información sobre nuestros deliciosos productos, precios y promociones. 🍰🧁🍪'],
+      i18n: {
+        es: {
+          title: "María",
+          subtitle: "Comienza una conversación. Estoy aquí para ayudarte.",
+          footer: "",
+          getStarted: "Nueva conversación",
+          inputPlaceholder: "Escribe tu pregunta...",
+        },
+      },
+      defaultLanguage: "es",
+      metadata: {
+        platform: "web",
+        userAgent: navigator.userAgent,
+      },
+      loadPreviousSession: true,
+    });
 
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>): void => {
-    setInputMessage(e.target.value);
-  };
+    // Función optimizada para modificar título
+    const modifyTitle = () => {
+      if (titleProcessed) return;
+      
+      const titleElement = document.querySelector(".chat-heading h1");
+      if (titleElement && !titleElement.querySelector("img")) {
+        titleElement.innerHTML = `
+          <img src="/avatar.jpeg" alt="María" style="width:35px;height:35px;border-radius:50%;margin-right:8px" />
+          María
+        `;
+        titleProcessed = true;
+      }
+    };
 
-  const handleToggleChat = (): void => {
-    toggleChatWindow();
-    if (!isOpen && unreadCount > 0) {
-      markMessagesAsRead();
-    }
-  };
+    // Función optimizada para agregar avatares
+    const addBotAvatars = () => {
+      // Procesar inmediatamente sin setTimeout
+      const botMessages = document.querySelectorAll(".chat-message-from-bot:not([data-avatar-added])");
+      
+      botMessages.forEach((msg) => {
+        // Marcar como procesado inmediatamente
+        msg.dataset.avatarAdded = "true";
 
-  return (
-    <div className="fixed bottom-4 right-4 z-50">
-      {/* Chat Window */}
-      {isOpen && (
-        <div className="bg-white rounded-lg shadow-xl w-80 h-96 flex flex-col mb-4 border">
-          {/* Header */}
-          <div className="bg-blue-600 text-white p-4 rounded-t-lg flex justify-between items-center">
-            <h3 className="font-semibold">Chat Assistant</h3>
-            <button
-              onClick={handleToggleChat}
-              className="text-white hover:text-gray-200"
-              aria-label="Cerrar chat"
-            >
-              ✕
-            </button>
-          </div>
+        // Guardar el contenido original del mensaje
+        const originalContent = msg.innerHTML;
 
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {messages.map((message: ChatMessage) => (
-              <div
-                key={message.id}
-                className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`max-w-xs px-3 py-2 rounded-lg ${
-                    message.isUser
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-200 text-gray-800'
-                  }`}
-                >
-                  {message.text}
-                </div>
-              </div>
-            ))}
-            {isLoading && (
-              <div className="flex justify-start">
-                <div className="bg-gray-200 text-gray-800 px-3 py-2 rounded-lg">
-                  Escribiendo...
-                </div>
-              </div>
-            )}
-            {error && (
-              <div className="text-red-500 text-sm text-center">
-                Error: {error}
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
+        // Aplicar estilo flex al mensaje
+        msg.style.cssText = `
+          display: flex !important;
+          align-items: flex-start !important;
+          gap: 8px !important;
+          margin-top: 8px !important;
+          margin-bottom: 8px !important;
+        `;
 
-          {/* Input */}
-          <form onSubmit={handleSendMessage} className="p-4 border-t">
-            <div className="flex space-x-2">
-              <input
-                type="text"
-                value={inputMessage}
-                onChange={handleInputChange}
-                placeholder="Escribe un mensaje..."
-                className="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
-                disabled={isLoading}
-              />
-              <button
-                type="submit"
-                disabled={isLoading || !inputMessage.trim()}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
-              >
-                ➤
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
+        // Crear imagen del avatar
+        const img = document.createElement("img");
+        img.src = "/avatar.jpeg";
+        img.alt = "María";
+        img.className = "bot-avatar";
+        img.style.cssText = `
+          width: 35px;
+          height: 35px;
+          border-radius: 50%;
+          flex-shrink: 0;
+          margin-right: 0;
+        `;
 
-      {/* Toggle Button */}
-      <button
-        onClick={handleToggleChat}
-        className="bg-blue-600 hover:bg-blue-700 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg relative"
-        aria-label="Abrir chat"
-      >
-        💬
-        {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">
-            {unreadCount > 9 ? '9+' : unreadCount}
-          </span>
-        )}
-      </button>
-    </div>
-  );
-};
+        // Crear contenedor para el texto del mensaje
+        const messageContent = document.createElement("div");
+        messageContent.className = "message-content";
+        messageContent.innerHTML = originalContent;
+        messageContent.style.cssText = `
+          flex: 1;
+          word-wrap: break-word;
+        `;
 
-export default ChatWidget;
+        // Limpiar el mensaje y agregar avatar + contenido
+        msg.innerHTML = "";
+        msg.appendChild(img);
+        msg.appendChild(messageContent);
+      });
+    };
+
+    // Observer mejorado con procesamiento más rápido
+    const setupObserver = () => {
+      const chatContainer = document.querySelector("#n8n-chat");
+      if (!chatContainer) {
+        // Reducir el intervalo de reintento
+        setTimeout(setupObserver, 100);
+        return;
+      }
+
+      observer = new MutationObserver((mutations) => {
+        let shouldProcessMessages = false;
+        let shouldProcessTitle = false;
+
+        mutations.forEach((mutation) => {
+          if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
+            mutation.addedNodes.forEach((node) => {
+              if (node.nodeType === Node.ELEMENT_NODE) {
+                // Verificar mensajes del bot
+                if (
+                  node.classList?.contains("chat-message-from-bot") ||
+                  node.querySelector?.(".chat-message-from-bot")
+                ) {
+                  shouldProcessMessages = true;
+                }
+                
+                // Verificar título
+                if (
+                  node.classList?.contains("chat-heading") ||
+                  node.querySelector?.(".chat-heading h1")
+                ) {
+                  shouldProcessTitle = true;
+                }
+              }
+            });
+          }
+        });
+
+        // Procesar inmediatamente cuando se detectan cambios
+        if (shouldProcessMessages) {
+          addBotAvatars();
+        }
+        
+        if (shouldProcessTitle) {
+          modifyTitle();
+        }
+      });
+
+      observer.observe(chatContainer, {
+        childList: true,
+        subtree: true,
+      });
+
+      // Procesar contenido existente inmediatamente
+      addBotAvatars();
+      modifyTitle();
+    };
+
+    // Inicialización más rápida
+    // Reducir el timeout inicial
+    setTimeout(setupObserver, 300);
+
+    // Cleanup
+    return () => {
+      if (observer) {
+        observer.disconnect();
+      }
+    };
+  }, []);
+
+  return <div id="n8n-chat" />;
+}

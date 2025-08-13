@@ -21,7 +21,7 @@ import chatbotReducer from './slices/chatbotSlice';
 const authPersistConfig = {
   key: 'auth',
   storage,
-  whitelist: ['isAuthenticated', 'name', 'token'], // Solo persiste estos campos
+  whitelist: ['isAuthenticated', 'name', 'token', 'id'], // Solo persiste estos campos
 };
 
 // Configuración de persistencia para chatbot (mantienes tu configuración actual)

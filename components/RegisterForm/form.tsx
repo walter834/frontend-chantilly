@@ -50,10 +50,13 @@ export default function Register({
   const {
     departments,
     provinces,
-    districts, // Y este.
+    districts,
     handleDepartmentChange,
     handleProvinceChange,
     handleDistrictChange,
+    getDepartmentName,
+    getProvinceName,
+    getDistrictName,
   } = useUbigeo();
 
   useEffect(() => {
@@ -94,10 +97,21 @@ export default function Register({
     setSubmitSuccess("");
 
     try {
-      console.log("Datos del formulario:", data);
+      console.log("Datos del formulario (códigos):", data);
 
-      const response = await register(data);
+      // ✅ CONVERSIÓN: Convertir códigos a nombres antes de enviar
+      const dataWithNames = {
+        ...data,
+        departamento: getDepartmentName(data.departamento),
+        provincia: getProvinceName(data.provincia),
+        distrito: getDistrictName(data.distrito),
+      };
 
+      console.log("Datos convertidos a nombres:", dataWithNames);
+
+      const response = await register(dataWithNames);
+
+      console.log("Respuesta del servidor:", response);
       console.log("Registro exitoso:", response.message);
       setSubmitSuccess(response.message || "Usuario registrado exitosamente");
 
@@ -349,7 +363,6 @@ export default function Register({
                       form.setValue("distrito", "");
 
                       handleDepartmentChange(value);
-                      // Agregado para sincronizar el hook
                     }}
                     value={field.value}
                   >
@@ -420,7 +433,7 @@ export default function Register({
                   <Select
                     onValueChange={(value) => {
                       field.onChange(value);
-                      handleDistrictChange(value); // ← si quieres guardar en el hook también
+                      handleDistrictChange(value);
                     }}
                     value={field.value}
                   >
