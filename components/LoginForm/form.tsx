@@ -25,10 +25,10 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 interface LoginProps {
   onCloseDialog?: () => void;
-  onOpenRegister?: () => void; // Nueva prop para abrir el register
+  onOpenRegister?: () => void;
 }
 
-export default function Login({ onOpenRegister }: LoginProps) {
+export default function Login({ onCloseDialog, onOpenRegister }: LoginProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -46,16 +46,14 @@ export default function Login({ onOpenRegister }: LoginProps) {
     setIsLoading(true);
     try {
       console.log("Login submitted:", data);
-      // Aquí irían las llamadas a la API de login
       const result = await loginUser({
         email: data.email,
         password: data.password,
       });
-      router.push("/"); // Redireccionar después del login
+      router.push("/");
       toast.success("Usuario registrado");
     } catch (error) {
       console.error("Error en login:", error);
-
       toast.error("Credenciales inválidas. Verifique su email y contraseña.");
     } finally {
       setIsLoading(false);
@@ -69,9 +67,15 @@ export default function Login({ onOpenRegister }: LoginProps) {
       loginWithGoogle();
     } catch (error) {
       console.error("Error en Google Sign In:", error);
-      setIsGoogleLoading(false); // Solo en caso de error
+      setIsGoogleLoading(false);
     }
-    // NO poner finally aquí porque la redirección interrumpe la ejecución
+  };
+
+  // Función para manejar el click en "Olvidó su contraseña"
+  const handleForgotPassword = () => {
+    if (onCloseDialog) {
+      onCloseDialog(); // Cierra el modal
+    }
   };
 
   return (
@@ -89,8 +93,6 @@ export default function Login({ onOpenRegister }: LoginProps) {
       {/* Form */}
       <Form {...form}>
         <form className="p-6 space-y-6 " onSubmit={form.handleSubmit(onSubmit)}>
-          {/* Error general del formulario */}
-
           {/* Email */}
           <FormField
             control={form.control}
@@ -153,6 +155,17 @@ export default function Login({ onOpenRegister }: LoginProps) {
             )}
           />
 
+          {/* Enlace de "Olvidó contraseña" - MODIFICADO */}
+          <div className="text-end -mt-4 mb-4">
+            <Link
+              href="/forgot-password"
+              onClick={handleForgotPassword}
+              className="text-purple-600 hover:text-purple-800 text-sm font-medium"
+            >
+              ¿Olvidó su contraseña?
+            </Link>
+          </div>
+
           {/* Sign In button */}
           <Button
             type="submit"
@@ -208,23 +221,13 @@ export default function Login({ onOpenRegister }: LoginProps) {
             )}
           </Button>
 
-          {/* Forgot password link */}
-          <div className="text-center">
-            <Link
-              href="/forgot-password"
-              className="text-purple-600 hover:text-purple-800 text-sm font-medium"
-            >
-              ¿Olvidó su contraseña?
-            </Link>
-          </div>
-
           {/* Sign up link */}
           <div className="text-center">
             <p className="text-sm text-gray-600">
               ¿No tienes una cuenta?{" "}
               <button
                 type="button"
-                onClick={onOpenRegister} // ahora solo cambia la vista dentro del mismo modal
+                onClick={onOpenRegister}
                 className="text-purple-600 hover:text-purple-800 font-medium"
               >
                 Regístrate aquí
