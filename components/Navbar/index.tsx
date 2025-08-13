@@ -6,6 +6,7 @@ import LoginForm from "../LoginForm";
 import { useAuth } from "@/hooks/useAuth";
 import Shopping from "../Shopping";
 import UserDrop from "../UserDrop";
+import Link from "next/link";
 
 export default function Navbar() {
   const { isAuthenticated } = useAuth();
@@ -13,13 +14,15 @@ export default function Navbar() {
     //fix
     <header className="sticky overflow-x-hidden bg-[#c41d1ada] backdrop-blur-3xl text-white top-0 z-50 flex justify-between items-center px-5 lg:px-10 py-4 w-full lg:min-w-[1024px] gap-12">
       <div className="hidden xl:flex">
-        <Image
-          src="/logo.png"
-          alt="logo"
-          width={180}
-          height={60}
-          className="max-w-[180px]"
-        />
+        <Link href="/">
+          <Image
+            src="/logo.png"
+            alt="logo"
+            width={180}
+            height={60}
+            className="max-w-[180px]"
+          />
+        </Link>
       </div>
       <div className="lg:flex hidden lg:gap-6">
         <nav className="flex flex-row">
@@ -30,7 +33,7 @@ export default function Navbar() {
       </div>
 
       <div className="lg:flex hidden gap-4 ">
-        {isAuthenticated ? <UserDrop/> : <LoginForm />}
+        {isAuthenticated ? <UserDrop /> : <LoginForm />}
 
         <Shopping />
       </div>

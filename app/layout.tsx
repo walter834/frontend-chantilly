@@ -11,6 +11,8 @@ import { store } from "@/store/store";
 import { StoreProvider } from "@/components/Providers";
 import ChatWidget from "@/components/Chatbot";
 
+import ChatBox from "@/components/Chatbot";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -52,7 +54,8 @@ export default function RootLayout({
           <Toaster />
           <CustomOrders />
           <Footer />
-          <ChatWidget />
+         <ChatBox/>
+          
         </StoreProvider>
       </body>
     </html>

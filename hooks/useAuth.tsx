@@ -5,16 +5,15 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/store/store';
 import { loginSuccess, logout } from '@/store/slices/authSlice';
 
-// ✅ CORREGIDA para coincidir con la respuesta de la API
 interface User {
   id?: number;
-  name: string;        // ✅ Cambiado de 'nombres' a 'name'
-  lastname: string;    // ✅ Cambiado de 'apellidos' a 'lastname'
+  name: string;       
+  lastname: string;    
   email: string;
-  id_document_type?: number; // ✅ Cambiado para coincidir con la respuesta
+  id_document_type?: number; 
   document_number?: string;
-  phone?: string;      // ✅ Cambiado de 'celular' a 'phone'
-  address?: string;    // ✅ Cambiado de 'direccion' a 'address'
+  phone?: string;
+  address?: string;    
   deparment?: string;
   province?: string;
   district?: string;
