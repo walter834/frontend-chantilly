@@ -39,9 +39,7 @@ const ShoppingList = () => {
         itemCount: 0
     });
     
-    const { items, total, itemCount } = cart;
-    console.log('cart',items);
-    
+    const { items, total, itemCount } = cart;    
     useEffect(() => {
         const loadCart = () => {
             const savedCart = localStorage.getItem('chantilly-cart');
@@ -132,41 +130,46 @@ const ShoppingList = () => {
                                 )}
                             </div>
                             <div className="ml-4 flex-1 min-w-0">
+                                
                                 <h3 className="font-medium text-black line-clamp-1">{item.product.name}</h3>
-                                    <p className="text-black/60 text-sm mt-1 line-clamp-3">
-                                        Porción: {item.product.portion}
-                                    </p>
-                                    <p className="text-black/60 text-sm mt-1 line-clamp-3">
-                                        Keke: {item.product.cakeFlavorName}
-                                    </p>
-                                    <p className="text-black/60 text-sm mt-1 line-clamp-3">
-                                        Relleno: {item.product.fillingName}
-                                    </p>
-                                    <p className="text-black/60 text-sm mt-1 line-clamp-3">
-                                        Dedicatoria: {item.product.dedication}
-                                    </p>
-                                    <p className="text-black/60 text-sm mt-1 line-clamp-3">
-                                        Fecha de recojo: {item.product.pickupDate}
-                                    </p>
+                                {item.productId.replace(/[^a-zA-Z]/g, '') !== 'accessory' && item.productId.replace(/[^a-zA-Z]/g, '') !== 'bocadito' ? (
+                                        <>
+                                            <p className="text-black/60 text-sm mt-1 line-clamp-3">
+                                                Porción: {item.product.portion || 'No especificado'}
+                                            </p>
+                                            <p className="text-black/60 text-sm mt-1 line-clamp-3">
+                                                Keke: {item.product.cakeFlavorName || 'No especificado'}
+                                            </p>
+                                            <p className="text-black/60 text-sm mt-1 line-clamp-3">
+                                                Relleno: {item.product.fillingName || 'No especificado'}
+                                            </p>
+                                            <p className="text-black/60 text-sm mt-1 line-clamp-3">
+                                                Dedicatoria: {item.product.dedication || 'No especificado'}
+                                            </p>
+                                            <p className="text-black/60 text-sm mt-1 line-clamp-3">
+                                                Fecha de recojo: {item.product.pickupDate}
+                                            </p>
+                                        </>
+                                    ) : null}
                                 <p className="text-black/80 font-medium mt-2">S/ {item.price.toFixed(2)}</p>
                                 
                                 <div className="flex justify-center items-center mt-3">
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-8 w-8 ml-auto text-[#c41c1a] hover:bg-red-500/20"
+                                        className="h-8 w-8 ml-auto text-[#c41c1a] hover:bg-red-500/20 cursor-pointer"
                                         onClick={() => removeFromCart(item.id)}
                                     >
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
-                                    <div className="flex items-center space-x-2 bg-white/10 rounded-lg p-1">
+                                    <div className="flex items-center space-x-2 bg-white/10 p-1">
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="h-8 w-8 text-black hover:bg-black/20"
+                                            className="h-8 w-8 text-white bg-[#c41c1a] hover:bg-[#c41c1a] hover:text-white cursor-pointer rounded-full"
                                             onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
                                         >
-                                            <Minus className="h-3 w-3" />
+                                            <Minus className="h-4 w-4" />
                                         </Button>
                                         <span className="w-6 text-center text-black text-sm font-medium">
                                             {item.quantity}
@@ -174,10 +177,10 @@ const ShoppingList = () => {
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="h-8 w-8 text-black hover:bg-black/20"
+                                            className="h-8 w-8 text-white bg-[#c41c1a] hover:bg-[#c41c1a] hover:text-white cursor-pointer rounded-full"
                                             onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
                                         >
-                                            <Plus className="h-3 w-3" />
+                                            <Plus className="h-4 w-4" />
                                         </Button>
                                     </div>
                                 </div>

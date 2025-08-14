@@ -34,11 +34,12 @@ export default function Shopping() {
         <SheetContent
           side="right"
         >
-          <SheetHeader className="bg-[#c41c1a]">
-            <SheetTitle className="text-white text-center">MI CARRITO</SheetTitle>
-            <SheetDescription ></SheetDescription>
+          <SheetHeader className="bg-white">
+            <SheetTitle className="text-black text-center">MI CARRITO</SheetTitle>
+            <SheetDescription >
+              <ShoppingList />
+            </SheetDescription>
           </SheetHeader>
-          <ShoppingList />
         </SheetContent>
       </Sheet>
     </div>

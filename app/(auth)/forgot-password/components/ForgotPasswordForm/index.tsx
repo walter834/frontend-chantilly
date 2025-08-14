@@ -50,8 +50,9 @@ export default function ForgotPasswordForm({
       if (response.success) {
         setIsSuccess(true);
       }
-    } catch (err: any) {
-      setError(err.message || "Error al enviar el correo de recuperación");
+    } catch (err) {
+      const error = err as Error;
+      setError(error.message || "Error al enviar el correo de recuperación");
     } finally {
       setIsLoading(false);
     }

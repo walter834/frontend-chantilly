@@ -6,12 +6,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/layout/Footer";
 import CustomOrders from "@/components/CustomOrders";
 import { Toaster } from "@/components/ui/sonner";
-import { Provider } from "react-redux";
-import { store } from "@/store/store";
 import { StoreProvider } from "@/components/Providers";
 import ChatWidget from "@/components/Chatbot";
-
-import ChatBox from "@/components/Chatbot";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -54,7 +50,7 @@ export default function RootLayout({
           <Toaster />
           <CustomOrders />
           <Footer />
-         <ChatBox/>
+          <ChatWidget />
           
         </StoreProvider>
       </body>

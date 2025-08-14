@@ -5,7 +5,7 @@ import { createChat } from "@n8n/chat";
 
 export default function N8nChat() {
   useEffect(() => {
-    let observer;
+    let observer: MutationObserver | null = null;
     let titleProcessed = false;
 
     createChat({
@@ -22,9 +22,10 @@ export default function N8nChat() {
           footer: "",
           getStarted: "Nueva conversación",
           inputPlaceholder: "Escribe tu pregunta...",
+          closeButtonTooltip: "Cerrar chat",
         },
       },
-      defaultLanguage: "es",
+      defaultLanguage: "en",
       metadata: {
         platform: "web",
         userAgent: navigator.userAgent,
@@ -49,23 +50,23 @@ export default function N8nChat() {
     // Función optimizada para agregar avatares
     const addBotAvatars = () => {
       // Procesar inmediatamente sin setTimeout
-      const botMessages = document.querySelectorAll(".chat-message-from-bot:not([data-avatar-added])");
+      const botMessages = document.querySelectorAll<HTMLElement>(".chat-message-from-bot:not([data-avatar-added])");
       
-      botMessages.forEach((msg) => {
+      botMessages.forEach((msg: HTMLElement) => {
         // Marcar como procesado inmediatamente
-        msg.dataset.avatarAdded = "true";
+        msg.setAttribute('data-avatar-added', 'true');
 
         // Guardar el contenido original del mensaje
         const originalContent = msg.innerHTML;
 
         // Aplicar estilo flex al mensaje
-        msg.style.cssText = `
+        msg.setAttribute('style', `
           display: flex !important;
           align-items: flex-start !important;
           gap: 8px !important;
           margin-top: 8px !important;
           margin-bottom: 8px !important;
-        `;
+        `);
 
         // Crear imagen del avatar
         const img = document.createElement("img");
@@ -113,18 +114,19 @@ export default function N8nChat() {
           if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
             mutation.addedNodes.forEach((node) => {
               if (node.nodeType === Node.ELEMENT_NODE) {
+                const element = node as HTMLElement;
                 // Verificar mensajes del bot
                 if (
-                  node.classList?.contains("chat-message-from-bot") ||
-                  node.querySelector?.(".chat-message-from-bot")
+                  (element.classList && element.classList.contains("chat-message-from-bot")) ||
+                  (element.querySelector && element.querySelector(".chat-message-from-bot"))
                 ) {
                   shouldProcessMessages = true;
                 }
                 
                 // Verificar título
                 if (
-                  node.classList?.contains("chat-heading") ||
-                  node.querySelector?.(".chat-heading h1")
+                  (element.classList && element.classList.contains("chat-heading")) ||
+                  (element.querySelector && element.querySelector(".chat-heading h1"))
                 ) {
                   shouldProcessTitle = true;
                 }

@@ -24,11 +24,19 @@ export interface ApiProduct {
   id: number;
   short_description: string;
   large_description: string;
-  product_type_id: number;
+  product_type_id: {
+    id: number;
+    name: string;
+    status: number;
+  };
   category_id: number;
   min_price: string;
   max_price: string;
-  theme_id: number;
+  theme_id: {
+    id: number;
+    name: string;
+    image_url: string;
+  };
   image: string;
   status: boolean;
   best_status: boolean;
@@ -36,11 +44,6 @@ export interface ApiProduct {
   category: {
     id: number;
     name: string;
-  };
-  product_type: {
-    id: number;
-    name: string;
-    status: number;
   };
 }
 
@@ -139,15 +142,22 @@ export interface ApiCakeFlavor {
   id: number;
   name: string;
   status: boolean;
-  filling_id: number;
-  filling: ApiCakeFilling;
+  fillings:{
+    id: number;
+    name: string;
+    status: boolean;
+  }[];
 }
 
 export interface TransformedCakeFlavor {
   id: number;
   name: string;
-  fillingId: number;
-  fillingName: string;
+  status: boolean;
+  fillings: {
+    id: number;
+    name: string;
+    status: boolean;
+  }[];
 }
 
 export interface TransformedProduct {
@@ -157,12 +167,10 @@ export interface TransformedProduct {
   price: number;
   originalPrice?: number;
   image: string;
-  category: string;
+  category_id: string;
+  product_type_id: string;
   theme_id?: string;
-  stock: number;
   isBestSeller: boolean;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 export function transformToSlug(linkView: string): string {
@@ -213,6 +221,7 @@ export function transformProductType(apiProductType: ApiProductType): Transforme
 export function transformProduct(apiProduct: ApiProduct): TransformedProduct {
   const minPrice = parseFloat(apiProduct.min_price);
   const maxPrice = parseFloat(apiProduct.max_price);
+  console.log('Product data:', apiProduct.product_type_id.id);
   return {
     id: apiProduct.id,
     name: apiProduct.short_description,
@@ -220,12 +229,10 @@ export function transformProduct(apiProduct: ApiProduct): TransformedProduct {
     price: minPrice,
     originalPrice: maxPrice > minPrice ? maxPrice : undefined,
     image: apiProduct.image,
-    category: apiProduct.product_type_id.toString(),
-    theme_id: apiProduct.theme_id?.id?.toString(),
-    stock: 10,
-    isBestSeller: apiProduct.best_status,
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    category_id: apiProduct.category_id?.toString() || '',
+    product_type_id: apiProduct.product_type_id?.id?.toString() || '',
+    theme_id: apiProduct.theme_id?.id?.toString() || '',
+    isBestSeller: apiProduct.best_status || false,
   };
 
 }
@@ -246,10 +253,13 @@ export function transformProductVariant(apiProductVariant: ApiProductVariant): T
 }
 
 export function transformCakeFlavor(apiCakeFlavor: ApiCakeFlavor): TransformedCakeFlavor {
+  apiCakeFlavor.fillings.map((filling: ApiCakeFilling) => {
+    console.log('filling',filling);
+  });
   return {
     id: apiCakeFlavor.id,
     name: apiCakeFlavor.name,
-    fillingId: apiCakeFlavor.filling_id,
-    fillingName: apiCakeFlavor.filling.name,
+    status: apiCakeFlavor.status,
+    fillings: apiCakeFlavor.fillings,
   };
 }

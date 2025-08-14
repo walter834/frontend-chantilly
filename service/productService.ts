@@ -29,10 +29,15 @@ export async function getProductVariantById(id: string, portion: string): Promis
     if(portion === "Elige una opción"){
       return null;
     }
+
     const endpoint = `${API_ROUTES.PRODUCTS_VARIANT}/${id}?portion_name=${portion}`;
     const { data } = await api.get<ApiProductVariant>(endpoint);
     return transformProductVariant(data);
   } catch (error) {
+    if (error instanceof Error && error.message.includes('404')) {
+      console.log('Product variant not found');
+      return null;
+    }
     console.error('Error fetching product variant by id:', error);
     return null;
   }

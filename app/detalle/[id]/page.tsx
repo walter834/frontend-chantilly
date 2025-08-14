@@ -17,7 +17,6 @@ export default function DetallePage() {
       try {
         setLoading(true);
         const productData = await getProductById(params.id as string);
-        console.log('Product data:', productData);
         if (!productData) {
           throw new Error('Producto no encontrado');
         }
@@ -64,7 +63,6 @@ export default function DetallePage() {
   }
 
   return (
-    console.log('theme_id',product),
     <div className="container mx-auto px-4 py-8">
       <ProductDetail
         id={product.id.toString()}
@@ -73,6 +71,7 @@ export default function DetallePage() {
         originalPrice={product.originalPrice}
         theme={product.theme_id}
         image={product.image}
+        productType={product.product_type_id}
       />
     </div>
   );

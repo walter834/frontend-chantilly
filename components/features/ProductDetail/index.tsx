@@ -13,11 +13,11 @@ interface ProductDetailProps {
   originalPrice?: number;
   theme?: string | null;
   image: string; 
- 
+  productType: string;
 }
 
-const ProductDetail = ({ id, name, price, originalPrice, theme, image}: ProductDetailProps) => {
-console.log('Product detail:', id, name, price, originalPrice, theme, image);
+const ProductDetail = ({ id, name, price, originalPrice, theme, image, productType}: ProductDetailProps) => {
+console.log('Product detail:', id, name, price, originalPrice, theme, image, productType);
   const [cakeFlavors, setCakeFlavors] = useState<TransformedCakeFlavor[]>([]);
   const [selectedCake, setSelectedCake] = useState(''); 
   const [accessories, setAccessories] = useState<TransformedProduct[]>([]);
@@ -27,6 +27,58 @@ console.log('Product detail:', id, name, price, originalPrice, theme, image);
   const [productVariant, setProductVariant] = useState<TransformedProductVariant | null>(null);
   const [priceProduct, setPriceProduct] = useState<string>('0.00');
   const [imageProduct, setImageProduct] = useState<string>('');
+
+  const handleAddToCart = (product: any, isAccessory = false) => {
+    const currentCart = JSON.parse(localStorage.getItem('chantilly-cart') || '{"items":[],"total":0,"itemCount":0}');
+    
+    const productType = isAccessory ? 'accessory' : 'bocadito';
+    const productIdentifier = `${productType}-${product.id}`;
+    
+    const existingItemIndex = currentCart.items.findIndex((item: any) => 
+      item.productId === productIdentifier
+    );
+
+    let updatedItems;
+    
+    if (existingItemIndex !== -1) {
+      updatedItems = [...currentCart.items];
+      updatedItems[existingItemIndex] = {
+        ...updatedItems[existingItemIndex],
+        quantity: updatedItems[existingItemIndex].quantity + 1,
+        price: parseFloat(updatedItems[existingItemIndex].price) + parseFloat(product.price || '0')
+      };
+    } else {
+      const newItem = {
+        id: `${productIdentifier}-${Date.now()}`,
+        productId: productIdentifier,
+        product: {
+          id: product.id,
+          name: product.name,
+          description: `${isAccessory ? 'Accesorio' : 'Bocadito'}: ${product.name}`,
+          price: parseFloat(product.price || '0'),
+          image: product.image,
+          type: productType
+        },
+        quantity: 1,
+        price: parseFloat(product.price || '0')
+      };
+      updatedItems = [...currentCart.items, newItem];
+    }
+    
+    const total = updatedItems.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
+    const itemCount = updatedItems.reduce((sum, item) => sum + item.quantity, 0);
+    
+    const updatedCart = {
+      items: updatedItems,
+      total,
+      itemCount
+    };
+    
+    localStorage.setItem('chantilly-cart', JSON.stringify(updatedCart));
+    window.dispatchEvent(new Event('storage'));
+    
+    alert(existingItemIndex !== -1 ? '¡Cantidad actualizada en el carrito!' : '¡Producto agregado al carrito!');
+  };
 
   const handlePortionChange = async (portion: string) => {
     if (!portion) {
@@ -69,13 +121,12 @@ console.log('Product detail:', id, name, price, originalPrice, theme, image);
     fetchCategoryProducts();
   }, []);
 
-
-
   useEffect(() => {
     const fetchCakeFlavors = async () => {
       try {
         const cakeFlavorResponse = await getCakeFlavors();
         setCakeFlavors(cakeFlavorResponse);
+        setSelectedCake(cakeFlavorResponse[0].name.toString());
       } catch (error) {
         console.error('Error fetching cake flavors:', error);
       }
@@ -138,12 +189,16 @@ console.log('Product detail:', id, name, price, originalPrice, theme, image);
           </div>
           <FormCart 
             productId={id}
+            name={name}
             initialPrice={price}
             productVariant={productVariant}
+            cakeName={selectedCake}
             cakeFlavors={cakeFlavors}
             onPortionChange={handlePortionChange}
             theme={theme}
             imageProduct={imageProduct}
+            initialImage={image}
+            productType={productType}
           />
         </div>
         <div className="lg:col-span-3">
@@ -174,7 +229,10 @@ console.log('Product detail:', id, name, price, originalPrice, theme, image);
                         <div className="font-bold text-[14px]">
                           S/ {accessory.price.toFixed(2)}
                         </div>
-                        <button className="bg-[#c41c1a] text-white text-xs px-2 py-1 rounded cursor-pointer hover:bg-[#a01818] transition-colors">
+                        <button 
+                          onClick={() => handleAddToCart(accessory, true)}
+                          className="bg-[#c41c1a] text-white text-xs px-2 py-1 rounded cursor-pointer hover:bg-[#a01818] transition-colors"
+                        >
                           Agregar
                         </button>
                       </div>
@@ -195,7 +253,7 @@ console.log('Product detail:', id, name, price, originalPrice, theme, image);
             <div className="col-span-full text-center text-gray-500">Cargando bocaditos...</div>
           ) : (
             bocaditos.map((bocadito) => (
-              <div key={bocadito.id} className="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow cursor-pointer">
+              <div key={bocadito.id} className="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow">
                 <div className="aspect-square overflow-hidden rounded-md mb-2">
                   <Image
                     src={bocadito.image}
@@ -208,7 +266,7 @@ console.log('Product detail:', id, name, price, originalPrice, theme, image);
                 <h3 className="text-sm font-medium text-gray-800 mb-1 line-clamp-2">
                   {bocadito.name}
                 </h3>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-bold text-[#c41c1a]">
                     S/ {bocadito.price.toFixed(2)}
                   </span>
@@ -218,6 +276,15 @@ console.log('Product detail:', id, name, price, originalPrice, theme, image);
                     </span>
                   )}
                 </div>
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAddToCart(bocadito, false);
+                  }}
+                  className="w-full bg-[#c41c1a] text-white text-sm px-2 py-1 rounded cursor-pointer hover:bg-[#a01818] transition-colors"
+                >
+                  Agregar
+                </button>
               </div>
             ))
           )}

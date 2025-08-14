@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import ResetForm from "./ResetForm";
 
 export default function Reset() {

@@ -13,8 +13,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Suspense } from "react";
-
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { ResetPasswordSchema } from "@/lib/validators/auth";
