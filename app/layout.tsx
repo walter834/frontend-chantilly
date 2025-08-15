@@ -51,7 +51,6 @@ export default function RootLayout({
           <CustomOrders />
           <Footer />
           <ChatWidget />
-          
         </StoreProvider>
       </body>
     </html>

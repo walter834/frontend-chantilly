@@ -37,6 +37,8 @@ export default function HomePageContent() {
           searchTerm,
           '1'
         );
+
+        console.log('result',result);
         setProducts(result.products);
         setPagination({
           currentPage: result.pagination.currentPage,

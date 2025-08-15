@@ -24,7 +24,7 @@ export default function Shopping() {
   }, [width]); */
 
   return (
-    <div className="">
+    <div className="z-50">
       <Sheet>
         <SheetTrigger asChild>
           <Button variant="ghost" className="cursor-pointer">
@@ -37,9 +37,9 @@ export default function Shopping() {
           <SheetHeader className="bg-white">
             <SheetTitle className="text-black text-center">MI CARRITO</SheetTitle>
             <SheetDescription >
-              <ShoppingList />
             </SheetDescription>
           </SheetHeader>
+          <ShoppingList />
         </SheetContent>
       </Sheet>
     </div>

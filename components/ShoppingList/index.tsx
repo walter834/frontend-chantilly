@@ -189,8 +189,7 @@ const ShoppingList = () => {
                     ))}
                 </div>
             </div>
-            
-            <div className="p-4 border-t border-black">
+            <div className="p-4 pb-22 border-t border-black">
                 <div className="flex justify-between items-center mb-4">
                     <span className="text-black">
                         Total ({itemCount} {itemCount === 1 ? 'producto' : 'productos'})
