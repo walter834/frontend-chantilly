@@ -15,6 +15,7 @@ import {
 import storage from 'redux-persist/lib/storage';
 
 import authReducer from "./slices/authSlice";
+import localSlice from "./slices/localSlice";
 import chatbotReducer from './slices/chatbotSlice';
 
 // Configuración de persistencia para auth
@@ -31,14 +32,24 @@ const chatbotPersistConfig = {
   whitelist: ['messages', 'unreadCount'], // solo persiste estos campos
 };
 
+// Configuración de persistencia para locals (opcional, solo si quieres cache)
+const localPersistConfig = {
+  key: 'local',
+  storage,
+  whitelist: ['currentLocation'], // Solo persistir la ubicación actual
+  blacklist: ['loading', 'error'], // No persistir estados temporales
+};
+
 // Crear los reducers persistidos
 const persistedAuthReducer = persistReducer(authPersistConfig, authReducer);
 const persistedChatbotReducer = persistReducer(chatbotPersistConfig, chatbotReducer);
+const persistedLocalReducer = persistReducer(localPersistConfig, localSlice);
 
 export const store = configureStore({
   reducer: {
     auth: persistedAuthReducer,        // Ahora también persistido
-    chatbot: persistedChatbotReducer,  // Tu configuración actual
+    chatbot: persistedChatbotReducer, 
+    local: persistedLocalReducer // Tu configuración actual
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
