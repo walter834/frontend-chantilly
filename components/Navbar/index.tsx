@@ -18,9 +18,9 @@ export default function Navbar() {
           <Image
             src="/logo.png"
             alt="logo"
-            width={180}
-            height={60}
-            className="max-w-[180px]"
+            width={320}
+            height={45}
+            className="max-w-[320px]"
           />
         </Link>
       </div>
