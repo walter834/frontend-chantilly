@@ -1,8 +1,9 @@
+"use client"
 import React from "react";
 import ProfileUpdateForm from "../components/ProfileUpdateForm";
 import { useAuth } from "@/hooks/useAuth";
-import { useParams } from "next/navigation";
-import { useRouter } from "next/router";
+import { useParams,useRouter } from "next/navigation";
+
 
 export default function Profile() {
   const { name, isAuthenticated } = useAuth();
