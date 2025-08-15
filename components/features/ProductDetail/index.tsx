@@ -2,8 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { capitalizeFirstLetter } from '@/lib/utils';
-import { fetchProducts, getCakeFlavors, getProductVariantById } from '@/service/productService';
-import { TransformedProduct, TransformedProductVariant, TransformedCakeFlavor } from '@/types/api';
+import { fetchAccessories, fetchProducts, getCakeFlavors, getProductVariantById } from '@/service/productService';
+import { TransformedProduct, TransformedProductVariant, TransformedCakeFlavor, TransformedProductAccessory } from '@/types/api';
 import FormCart from '@/components/formCart';
 
 interface ProductDetailProps {
@@ -14,27 +14,33 @@ interface ProductDetailProps {
   theme?: string | null;
   image: string; 
   productType: string;
+  description: string;
 }
 
-const ProductDetail = ({ id, name, price, originalPrice, theme, image, productType}: ProductDetailProps) => {
+const ProductDetail = ({ id, name, price, originalPrice, theme, image, productType, description}: ProductDetailProps) => {
 console.log('Product detail:', id, name, price, originalPrice, theme, image, productType);
   const [cakeFlavors, setCakeFlavors] = useState<TransformedCakeFlavor[]>([]);
   const [selectedCake, setSelectedCake] = useState(''); 
-  const [accessories, setAccessories] = useState<TransformedProduct[]>([]);
-  const [bocaditos, setBocaditos] = useState<TransformedProduct[]>([]);
+  const [accessories, setAccessories] = useState<TransformedProductAccessory[]>([]);  const [bocaditos, setBocaditos] = useState<TransformedProduct[]>([]);
   const [loadingAccessories, setLoadingAccessories] = useState(true);
   const [loadingBocaditos, setLoadingBocaditos] = useState(true);
   const [productVariant, setProductVariant] = useState<TransformedProductVariant | null>(null);
-  const [priceProduct, setPriceProduct] = useState<string>('0.00');
   const [imageProduct, setImageProduct] = useState<string>('');
+  
+  // Cart item shape stored in localStorage
+  interface LocalCartItem {
+    productId: string;
+    product: { id: string | number; name: string; description: string; price: number; image: string; type: string };
+    quantity: number;
+    price: number | string;
+  }
 
-  const handleAddToCart = (product: any, isAccessory = false) => {
+  const handleAddToCart = (product: TransformedProduct | TransformedProductAccessory, isAccessory = false) => {
     const currentCart = JSON.parse(localStorage.getItem('chantilly-cart') || '{"items":[],"total":0,"itemCount":0}');
-    
     const productType = isAccessory ? 'accessory' : 'bocadito';
     const productIdentifier = `${productType}-${product.id}`;
     
-    const existingItemIndex = currentCart.items.findIndex((item: any) => 
+    const existingItemIndex = currentCart.items.findIndex((item: LocalCartItem) => 
       item.productId === productIdentifier
     );
 
@@ -45,27 +51,29 @@ console.log('Product detail:', id, name, price, originalPrice, theme, image, pro
       updatedItems[existingItemIndex] = {
         ...updatedItems[existingItemIndex],
         quantity: updatedItems[existingItemIndex].quantity + 1,
-        price: parseFloat(updatedItems[existingItemIndex].price) + parseFloat(product.price || '0')
+        price: parseFloat(String(updatedItems[existingItemIndex].price)) + (isAccessory ? parseFloat((product as TransformedProductAccessory).max_price) : (product as TransformedProduct).price)
       };
     } else {
+      const unitPrice = isAccessory ? parseFloat((product as TransformedProductAccessory).max_price) : (product as TransformedProduct).price;
+      const nameText = isAccessory ? (product as TransformedProductAccessory).short_description : (product as TransformedProduct).name;
       const newItem = {
         id: `${productIdentifier}-${Date.now()}`,
         productId: productIdentifier,
         product: {
           id: product.id,
-          name: product.name,
-          description: `${isAccessory ? 'Accesorio' : 'Bocadito'}: ${product.name}`,
-          price: parseFloat(product.price || '0'),
+          name: nameText,
+          description: `${isAccessory ? 'Accesorio' : 'Bocadito'}: ${nameText}`,
+          price: unitPrice,
           image: product.image,
           type: productType
         },
         quantity: 1,
-        price: parseFloat(product.price || '0')
+        price: unitPrice
       };
       updatedItems = [...currentCart.items, newItem];
     }
     
-    const total = updatedItems.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
+    const total = updatedItems.reduce((sum: number, item: LocalCartItem) => sum + (Number(item.price) * item.quantity), 0);
     const itemCount = updatedItems.reduce((sum, item) => sum + item.quantity, 0);
     
     const updatedCart = {
@@ -73,16 +81,17 @@ console.log('Product detail:', id, name, price, originalPrice, theme, image, pro
       total,
       itemCount
     };
-    
+
     localStorage.setItem('chantilly-cart', JSON.stringify(updatedCart));
-    window.dispatchEvent(new Event('storage'));
-    
+/*     window.dispatchEvent(new Event('storage'));
+ */    window.dispatchEvent(new Event('chantilly-cart-updated'));
     alert(existingItemIndex !== -1 ? '¡Cantidad actualizada en el carrito!' : '¡Producto agregado al carrito!');
+
   };
 
   const handlePortionChange = async (portion: string) => {
     if (!portion) {
-      setPriceProduct('0.00');
+      // reset image when no portion
       setImageProduct(image);
       setProductVariant(null);
       return;
@@ -91,12 +100,10 @@ console.log('Product detail:', id, name, price, originalPrice, theme, image, pro
       const variant = await getProductVariantById(id, portion);
       if (variant) {
         setProductVariant(variant);
-        setPriceProduct(variant.price);
         setImageProduct(variant.image);
       }
     } catch (error) {
       console.error('Error fetching product variant:', error);
-      setPriceProduct(price.toFixed(2));
       setImageProduct(image);
     }
   };
@@ -104,8 +111,9 @@ console.log('Product detail:', id, name, price, originalPrice, theme, image, pro
   useEffect(() => {
     const fetchCategoryProducts = async () => {
       try {
-        const accessoriesResponse = await fetchProducts(1, 5);
-        setAccessories(accessoriesResponse.products.slice(0, 8));
+        const accessoriesResponse = await fetchAccessories();
+        console.log('accessoriesResponse',accessoriesResponse);
+        setAccessories(accessoriesResponse);
         setLoadingAccessories(false);
 
         const bocaditosResponse = await fetchProducts(1, 4);
@@ -177,13 +185,13 @@ console.log('Product detail:', id, name, price, originalPrice, theme, image, pro
                 </span>
                 {originalPrice && (
                   <span className="text-2xl font-bold text-[#c41c1a]">
-                    S/ {originalPrice.toFixed(2)}
+                   - S/ {originalPrice.toFixed(2)}
                   </span>
                 )}
               </div>
             </div>
-            <p className="text-sm text-black mb-4">
-              {capitalizeFirstLetter(name)}<br />
+            <p className="text-sm text-black mb-4 text-[15px]">
+              {capitalizeFirstLetter(description)}<br />
               <span className="text-[#c41c1a]"></span> Tiempo elaboración: - horas
             </p>
           </div>
@@ -215,7 +223,7 @@ console.log('Product detail:', id, name, price, originalPrice, theme, image, pro
                         {accessory.image && (
                           <Image
                             src={accessory.image}
-                            alt={accessory.name}
+                            alt={accessory.short_description}
                             width={128}
                             height={128}
                             className="w-full h-full object-cover"
@@ -223,11 +231,11 @@ console.log('Product detail:', id, name, price, originalPrice, theme, image, pro
                         )}
                       </div>
                       <p className="text-sm text-[#c41c1a] font-bold text-center">
-                        {accessory.name}
+                        {accessory.short_description}
                       </p>
                       <div className="flex items-center gap-2 justify-center">
                         <div className="font-bold text-[14px]">
-                          S/ {accessory.price.toFixed(2)}
+                          S/ {parseInt(accessory.max_price).toFixed(2)}
                         </div>
                         <button 
                           onClick={() => handleAddToCart(accessory, true)}

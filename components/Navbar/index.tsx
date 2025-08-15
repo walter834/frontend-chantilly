@@ -35,7 +35,7 @@ export default function Navbar() {
       <div className="lg:flex hidden gap-4 ">
         {isAuthenticated ? <UserDrop /> : <LoginForm />}
 
-        <Shopping />
+        <Shopping showCount={true}/>
       </div>
 
       <div className="flex justify-between  w-full items-center lg:hidden">
@@ -43,7 +43,7 @@ export default function Navbar() {
 
         <div className="flex gap-1 items-center">
           <LoginForm />
-          <Shopping />
+          <Shopping showCount={true}/>
         </div>
       </div>
     </header>

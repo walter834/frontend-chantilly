@@ -67,6 +67,7 @@ export default function DetallePage() {
       <ProductDetail
         id={product.id.toString()}
         name={product.name}
+        description={product.description}
         price={product.price}
         originalPrice={product.originalPrice}
         theme={product.theme_id}

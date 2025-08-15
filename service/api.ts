@@ -6,6 +6,7 @@ export const API_ROUTES = {
   PAGES: '/pages',
   THEMES: '/theme',
   PRODUCTS: '/products',
+  ACCESSORIES: '/products-accessories',
   PRODUCT_TYPES: '/product-types',
   CATEGORIES: '/categories',
   PRODUCTS_VARIANT: '/products-variant',

@@ -5,12 +5,15 @@ import {
   ApiProductsResponse, 
   ApiProductVariant, 
   ApiCakeFlavor, 
+  ApiProductAccessory,
   TransformedProduct, 
+  TransformedProductAccessory,
   TransformedProductVariant, 
   TransformedCakeFlavor, 
   transformProduct, 
   transformProductVariant, 
-  transformCakeFlavor 
+  transformCakeFlavor,
+  transformProductAccessory 
 } from '@/types/api';
 
 export async function getProductById(id: string): Promise<TransformedProduct | null> {
@@ -179,6 +182,24 @@ export async function fetchProducts(
         hasPrevPage: false,
       },
     };
+  }
+}
+
+export async function fetchAccessories(): Promise<TransformedProductAccessory[]> {
+  try {
+    const endpoint = `${API_ROUTES.ACCESSORIES}`;
+    const response = await api.get<{ accesorios: ApiProductAccessory[] }>(endpoint);
+    console.log('API Response:', response);
+    
+    if (response.data && Array.isArray(response.data.accesorios)) {
+      return response.data.accesorios.map(transformProductAccessory);
+    }
+    
+    console.warn('Unexpected API response format:', response);
+    return [];
+  } catch (error) {
+    console.error('Error fetching accessories:', error);
+    return [];
   }
 }
 

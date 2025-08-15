@@ -47,6 +47,17 @@ export interface ApiProduct {
   };
 }
 
+export interface ApiProductAccessory {
+  id: number;
+  short_description: string;
+  large_description: string;
+  min_price: string;
+  max_price: string;
+  image: string;
+  status: boolean;
+  best_status: boolean
+}
+
 export interface ApiProductVariant {
   data: {
     0: {
@@ -173,6 +184,17 @@ export interface TransformedProduct {
   isBestSeller: boolean;
 }
 
+export interface TransformedProductAccessory {
+  id: number;
+  short_description: string;
+  large_description: string;
+  min_price: string;
+  max_price: string;
+  image: string;
+  status: boolean;
+  best_status: boolean;
+}
+
 export function transformToSlug(linkView: string): string {
   return linkView
     .toLowerCase()
@@ -235,6 +257,21 @@ export function transformProduct(apiProduct: ApiProduct): TransformedProduct {
     isBestSeller: apiProduct.best_status || false,
   };
 
+}
+
+export function transformProductAccessory(apiProductAccessory: ApiProductAccessory): TransformedProductAccessory {
+  const minPrice = parseFloat(apiProductAccessory.min_price);
+  const maxPrice = parseFloat(apiProductAccessory.max_price);
+  return {
+    id: apiProductAccessory.id,
+    short_description: apiProductAccessory.short_description,
+    large_description: apiProductAccessory.large_description,
+    min_price: minPrice.toString(),
+    max_price: maxPrice.toString(),
+    image: apiProductAccessory.image,
+    status: apiProductAccessory.status,
+    best_status: apiProductAccessory.best_status,
+  };
 }
 
 export function transformProductVariant(apiProductVariant: ApiProductVariant): TransformedProductVariant {

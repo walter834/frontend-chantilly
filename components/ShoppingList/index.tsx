@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import Shopping from '../Shopping';
 
 interface CartItem {
     id: string;
@@ -92,12 +93,13 @@ const ShoppingList = () => {
         const updatedCart: Cart = { items: [], total: 0, itemCount: 0 };
         localStorage.setItem('chantilly-cart', JSON.stringify(updatedCart));
         setCart(updatedCart);
-        window.dispatchEvent(new Event('storage'));
+        window.dispatchEvent(new Event('chantilly-cart-updated'));
     };
     
     const handleQuantityChange = (itemId: string, newQuantity: number) => {
         if (newQuantity < 1) return;
         updateQuantity(itemId, newQuantity);
+        window.dispatchEvent(new Event('chantilly-cart-updated'));
     };
 
     if (items.length === 0) {

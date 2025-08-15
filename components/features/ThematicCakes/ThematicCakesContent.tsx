@@ -1,4 +1,4 @@
-'use client';
+/* 'use client';
 import React, { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import ProductGrid from '@/components/features/ProductGrid';
@@ -114,3 +114,4 @@ export default function ThematicCakes() {
     </div>
   );
 }
+ */

@@ -32,20 +32,29 @@ const FormCart: React.FC<FormCartProps> = ({
 }) => {
   const [selectedPortion, setSelectedPortion] = useState('');
   const [selectedCake, setSelectedCake] = useState('');
-  const [selectedCakeName, setSelectedCakeName] = useState('');
   const [selectedFilling, setSelectedFilling] = useState('');
   const [fillings, setFillings] = useState<Array<{id: number, name: string, status: boolean}>>([]);
   const [pickupDate, setPickupDate] = useState('');
   const [dedication, setDedication] = useState('');
+
+  // Cart item shape used in localStorage
+  interface LocalCartItem {
+    productId: string;
+    product: {
+      portion?: string;
+      cakeFlavor?: string;
+      fillingName?: string;
+    };
+    price: number | string;
+    quantity: number;
+  }
 
   function arrayDataToCart(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     
     const currentCart = JSON.parse(localStorage.getItem('chantilly-cart') || '{"items":[],"total":0,"itemCount":0}');
     
-    const productIdentifier = `${productId}-${selectedPortion}-${selectedCake}-${selectedFilling}`;
-    
-    const existingItemIndex = currentCart.items.findIndex((item: any) => 
+    const existingItemIndex = currentCart.items.findIndex((item: LocalCartItem) => 
       item.productId === productId && 
       item.product.portion === selectedPortion &&
       item.product.cakeFlavor === selectedCake &&
@@ -95,7 +104,7 @@ const FormCart: React.FC<FormCartProps> = ({
     };
     
     localStorage.setItem('chantilly-cart', JSON.stringify(updatedCart));
-    window.dispatchEvent(new Event('storage'));
+    window.dispatchEvent(new Event('chantilly-cart-updated'));
     
     console.log('Carrito actualizado:', updatedCart);
     alert(existingItemIndex !== -1 ? '¡Cantidad actualizada en el carrito!' : '¡Producto agregado al carrito!');
@@ -214,7 +223,7 @@ const FormCart: React.FC<FormCartProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center gap-4">
         <div className="text-3xl font-bold text-[#c41c1a] sm:w-32 sm:flex-shrink-0 text-center sm:text-left">
           S/
-          {productType === '3' ? (
+          {productType === '3' || productType === '4' ? (
             initialPrice.toFixed(2)
           ) : selectedPortion && productVariant ? productVariant.price : '0.00'}
         </div>
