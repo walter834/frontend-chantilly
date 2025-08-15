@@ -53,6 +53,7 @@ export default function ProductGrid({
           key={product.id}
           id={product.id.toString()}
           name={product.name}
+          description={product.description}
           price={product.price}
           originalPrice={product.originalPrice}
           image={product.image}

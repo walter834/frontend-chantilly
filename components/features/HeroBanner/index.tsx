@@ -34,13 +34,26 @@ export default function HeroBanner({ slides, className = '' }: HeroBannerProps) 
       >
         {slides.map((slide) => (
           <SwiperSlide key={slide.id}>
-            <Image 
-              src={slide.image} 
-              alt={slide.title} 
-              width={1200}
-              height={600}
-              className="w-full h-[400px] md:h-[500px] lg:h-[600px] object-cover" 
-            />
+            <div className="relative w-full h-[250px] xs:h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] xl:h-[700px] 2xl:h-[800px]">
+              <Image 
+                src={slide.image} 
+                alt={slide.title}
+                fill
+                sizes="(max-width: 380px) 100vw,
+                       (max-width: 640px) 100vw,
+                       (max-width: 768px) 100vw,
+                       (max-width: 1024px) 100vw,
+                       100vw"
+                priority={slide.id === '1'}
+                quality={100}
+                className="w-full h-full object-cover"
+                style={{
+                  objectPosition: 'center',
+                  objectFit: 'cover',
+                  maxWidth: '100%'
+                }}
+              />
+            </div>
           </SwiperSlide>
         ))}
       </Swiper>

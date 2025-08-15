@@ -66,6 +66,7 @@ export default function N8nChat() {
           gap: 8px !important;
           margin-top: 8px !important;
           margin-bottom: 8px !important;
+          z-index: 1000 !important;
         `);
 
         // Crear imagen del avatar

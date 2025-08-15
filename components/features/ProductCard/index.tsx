@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 interface ProductCardProps {
   id: string;
   name: string;
+  description: string;
   price: number;
   originalPrice?: number;
   image: string;
@@ -14,6 +15,7 @@ interface ProductCardProps {
 export default function ProductCard({
   id,
   name,
+  description,
   price,
   originalPrice,
   image
@@ -40,7 +42,7 @@ export default function ProductCard({
       <div className="space-y-2">
         <h3 className="font-semibold text-[#c41c1a] text-lg">{name}</h3>
         
-        <p className="text-gray-600 text-sm">{name}</p>
+        <p className="text-black font-normal text-sm">{description}</p>
 
         <div className="flex items-center justify-center space-x-2">
           <span className="text-lg font-bold text-gray-900">S/ {price.toFixed(2)}</span>
