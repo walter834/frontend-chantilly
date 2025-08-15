@@ -42,7 +42,7 @@ export default function Navbar() {
         <NavToggle />
 
         <div className="flex gap-1 items-center">
-          <LoginForm />
+          {isAuthenticated ? <UserDrop /> : <LoginForm />}
           <Shopping />
         </div>
       </div>

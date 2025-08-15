@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,7 +12,7 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,75 +23,63 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
 
 import { useAuth } from "@/hooks/useAuth";
+import { CircleUser, LogOut, ShoppingBasket, Watch } from "lucide-react";
+import Link from "next/link";
 
 export default function UserDrop() {
-  const { name, isAuthenticated, logoutUser } = useAuth();
-  
+  const { name, logoutUser } = useAuth();
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost">{name}</Button>
+        <Button
+          variant="ghost"
+          className="border-2 border-yellow-300 text-yellow-300 rounded-full w-[40px] h-[40px] hover:bg-yellow-300 hover:text-red-800"
+        >
+          {name}
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="start">
-        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+        <DropdownMenuLabel>Mi cuenta</DropdownMenuLabel>
         <DropdownMenuGroup>
-          <DropdownMenuItem>
-            Profile
-            <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            Billing
-            <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            Settings
-            <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            Keyboard shortcuts
-            <DropdownMenuShortcut>⌘K</DropdownMenuShortcut>
-          </DropdownMenuItem>
+          <Link href="/profile">
+            <DropdownMenuItem>
+              Perfil
+              <DropdownMenuShortcut>
+                <CircleUser />
+              </DropdownMenuShortcut>
+            </DropdownMenuItem>
+          </Link>
+          <Link href="/profile">
+            <DropdownMenuItem>
+              Mis compras
+              <DropdownMenuShortcut>
+                <ShoppingBasket />
+              </DropdownMenuShortcut>
+            </DropdownMenuItem>
+          </Link>
         </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuItem>Team</DropdownMenuItem>
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger>Invite users</DropdownMenuSubTrigger>
-            <DropdownMenuPortal>
-              <DropdownMenuSubContent>
-                <DropdownMenuItem>Email</DropdownMenuItem>
-                <DropdownMenuItem>Message</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>More...</DropdownMenuItem>
-              </DropdownMenuSubContent>
-            </DropdownMenuPortal>
-          </DropdownMenuSub>
-          <DropdownMenuItem>
-            New Team
-            <DropdownMenuShortcut>⌘+T</DropdownMenuShortcut>
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem>GitHub</DropdownMenuItem>
-        <DropdownMenuItem>Support</DropdownMenuItem>
-        <DropdownMenuItem disabled>API</DropdownMenuItem>
+
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <div className="w-full cursor-pointer px-2 py-1 rounded-md hover:bg-red-500 hover:text-white transition-colors flex items-center justify-between">
-                Salir
-                <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
+              <div className="w-full text-sm cursor-pointer px-2 py-1 rounded-md hover:text-red-500  transition-colors flex items-center justify-between">
+                Cerrar sesión
+                <DropdownMenuShortcut>
+                  <LogOut size={14} />
+                </DropdownMenuShortcut>
               </div>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  ¿Estás seguro de que quieres cerrar sesión? Tendrás que iniciar sesión nuevamente para acceder a tu cuenta.
+                  ¿Estás seguro de que quieres cerrar sesión? Tendrás que
+                  iniciar sesión nuevamente para acceder a tu cuenta.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

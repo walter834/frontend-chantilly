@@ -25,11 +25,11 @@ export default function LocalCard({ local }: LocalCardProps) {
     <div className="flex items-center justify-center p-4">
       <div className="relative group">
         {/* Gradient border effect */}
-        <div
+        {/* <div
           className="absolute -inset-1 bg-gradient-to-r from-pink-200 via-purple-200 to-pink-200 rounded-xl blur-sm opacity-75 
                         group-hover:-inset-2 group-hover:from-pink-300 group-hover:via-purple-300 group-hover:to-pink-300 group-hover:opacity-90 
                         transition-all duration-300 ease-in-out"
-        ></div>
+        ></div> */}
 
         {/* Main card */}
         <Card className="relative bg-white w-full max-w-md p-0 transition-transform duration-300 group-hover:scale-[1.02]">
@@ -38,7 +38,7 @@ export default function LocalCard({ local }: LocalCardProps) {
             alt={local.name}
             width={460}
             height={280}
-            className="w-full h-auto object-cover rounded-t-xl max-h-[280px] aspect-video"
+            className="w-full h-auto object-cover rounded-t-xl max-h-[280px] aspect-video "
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               target.src = "/avatar.jpeg"; // Imagen por defecto

@@ -478,5 +478,20 @@ export const ResetPassword = async (resetData: {
   }
 };
 
+export const updateProfile = async (data: any) => {
+  try {
+    const response = await api.put(`/customers/${data.id}`, data);
+    return {
+      success: true,
+      message: response.data.message,
+    };
+  } catch (error: any) {
+    throw {
+      success: false,
+      message: error.response?.data?.message || "Error al actualizar perfil",
+    };
+  }
+};
+
 // Tipos para exportar
 export type { User, LoginCredentials, RegisterFormData };

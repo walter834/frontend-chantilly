@@ -4,13 +4,13 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 // Interfaces - CORREGIDAS para coincidir con la respuesta de la API
 interface User {
   id?: number;
-  name: string;        // ✅ Cambiado de 'nombres' a 'name'
-  lastname: string;    // ✅ Cambiado de 'apellidos' a 'lastname'
+  name: string; // ✅ Cambiado de 'nombres' a 'name'
+  lastname: string; // ✅ Cambiado de 'apellidos' a 'lastname'
   email: string;
   id_document_type?: number; // ✅ Cambiado para coincidir con la respuesta
   document_number?: string;
-  phone?: string;      // ✅ Cambiado de 'celular' a 'phone'
-  address?: string;    // ✅ Cambiado de 'direccion' a 'address'
+  phone?: string; // ✅ Cambiado de 'celular' a 'phone'
+  address?: string; // ✅ Cambiado de 'direccion' a 'address'
   deparment?: string;
   province?: string;
   district?: string;
@@ -30,13 +30,15 @@ interface LoginPayload {
 }
 
 // Función helper para extraer el nombre completo del usuario - CORREGIDA
+
 const extractUserName = (user: User): string => {
-  const firstName = user.name?.trim() || '';      // ✅ Cambiado de 'nombres' a 'name'
-  const lastName = user.lastname?.trim() || '';   // ✅ Cambiado de 'apellidos' a 'lastname'
-  const fullName = `${firstName} ${lastName}`.trim();
-  
-  // Si no hay nombres/apellidos, usar la parte antes del @ del email
-  return fullName || user.email.split('@')[0];
+  const firstNameInitial = user.name?.trim().charAt(0).toUpperCase() || "";
+  const lastNameInitial = user.lastname?.trim().charAt(0).toUpperCase() || "";
+
+  const initials = `${firstNameInitial}${lastNameInitial}`;
+
+  // Si no hay nombre/apellido, tomar primera letra antes del @
+  return initials || user.email.charAt(0).toUpperCase();
 };
 
 // Estado inicial - Redux Persist se encarga de restaurar desde localStorage
@@ -57,7 +59,7 @@ export const authSlice = createSlice({
       state.token = action.payload.token;
       // Redux Persist automáticamente guarda esto en localStorage
     },
-    
+
     // Acción para logout
     logout: (state) => {
       state.isAuthenticated = false;
@@ -65,18 +67,19 @@ export const authSlice = createSlice({
       state.token = null;
       // Redux Persist automáticamente limpia localStorage
     },
-    
+
     // Acción para actualizar solo el nombre (si necesitas)
     updateUserName: (state, action: PayloadAction<string>) => {
       state.name = action.payload;
     },
-    
+
     // Acción para actualizar solo el token (si necesitas)
     updateToken: (state, action: PayloadAction<string>) => {
       state.token = action.payload;
-    }
+    },
   },
 });
 
-export const { loginSuccess, logout, updateUserName, updateToken } = authSlice.actions;
+export const { loginSuccess, logout, updateUserName, updateToken } =
+  authSlice.actions;
 export default authSlice.reducer;
