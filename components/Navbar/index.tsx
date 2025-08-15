@@ -42,8 +42,8 @@ export default function Navbar() {
         <NavToggle />
 
         <div className="flex gap-1 items-center">
-          <LoginForm />
-          <Shopping showCount={true}/>
+          {isAuthenticated ? <UserDrop /> : <LoginForm />}
+          <Shopping showCount= {true}/>
         </div>
       </div>
     </header>

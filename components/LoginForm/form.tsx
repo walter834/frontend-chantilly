@@ -20,6 +20,7 @@ import { loginSchema } from "@/lib/validators/auth";
 import { loginUser, loginWithGoogle } from "@/service/auth/authService";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import Image from "next/image";
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
@@ -79,16 +80,8 @@ export default function Login({ onCloseDialog, onOpenRegister }: LoginProps) {
   };
 
   return (
-    <div className="w-full  justify-center  overflow-hidden">
-      {/* Header */}
-      <div className="bg-red-600 text-white px-6 py-4 -mt-2">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold italic">La Casa del Chantilly</h1>
-          <div className="bg-yellow-400 p-2 rounded">
-            <Home className="h-6 w-6 text-red-600" />
-          </div>
-        </div>
-      </div>
+    <div className="w-full overflow-hidden">
+      
 
       {/* Form */}
       <Form {...form}>

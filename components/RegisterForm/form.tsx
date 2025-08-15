@@ -31,11 +31,12 @@ type FormData = z.infer<typeof registerSchema>;
 interface RegisterProps {
   onBackToLogin?: () => void;
   onCloseDialog?: () => void;
+  onGoToLogin?: () => void;
 }
 
 export default function Register({
   onBackToLogin,
-  onCloseDialog,
+  onGoToLogin
 }: RegisterProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -117,17 +118,18 @@ export default function Register({
 
       // Esperar un poco antes de cerrar para mostrar el mensaje de éxito
       setTimeout(() => {
-        onCloseDialog?.();
-      }, 2000);
+        onGoToLogin?.();
+      }, 1000);
     } catch (error: unknown) {
       console.error("Error completo:", error);
 
       let errorMessage = "Error al registrar usuario";
 
-      if (error && typeof error === 'object') {
+      if (error && typeof error === "object") {
         const err = error as { status?: number; message?: string };
         if (err.status === 422) {
-          errorMessage = err.message || "Error de validación. Revise los datos ingresados.";
+          errorMessage =
+            err.message || "Error de validación. Revise los datos ingresados.";
         } else if (err.status === 409) {
           errorMessage = "El email o número de documento ya están registrados.";
         } else if (err.status === 400) {
@@ -145,16 +147,6 @@ export default function Register({
 
   return (
     <div className="w-full rounded-lg overflow-hidden">
-      {/* Header */}
-      <div className="bg-red-600 text-white px-6 py-4 -mt-2">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold italic">La Casa del Chantilly</h1>
-          <div className="bg-yellow-400 p-2 rounded">
-            <Home className="h-6 w-6 text-red-600" />
-          </div>
-        </div>
-      </div>
-
       {/* Form */}
       <Form {...form}>
         <form
@@ -221,7 +213,7 @@ export default function Register({
           />
 
           {/* Documento Identidad */}
-          <div className="grid grid-cols-4 gap-1">
+          <div className="grid grid-cols-3 md:grid-cols-4 gap-3 md:gap-1">
             <FormField
               control={form.control}
               name="documentType"
@@ -235,7 +227,7 @@ export default function Register({
                     value={field.value}
                     disabled={isLoading || loadingDocs}
                   >
-                    <FormControl className="w-full">
+                    <FormControl className="md:w-full">
                       <SelectTrigger>
                         <SelectValue
                           placeholder={loadingDocs ? "Cargando..." : "Tipo"}
@@ -259,7 +251,7 @@ export default function Register({
               control={form.control}
               name="documentNumber"
               render={({ field }) => (
-                <FormItem className="col-span-3">
+                <FormItem className="col-span-2 md:col-span-3">
                   <FormLabel className="text-sm font-medium text-gray-700">
                     Número <span className="text-red-500">*</span>
                   </FormLabel>
@@ -333,7 +325,7 @@ export default function Register({
                 </FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="Ingrese su Dirección"
+                    placeholder="Ingrese su dirección"
                     {...field}
                     disabled={isLoading}
                   />
@@ -344,14 +336,14 @@ export default function Register({
           />
 
           {/* Ubigeo: Departamento, Provincia, Distrito */}
-          <div className="grid grid-cols-3 gap-2">
+          <div className="flex flex-col gap-3  md:grid md:grid-cols-3 md:gap-2">
             {/* Departamento */}
             <FormField
               control={form.control}
               name="departamento"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm font-medium text-gray-700">
+                  <FormLabel className="text-sm font-medium text-gray-700 ">
                     Departamento <span className="text-red-500">*</span>
                   </FormLabel>
                   <Select
@@ -366,7 +358,7 @@ export default function Register({
                     }}
                     value={field.value}
                   >
-                    <FormControl>
+                    <FormControl className="w-full">
                       <SelectTrigger>
                         <SelectValue placeholder={"Seleccionar"} />
                       </SelectTrigger>
@@ -403,7 +395,7 @@ export default function Register({
                     }}
                     value={field.value}
                   >
-                    <FormControl>
+                    <FormControl className="w-full">
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccionar" />
                       </SelectTrigger>
@@ -437,7 +429,7 @@ export default function Register({
                     }}
                     value={field.value}
                   >
-                    <FormControl>
+                    <FormControl className="w-full">
                       <SelectTrigger>
                         <SelectValue placeholder={"Seleccionar"} />
                       </SelectTrigger>
@@ -457,7 +449,7 @@ export default function Register({
           </div>
 
           {/* Password fields */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="flex flex-col md:grid md:grid-cols-2 gap-3">
             <FormField
               control={form.control}
               name="password"

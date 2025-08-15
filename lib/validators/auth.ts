@@ -3,7 +3,7 @@ import * as z from "zod";
 export const registerSchema = z.object({
   nombres: z.string().min(2, "Los nombres son requeridos").max(50, "Máximo 50 caracteres"),
   apellidos: z.string().min(2, "Los apellidos son requeridos").max(50, "Máximo 50 caracteres"),
-  documentType: z.string().min(1, "Seleccione un tipo de documento"),
+  documentType: z.string().min(1, "Seleccione"),
   documentNumber: z.string().min(8, "Mínimo 8 dígitos").max(15, "Máximo 15 dígitos"),
   celular: z.string().min(9, "Mínimo 9 dígitos").max(12, "Máximo 12 dígitos"),
   email: z.string().email("Email inválido"),
@@ -12,7 +12,7 @@ export const registerSchema = z.object({
   // Campos de ubigeo
   departamento: z.string().min(1, "Seleccione un departamento"),
   provincia: z.string().min(1, "Seleccione una provincia"), 
-  distrito: z.string().min(1, "Seleccione un distrito"),
+  distrito: z.string().min(1, "Seleccione un distrito de la lista"),
   
   password: z.string().min(8, "Mínimo 8 caracteres"),
   confirmPassword: z.string().min(8, "Confirme su contraseña"),
