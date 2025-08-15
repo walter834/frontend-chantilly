@@ -30,7 +30,7 @@ import { CircleUser, LogOut, ShoppingBasket, Watch } from "lucide-react";
 import Link from "next/link";
 
 export default function UserDrop() {
-  const { name, logoutUser } = useAuth();
+  const { initials, logoutUser } = useAuth();
 
   return (
     <DropdownMenu>
@@ -39,7 +39,7 @@ export default function UserDrop() {
           variant="ghost"
           className="border-2 border-yellow-300 text-yellow-300 rounded-full w-[40px] h-[40px] hover:bg-yellow-300 hover:text-red-800"
         >
-          {name}
+          {initials}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="start">

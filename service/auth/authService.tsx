@@ -1,39 +1,23 @@
-// service/auth/authService.ts - VERSIÓN OPTIMIZADA SIN /customer
+// service/auth/authService.ts - VERSIÓN CORREGIDA
 import api from "../api";
 import { z } from "zod";
 import { registerSchema } from "@/lib/validators/auth";
 import { store } from "@/store/store";
-import { loginSuccess, logout } from "@/store/slices/authSlice";
+import { loginSuccess, logout, Customer } from "@/store/slices/authSlice";
 
 // Interfaces de respuesta
 interface LoginResponse {
   message: string;
-  customer: User;
+  customer: Customer;
   token: string;
   token_type: string;
 }
 
 interface RegisterResponse {
   message: string;
-  customer: User; // Cambiado de 'user' a 'customer'
-  token?: string; // Opcional porque no parece venir en la respuesta
-  type?: string; // Opcional
-}
-
-interface User {
-  id?: number;
-  name: string;
-  lastname: string;
-  email: string;
-  id_document_type?: number;
-  document_number?: string;
-  phone?: string;
-  address?: string;
-  deparment?: string;
-  province?: string;
-  district?: string;
-  status?: number;
-  google_id?: string | null;
+  customer: Customer;
+  token?: string;
+  type?: string;
 }
 
 interface LoginCredentials {
@@ -63,18 +47,18 @@ interface RegisterPayload {
  */
 export const loginUser = async (
   credentials: LoginCredentials
-): Promise<{ success: boolean; message: string; customer?: User }> => {
+): Promise<{ success: boolean; message: string; customer?: Customer }> => {
   try {
     const response = await api.post<LoginResponse>("/login", credentials);
     const { token, customer, message } = response.data;
 
-    // Guardar en Redux (Redux Persist automáticamente guarda en localStorage)
+    // Guardar en Redux con todos los datos del customer
     store.dispatch(loginSuccess({ customer, token }));
 
     return {
       success: true,
       message: message || "Login exitoso",
-      customer, // Devolver también los datos del customer
+      customer,
     };
   } catch (error: any) {
     console.error("Error en login:", error);
@@ -94,12 +78,10 @@ export const loginUser = async (
  */
 export const logoutUser = async (): Promise<void> => {
   try {
-    // Intentar cerrar sesión en el backend
     await api.post("/logout");
   } catch (error) {
     console.warn("Error during logout API call:", error);
   } finally {
-    // Redux Persist automáticamente limpia localStorage
     store.dispatch(logout());
   }
 };
@@ -115,7 +97,6 @@ export const loginWithGoogle = () => {
       throw new Error("baseURL no está configurado en la instancia de api");
     }
 
-    // Solo usar sessionStorage para redirection (es temporal)
     if (typeof window !== "undefined") {
       sessionStorage.setItem("redirectAfterLogin", window.location.href);
     }
@@ -134,15 +115,12 @@ export const loginWithGoogle = () => {
 
 /**
  * Función para manejar el callback después del login con Google
- * OPCIÓN 1: Si tu backend envía los datos del customer en la URL
  */
 export const handleAuthCallbackWithData = async () => {
   try {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get("token");
     const error = urlParams.get("error");
-
-    // Obtener datos del customer si vienen en los parámetros
     const customerDataParam = urlParams.get("customer");
 
     if (error) {
@@ -152,12 +130,10 @@ export const handleAuthCallbackWithData = async () => {
     }
 
     if (token && customerDataParam) {
-      // Limpiar URL de parámetros
       window.history.replaceState({}, document.title, window.location.pathname);
 
       try {
-        // Decodificar datos del customer
-        const customer = JSON.parse(decodeURIComponent(customerDataParam));
+        const customer: Customer = JSON.parse(decodeURIComponent(customerDataParam));
         store.dispatch(loginSuccess({ customer, token }));
       } catch (parseError) {
         console.error("Error procesando datos del usuario:", parseError);
@@ -165,11 +141,8 @@ export const handleAuthCallbackWithData = async () => {
         return;
       }
 
-      // Obtener URL de redirección guardada o ir al home
       const redirectUrl = sessionStorage.getItem("redirectAfterLogin") || "/";
       sessionStorage.removeItem("redirectAfterLogin");
-
-      // Redirigir
       window.location.href = redirectUrl;
     } else {
       console.error("No se recibió token o datos del customer");
@@ -182,8 +155,7 @@ export const handleAuthCallbackWithData = async () => {
 };
 
 /**
- * OPCIÓN 2: Si tu backend tiene un endpoint especial para obtener datos después de Google Auth
- * Por ejemplo: GET /auth/google/user con el token
+ * Función alternativa para callback con endpoint
  */
 export const handleAuthCallbackWithEndpoint = async () => {
   try {
@@ -198,12 +170,10 @@ export const handleAuthCallbackWithEndpoint = async () => {
     }
 
     if (token) {
-      // Limpiar URL de parámetros
       window.history.replaceState({}, document.title, window.location.pathname);
 
       try {
-        // Hacer llamada a endpoint específico para Google auth
-        const response = await api.get<{ customer: User }>(
+        const response = await api.get<{ customer: Customer }>(
           "/auth/google/user",
           {
             headers: { Authorization: `Bearer ${token}` },
@@ -218,11 +188,8 @@ export const handleAuthCallbackWithEndpoint = async () => {
         return;
       }
 
-      // Obtener URL de redirección guardada o ir al home
       const redirectUrl = sessionStorage.getItem("redirectAfterLogin") || "/";
       sessionStorage.removeItem("redirectAfterLogin");
-
-      // Redirigir
       window.location.href = redirectUrl;
     } else {
       console.error("No se recibió token en el callback");
@@ -234,15 +201,13 @@ export const handleAuthCallbackWithEndpoint = async () => {
   }
 };
 
-// Alias para la función que vayas a usar
-export const handleAuthCallback = handleAuthCallbackWithData; // O handleAuthCallbackWithEndpoint
+export const handleAuthCallback = handleAuthCallbackWithData;
 
 /**
  * Función para registrar un nuevo usuario
  */
 export const register = async (formData: RegisterFormData) => {
   try {
-    // Validar que las contraseñas coincidan antes de enviar
     if (formData.password !== formData.confirmPassword) {
       throw {
         success: false,
@@ -252,7 +217,6 @@ export const register = async (formData: RegisterFormData) => {
       };
     }
 
-    // Mapear los datos del formulario al formato que espera la API Laravel
     const payload: RegisterPayload = {
       email: formData.email.trim().toLowerCase(),
       password: formData.password,
@@ -271,8 +235,6 @@ export const register = async (formData: RegisterFormData) => {
     const response = await api.post<RegisterResponse>("/customers", payload);
     const { customer, message } = response.data;
 
-    // Para registro usamos user como customer
-
     return {
       success: true,
       message,
@@ -281,7 +243,6 @@ export const register = async (formData: RegisterFormData) => {
   } catch (error: any) {
     console.error("Error en registro completo:", error);
 
-    // Manejar errores específicos de Laravel
     let errorMessage = "Error al registrar usuario";
     let validationErrors = {};
 
@@ -313,16 +274,24 @@ export const register = async (formData: RegisterFormData) => {
 };
 
 /**
- * Función para obtener tipos de documento
+ * ✅ CORREGIDA: Función para obtener los datos del customer desde Redux
+ * Ya no necesita hacer petición a API porque no existe endpoint /me
  */
-export const getDocumentTypes = async (): Promise<DocumentType[]> => {
-  try {
-    const response = await api.get<DocumentType[]>("/document-types");
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching document types:", error);
-    return [];
+export const getCurrentCustomer = (): Customer | null => {
+  const state = store.getState();
+  
+  if (!state.auth.isAuthenticated || !state.auth.token || !state.auth.customer) {
+    return null;
   }
+
+  return state.auth.customer;
+};
+
+/**
+ * ✅ Función alternativa con nombre más descriptivo (igual funcionalidad)
+ */
+export const getCurrentCustomerFromState = (): Customer | null => {
+  return getCurrentCustomer();
 };
 
 /**
@@ -337,6 +306,8 @@ export const validateToken = async (): Promise<boolean> => {
       return false;
     }
 
+    // Si tienes un endpoint para validar token, úsalo aquí
+    // Si no, puedes comentar esta línea y solo validar que exista el token
     await api.get("/validate-token");
     return true;
   } catch (error) {
@@ -347,28 +318,78 @@ export const validateToken = async (): Promise<boolean> => {
 };
 
 /**
- * Función para obtener los datos del usuario logueado desde Redux
- * (sin hacer llamada a la API)
+ * ✅ Función para actualizar perfil completa
  */
-export const getCurrentUserFromState = (): User | null => {
-  const state = store.getState();
+export const updateProfile = async (data: Partial<Customer>) => {
+  try {
+    const currentCustomer = getCurrentCustomer();
+    
+    if (!currentCustomer?.id) {
+      throw new Error("No se encontró el ID del customer");
+    }
 
-  if (!state.auth.isAuthenticated || !state.auth.token || !state.auth.name) {
-    return null;
+    console.log(`🔍 Actualizando customer ID: ${currentCustomer.id}`);
+    
+    const response = await api.put(`/customers/${currentCustomer.id}`, data);
+    
+    // Actualizar los datos en Redux con la respuesta del servidor
+    if (response.data.customer) {
+      store.dispatch(loginSuccess({ 
+        customer: response.data.customer, 
+        token: store.getState().auth.token! 
+      }));
+    }
+
+    return {
+      success: true,
+      message: response.data.message,
+      customer: response.data.customer,
+    };
+  } catch (error: any) {
+    const currentCustomer = getCurrentCustomer();
+    console.error(`❌ Error actualizando customer ID ${currentCustomer?.id}:`, error);
+    throw {
+      success: false,
+      message: error.response?.data?.message || "Error al actualizar perfil",
+    };
   }
-
-  // Como no tenemos todos los datos del user en el state,
-  // solo podemos devolver lo básico
-  return {
-    name: state.auth.name.split(" ")[0] || state.auth.name,
-    lastname: state.auth.name.split(" ").slice(1).join(" ") || "",
-    email: "", // No lo tenemos en el state
-  };
 };
 
 /**
- * Función para cambiar contraseña
+ * ✅ NUEVA: Función para refrescar datos del customer después de una actualización
+ * Si tu API devuelve los datos actualizados en algún endpoint, puedes usar esta función
  */
+export const refreshCustomerData = async (): Promise<Customer | null> => {
+  try {
+    const currentCustomer = getCurrentCustomer();
+    
+    if (!currentCustomer?.id) {
+      return null;
+    }
+
+    // Si tienes un endpoint para obtener customer por ID, úsalo aquí
+    // const response = await api.get(`/customers/${currentCustomer.id}`);
+    // const updatedCustomer = response.data.customer;
+    
+    // Por ahora, devolvemos los datos que ya tenemos en Redux
+    return currentCustomer;
+  } catch (error) {
+    console.error("Error refrescando datos del customer:", error);
+    return getCurrentCustomer();
+  }
+};
+
+// Resto de funciones...
+export const getDocumentTypes = async (): Promise<DocumentType[]> => {
+  try {
+    const response = await api.get<DocumentType[]>("/document-types");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching document types:", error);
+    return [];
+  }
+};
+
 export const changePassword = async (
   currentPassword: string,
   newPassword: string
@@ -397,9 +418,6 @@ export const changePassword = async (
   }
 };
 
-/**
- * Función para recuperar contraseña
- */
 export const forgotPassword = async (email: string) => {
   try {
     const response = await api.post("/forgot-password", { email });
@@ -431,19 +449,12 @@ export const ResetPassword = async (resetData: {
   password_confirmation: string;
 }) => {
   try {
-    // 🔥 Agregar logs para debug
-    console.log("🔍 Datos enviados al reset-password:", resetData);
-    console.log("🔍 URL base de la API:", api.defaults.baseURL);
-
-    // Asegurar que los datos estén limpios y coincidan exactamente con tu API
     const payload = {
       token: resetData.token.trim(),
       email: resetData.email.trim().toLowerCase(),
       password: resetData.password,
       password_confirmation: resetData.password_confirmation,
     };
-
-    console.log("🔍 Payload limpio:", payload);
 
     const response = await api.post("/reset-password", payload, {
       headers: {
@@ -452,19 +463,13 @@ export const ResetPassword = async (resetData: {
       },
     });
 
-    console.log("✅ Respuesta exitosa:", response.data);
-
     return {
       success: true,
       message: response.data.message || "Contraseña restablecida exitosamente",
       data: response.data,
     };
   } catch (error: any) {
-    // 🔥 Logs detallados del error
     console.error("❌ Error completo:", error);
-    console.error("❌ Response data:", error.response?.data);
-    console.error("❌ Response status:", error.response?.status);
-    console.error("❌ Request config:", error.config);
 
     const errorMessage =
       error.response?.data?.message || "Error al restablecer la contraseña";
@@ -478,20 +483,5 @@ export const ResetPassword = async (resetData: {
   }
 };
 
-export const updateProfile = async (data: any) => {
-  try {
-    const response = await api.put(`/customers/${data.id}`, data);
-    return {
-      success: true,
-      message: response.data.message,
-    };
-  } catch (error: any) {
-    throw {
-      success: false,
-      message: error.response?.data?.message || "Error al actualizar perfil",
-    };
-  }
-};
-
-// Tipos para exportar
-export type { User, LoginCredentials, RegisterFormData };
+// Exportar tipos
+export type { Customer, LoginCredentials, RegisterFormData };

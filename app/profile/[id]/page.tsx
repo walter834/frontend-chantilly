@@ -6,7 +6,7 @@ import { useParams,useRouter } from "next/navigation";
 
 
 export default function Profile() {
-  const { name, isAuthenticated } = useAuth();
+
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
