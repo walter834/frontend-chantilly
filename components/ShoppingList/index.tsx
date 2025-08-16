@@ -91,6 +91,8 @@ const ShoppingList = () => {
     const removeFromCart = (itemId: string) => {
         const updatedItems = items.filter(item => item.id !== itemId);
         updateCart(updatedItems);
+        window.dispatchEvent(new Event('chantilly-cart-updated'));
+
     };
     
     const clearCart = () => {
