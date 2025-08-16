@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -21,61 +21,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { AlertCircle, CheckCircle, Loader2 } from "lucide-react";
+import { AlertCircle, CheckCircle, Eye, EyeOff, Loader2 } from "lucide-react";
 import { getDocumentTypes, updateProfile } from "@/service/auth/authService";
 import { useUbigeo } from "@/hooks/useUbigeo";
 import { useAuth } from "@/hooks/useAuth";
-import api from "@/service/api";
-
-// Schema de validación para actualización de perfil (sin passwords)
-const profileUpdateSchema = z.object({
-  nombres: z
-    .string()
-    .min(2, "El nombre debe tener al menos 2 caracteres")
-    .max(50, "El nombre no puede tener más de 50 caracteres")
-    .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, "Solo se permiten letras y espacios"),
-  apellidos: z
-    .string()
-    .min(2, "Los apellidos deben tener al menos 2 caracteres")
-    .max(50, "Los apellidos no pueden tener más de 50 caracteres")
-    .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, "Solo se permiten letras y espacios"),
-  documentType: z.string().min(1, "Seleccione un tipo de documento"),
-  documentNumber: z
-    .string()
-    .min(8, "El número de documento debe tener al menos 8 caracteres")
-    .max(15, "El número de documento no puede tener más de 15 caracteres"),
-  celular: z
-    .string()
-    .min(9, "El celular debe tener al menos 9 dígitos")
-    .max(12, "El celular no puede tener más de 12 dígitos")
-    .regex(/^\d+$/, "Solo se permiten números"),
-  email: z
-    .string()
-    .email("Ingrese un email válido")
-    .min(1, "El email es requerido"),
-  direccion: z.string().optional(),
-  departamento: z.string().min(1, "Seleccione un departamento"),
-  provincia: z.string().min(1, "Seleccione una provincia"),
-  distrito: z.string().min(1, "Seleccione un distrito"),
-});
+import { profileUpdateSchema } from "@/lib/validators/auth";
 
 type FormData = z.infer<typeof profileUpdateSchema>;
-
-interface User {
-  id: number;
-  name: string;
-  lastname: string;
-  email: string;
-  id_document_type: number;
-  document_number: string;
-  phone: string;
-  address?: string;
-  deparment: string;
-  province: string;
-  district: string;
-  status: number;
-  google_id?: string | null;
-}
 
 interface ProfileUpdateFormProps {
   id: string;
@@ -83,14 +35,33 @@ interface ProfileUpdateFormProps {
 
 export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [isLoadingUser, setIsLoadingUser] = useState(true);
+  const [isLoadingForm, setIsLoadingForm] = useState(true);
   const [submitError, setSubmitError] = useState<string>("");
   const [submitSuccess, setSubmitSuccess] = useState<string>("");
   const [documentTypes, setDocumentTypes] = useState<DocumentType[]>([]);
   const [loadingDocs, setLoadingDocs] = useState(true);
-  const { token } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
+  // Flag para controlar si ya se cargaron los datos iniciales
+  const initialDataLoaded = useRef(false);
 
-  // Hook para manejar ubigeo
+  const {
+    customer,
+    isAuthenticated,
+    name,
+    lastname,
+    email,
+    phone,
+    address,
+    documentNumber,
+    documentType,
+    department,
+    province,
+    district,
+    updateCustomerData,
+  } = useAuth();
+
   const {
     departments,
     provinces,
@@ -101,7 +72,6 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
     getDepartmentName,
     getProvinceName,
     getDistrictName,
-    
   } = useUbigeo();
 
   const form = useForm<FormData>({
@@ -117,10 +87,12 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
       departamento: "",
       provincia: "",
       distrito: "",
+      password: "",
+      confirmPassword: "",
     },
   });
 
-  // Cargar tipos de documento
+  // ✅ Cargar tipos de documento (solo una vez)
   useEffect(() => {
     const fetchDocumentTypes = async () => {
       try {
@@ -135,81 +107,61 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
     fetchDocumentTypes();
   }, []);
 
-  // Cargar datos del usuario
+  // ✅ Cargar datos iniciales SOLO UNA VEZ
   useEffect(() => {
-    const fetchUserData = async () => {
-      if (!token || !id) return;
+    const loadInitialData = async () => {
+      if (!isAuthenticated || !customer || initialDataLoaded.current) return;
 
-      try {
-        setIsLoadingUser(true);
-        const response = await api.get<{ customer: User }>(`/customers/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        
-        const userData = response.data.customer;
-        console.log("Datos del usuario cargados:", userData);
+      console.log("✅ Cargando datos iniciales del formulario...");
+      initialDataLoaded.current = true;
 
-        // Buscar códigos de ubigeo basados en los nombres
-        const departmentCode = departments.find(d => d.name === userData.deparment)?.code || "";
-        
-        // Si encontramos el departamento, cargar sus provincias
-        if (departmentCode) {
-          await handleDepartmentChange(departmentCode);
-          
-          // Buscar el código de la provincia
-          setTimeout(async () => {
-            const provinceCode = provinces.find(p => p.name === userData.province)?.code || "";
-            
-            if (provinceCode) {
-              await handleProvinceChange(provinceCode);
-              
-              // Buscar el código del distrito
-              setTimeout(() => {
-                const districtCode = districts.find(d => d.name === userData.district)?.code || "";
-                
-                // Actualizar formulario con todos los datos
-                form.reset({
-                  nombres: userData.name || "",
-                  apellidos: userData.lastname || "",
-                  documentType: String(userData.id_document_type) || "",
-                  documentNumber: userData.document_number || "",
-                  celular: userData.phone || "",
-                  email: userData.email || "",
-                  direccion: userData.address || "",
-                  departamento: departmentCode,
-                  provincia: provinceCode,
-                  distrito: districtCode,
-                });
-              }, 100);
-            }
-          }, 100);
-        } else {
-          // Si no encontramos el departamento, solo llenar los datos básicos
-          form.reset({
-            nombres: userData.name || "",
-            apellidos: userData.lastname || "",
-            documentType: String(userData.id_document_type) || "",
-            documentNumber: userData.document_number || "",
-            celular: userData.phone || "",
-            email: userData.email || "",
-            direccion: userData.address || "",
-            departamento: "",
-            provincia: "",
-            distrito: "",
-          });
+      // Cargar datos básicos
+      form.setValue("nombres", name || "");
+      form.setValue("apellidos", lastname || "");
+      form.setValue("documentType", String(documentType) || "");
+      form.setValue("documentNumber", documentNumber || "");
+      form.setValue("celular", phone || "");
+      form.setValue("email", email || "");
+      form.setValue("direccion", address || "");
+
+      // ✅ Cargar ubigeo usando códigos
+      if (customer.deparment_code) {
+        form.setValue("departamento", customer.deparment_code);
+        await handleDepartmentChange(customer.deparment_code);
+
+        if (customer.province_code) {
+          // Esperar a que se carguen las provincias
+          await new Promise(resolve => setTimeout(resolve, 100));
+          form.setValue("provincia", customer.province_code);
+          await handleProvinceChange(customer.province_code);
+
+          if (customer.district_code) {
+            // Esperar a que se carguen los distritos
+            await new Promise(resolve => setTimeout(resolve, 100));
+            form.setValue("distrito", customer.district_code);
+            handleDistrictChange(customer.district_code);
+          }
         }
-
-      } catch (error) {
-        console.error("Error cargando datos del usuario:", error);
-        setSubmitError("Error al cargar los datos del usuario");
-      } finally {
-        setIsLoadingUser(false);
       }
+
+      setIsLoadingForm(false);
+      console.log("✅ Datos iniciales cargados");
     };
 
-    fetchUserData();
-  }, [id, token, form, departments, provinces, districts]);
+    if (departments.length > 0) {
+      loadInitialData();
+    }
+  }, [departments.length, customer, isAuthenticated]);
 
+  // ✅ Si los departamentos se cargan después, completar la carga
+  useEffect(() => {
+    if (departments.length > 0 && !initialDataLoaded.current && customer) {
+      // Trigger el efecto anterior
+      setIsLoadingForm(true);
+    }
+  }, [departments.length, customer]);
+
+  // ✅ onSubmit mejorado
   const onSubmit = async (data: FormData) => {
     setIsLoading(true);
     setSubmitError("");
@@ -218,9 +170,8 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
     try {
       console.log("Datos del formulario (códigos):", data);
 
-      // Convertir códigos a nombres antes de enviar
-      const dataWithNames = {
-        id: parseInt(id),
+      const dataWithCodes: any = {
+        id: customer?.id || parseInt(id),
         name: data.nombres.trim(),
         lastname: data.apellidos.trim(),
         email: data.email.trim().toLowerCase(),
@@ -228,23 +179,39 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
         document_number: data.documentNumber.trim(),
         phone: data.celular.trim(),
         address: data.direccion?.trim() || "",
-        deparment: getDepartmentName(data.departamento),
-        province: getProvinceName(data.provincia),
+        // ✅ Enviar tanto nombres como códigos
+        deparment: getDepartmentName(data.departamento ),
+        province: getProvinceName(data.provincia ),
         district: getDistrictName(data.distrito),
+        deparment_code: data.departamento,
+        province_code: data.provincia,
+        district_code: data.distrito
       };
 
-      console.log("Datos convertidos para envío:", dataWithNames);
+      // Solo incluir contraseña si se proporcionó
+      if (data.password && data.password.trim()) {
+        dataWithCodes.password = data.password.trim();
+      }
 
-      const response = await updateProfile(dataWithNames);
+      console.log("Datos convertidos para envío:", dataWithCodes);
+
+      const response = await updateProfile(dataWithCodes);
       console.log("Respuesta del servidor:", response);
 
+      if (response.customer) {
+        updateCustomerData(response.customer);
+        console.log("✅ Datos actualizados en Redux");
+      }
+
       setSubmitSuccess(response.message || "Perfil actualizado exitosamente");
-      
-      // Limpiar mensaje de éxito después de 3 segundos
+
+      // Limpiar campos de contraseña después del éxito
+      form.setValue("password", "");
+      form.setValue("confirmPassword", "");
+
       setTimeout(() => {
         setSubmitSuccess("");
       }, 3000);
-
     } catch (error: unknown) {
       console.error("Error completo:", error);
 
@@ -269,12 +236,25 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
     }
   };
 
-  if (isLoadingUser) {
+  if (!isAuthenticated || !customer) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="flex items-center gap-2">
+          <AlertCircle className="h-6 w-6 text-red-500" />
+          <span>
+            No se encontraron datos del usuario. Por favor, inicie sesión nuevamente.
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoadingForm) {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="flex items-center gap-2">
           <Loader2 className="h-6 w-6 animate-spin" />
-          <span>Cargando datos del usuario...</span>
+          <span>Cargando formulario...</span>
         </div>
       </div>
     );
@@ -287,7 +267,7 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
           onSubmit={form.handleSubmit(onSubmit)}
           className="p-6 space-y-4 max-w-[900px]"
         >
-          {/* Mostrar mensajes de error/éxito */}
+          {/* Mensajes de error/éxito */}
           {submitError && (
             <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded flex items-center gap-2">
               <AlertCircle className="h-5 w-5" />
@@ -481,11 +461,12 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
                     Departamento <span className="text-red-500">*</span>
                   </FormLabel>
                   <Select
-                    onValueChange={(value) => {
+                    onValueChange={async (value) => {
                       field.onChange(value);
+                      // Limpiar provincia y distrito sin resetear todo el form
                       form.setValue("provincia", "");
                       form.setValue("distrito", "");
-                      handleDepartmentChange(value);
+                      await handleDepartmentChange(value);
                     }}
                     value={field.value}
                     disabled={isLoading}
@@ -518,10 +499,11 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
                     Provincia <span className="text-red-500">*</span>
                   </FormLabel>
                   <Select
-                    onValueChange={(value) => {
+                    onValueChange={async (value) => {
                       field.onChange(value);
+                      // Solo limpiar distrito
                       form.setValue("distrito", "");
-                      handleProvinceChange(value);
+                      await handleProvinceChange(value);
                     }}
                     value={field.value}
                     disabled={isLoading}
@@ -574,6 +556,87 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
                       ))}
                     </SelectContent>
                   </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {/* Campos de contraseña opcionales */}
+          <div className="flex flex-col md:grid md:grid-cols-2 gap-3">
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">
+                    Nueva Contraseña <span className="text-gray-400">(Opcional)</span>
+                  </FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Dejar vacío para mantener actual"
+                        {...field}
+                        className="pr-10"
+                        disabled={isLoading}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        onClick={() => setShowPassword(!showPassword)}
+                        disabled={isLoading}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4 text-gray-400" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-gray-400" />
+                        )}
+                      </Button>
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">
+                    Confirmar Nueva Contraseña <span className="text-gray-400">(Opcional)</span>
+                  </FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Input
+                        type={showConfirmPassword ? "text" : "password"}
+                        placeholder="Confirmar nueva contraseña"
+                        {...field}
+                        className="pr-10"
+                        disabled={isLoading}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
+                        disabled={isLoading}
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff className="h-4 w-4 text-gray-400" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-gray-400" />
+                        )}
+                      </Button>
+                    </div>
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

@@ -3,7 +3,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 // Interface del Customer - coincide exactamente con tu respuesta de API
 interface Customer {
-  id: number; // ✅ OBLIGATORIO - siempre viene en la respuesta
+  id: number; 
   name: string;
   lastname: string;
   email: string;
@@ -15,15 +15,23 @@ interface Customer {
   deparment: string;
   province: string;
   district: string;
+  // ✅ Agregar códigos de ubigeo
+  deparment_code: string;
+  province_code: string;
+  district_code: string;
   status?: number;
   google_id?: string | null;
 }
 
-// Estado de autenticación - AMPLIADO para incluir todos los datos
+// ✅ AMPLIADO: Estado de autenticación incluye campos derivados persistentes
 interface AuthState {
   isAuthenticated: boolean;
   token: string | null;
-  customer: Customer | null; // ✅ Agregamos todos los datos del customer
+  customer: Customer | null;
+  // ✅ NUEVOS: Campos derivados que se calculan y persisten
+  fullName: string | null;
+  displayName: string | null;
+  initials: string;
 }
 
 interface LoginPayload {
@@ -35,42 +43,70 @@ interface LoginPayload {
 const initialState: AuthState = {
   isAuthenticated: false,
   token: null,
-  customer: null, // ✅ Inicializar customer como null
+  customer: null,
+  // ✅ NUEVOS: Estados iniciales para campos derivados
+  fullName: null,
+  displayName: null,
+  initials: '',
 };
 
-/* const initials = (customer: Customer): string => {
-  const firstNameInitial = customer.name?.trim().charAt(0).toUpperCase() || "";
-  const lastNameInitial = customer.lastname?.trim().charAt(0).toUpperCase() || "";
+// ✅ Helper functions para calcular campos derivados
+const calculateFullName = (customer: Customer): string => {
+  return `${customer.name} ${customer.lastname}`.trim();
+};
 
-  const initials = `${firstNameInitial}${lastNameInitial}`;
+const calculateDisplayName = (customer: Customer): string => {
+  return customer.name || customer.email.split('@')[0];
+};
 
-  // Si no hay nombre/apellido, tomar primera letra antes del @
+const calculateInitials = (customer: Customer): string => {
+  const firstInitial = customer.name?.charAt(0).toUpperCase() || '';
+  const lastInitial = customer.lastname?.charAt(0).toUpperCase() || '';
+  const initials = firstInitial + lastInitial;
+  
+  // Si no hay nombre/apellido, tomar primera letra del email
   return initials || customer.email.charAt(0).toUpperCase();
-}; */
+};
 
 export const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    // Acción principal para login exitoso
+    // ✅ MEJORADO: Acción principal para login exitoso - calcula y persiste campos derivados
     loginSuccess: (state, action: PayloadAction<LoginPayload>) => {
+      const { customer, token } = action.payload;
+      
       state.isAuthenticated = true;
-      state.token = action.payload.token;
-      state.customer = action.payload.customer; // ✅ Guardar todos los datos del customer
-      // Extraer y guardar el nombre o iniciales
+      state.token = token;
+      state.customer = customer;
+      
+      // ✅ NUEVOS: Calcular y guardar campos derivados
+      state.fullName = calculateFullName(customer);
+      state.displayName = calculateDisplayName(customer);
+      state.initials = calculateInitials(customer);
     },
 
-    // Acción para logout
+    // ✅ MEJORADO: Acción para logout - limpia todo
     logout: (state) => {
       state.isAuthenticated = false;
       state.token = null;
-      state.customer = null; // ✅ Limpiar datos del customer
+      state.customer = null;
+      // ✅ NUEVOS: Limpiar campos derivados
+      state.fullName = null;
+      state.displayName = null;
+      state.initials = '';
     },
 
-    // Acción para actualizar datos del customer
+    // ✅ MEJORADO: Acción para actualizar datos del customer - recalcula campos derivados
     updateCustomer: (state, action: PayloadAction<Partial<Customer>>) => {
       if (state.customer) {
+        // Actualizar customer
         state.customer = { ...state.customer, ...action.payload };
+        
+        // ✅ NUEVOS: Recalcular campos derivados después de actualizar
+        state.fullName = calculateFullName(state.customer);
+        state.displayName = calculateDisplayName(state.customer);
+        state.initials = calculateInitials(state.customer);
       }
     },
 

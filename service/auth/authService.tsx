@@ -39,6 +39,9 @@ interface RegisterPayload {
   deparment: string;
   province: string;
   district: string;
+  deparment_code: string;
+  province_code: string;
+  district_code: string;
   password_confirmation: string;
 }
 
@@ -133,7 +136,9 @@ export const handleAuthCallbackWithData = async () => {
       window.history.replaceState({}, document.title, window.location.pathname);
 
       try {
-        const customer: Customer = JSON.parse(decodeURIComponent(customerDataParam));
+        const customer: Customer = JSON.parse(
+          decodeURIComponent(customerDataParam)
+        );
         store.dispatch(loginSuccess({ customer, token }));
       } catch (parseError) {
         console.error("Error procesando datos del usuario:", parseError);
@@ -229,6 +234,9 @@ export const register = async (formData: RegisterFormData) => {
       deparment: formData.departamento,
       province: formData.provincia,
       district: formData.distrito,
+      deparment_code: formData.deparment_code,
+      province_code: formData.province_code,
+      district_code: formData.district_code,
       password_confirmation: formData.confirmPassword,
     };
 
@@ -279,8 +287,12 @@ export const register = async (formData: RegisterFormData) => {
  */
 export const getCurrentCustomer = (): Customer | null => {
   const state = store.getState();
-  
-  if (!state.auth.isAuthenticated || !state.auth.token || !state.auth.customer) {
+
+  if (
+    !state.auth.isAuthenticated ||
+    !state.auth.token ||
+    !state.auth.customer
+  ) {
     return null;
   }
 
@@ -323,21 +335,25 @@ export const validateToken = async (): Promise<boolean> => {
 export const updateProfile = async (data: Partial<Customer>) => {
   try {
     const currentCustomer = getCurrentCustomer();
-    
+    console.log("datos del usuario", currentCustomer);
+
     if (!currentCustomer?.id) {
       throw new Error("No se encontró el ID del customer");
     }
 
     console.log(`🔍 Actualizando customer ID: ${currentCustomer.id}`);
-    
+
     const response = await api.put(`/customers/${currentCustomer.id}`, data);
-    
+    console.log("Response del update:", response);
+
     // Actualizar los datos en Redux con la respuesta del servidor
     if (response.data.customer) {
-      store.dispatch(loginSuccess({ 
-        customer: response.data.customer, 
-        token: store.getState().auth.token! 
-      }));
+      store.dispatch(
+        loginSuccess({
+          customer: response.data.customer,
+          token: store.getState().auth.token!,
+        })
+      );
     }
 
     return {
@@ -347,7 +363,10 @@ export const updateProfile = async (data: Partial<Customer>) => {
     };
   } catch (error: any) {
     const currentCustomer = getCurrentCustomer();
-    console.error(`❌ Error actualizando customer ID ${currentCustomer?.id}:`, error);
+    console.error(
+      `❌ Error actualizando customer ID ${currentCustomer?.id}:`,
+      error
+    );
     throw {
       success: false,
       message: error.response?.data?.message || "Error al actualizar perfil",
@@ -362,7 +381,7 @@ export const updateProfile = async (data: Partial<Customer>) => {
 export const refreshCustomerData = async (): Promise<Customer | null> => {
   try {
     const currentCustomer = getCurrentCustomer();
-    
+
     if (!currentCustomer?.id) {
       return null;
     }
@@ -370,7 +389,7 @@ export const refreshCustomerData = async (): Promise<Customer | null> => {
     // Si tienes un endpoint para obtener customer por ID, úsalo aquí
     // const response = await api.get(`/customers/${currentCustomer.id}`);
     // const updatedCustomer = response.data.customer;
-    
+
     // Por ahora, devolvemos los datos que ya tenemos en Redux
     return currentCustomer;
   } catch (error) {

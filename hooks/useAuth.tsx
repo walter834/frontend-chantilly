@@ -7,8 +7,15 @@ import { loginSuccess, logout, updateCustomer, Customer } from '@/store/slices/a
 export const useAuth = () => {
   const dispatch = useDispatch();
   
-  // ✅ Obtener todos los datos del estado
-  const { isAuthenticated, token, customer } = useSelector((state: RootState) => state.auth);
+  // ✅ OPTIMIZADO: Ahora obtiene todos los datos incluyendo los campos derivados persistentes
+  const { 
+    isAuthenticated, 
+    token, 
+    customer,
+    fullName,
+    displayName, 
+    initials 
+  } = useSelector((state: RootState) => state.auth);
   
   // Función para login
   const loginUser = (customerData: Customer, authToken: string) => {
@@ -20,39 +27,24 @@ export const useAuth = () => {
     dispatch(logout());
   };
 
-  // Función para actualizar datos del customer
+  // ✅ MEJORADO: Función para actualizar datos del customer (recalcula automáticamente campos derivados)
   const updateCustomerData = (updates: Partial<Customer>) => {
     dispatch(updateCustomer(updates));
-  };
-
-  // ✅ Funciones helper para acceder fácilmente a datos específicos
-  const getFullName = () => {
-    if (!customer) return null;
-    return `${customer.name} ${customer.lastname}`.trim();
-  };
-
-  const getInitials = () => {
-    if (!customer) return '';
-    const firstInitial = customer.name?.charAt(0).toUpperCase() || '';
-    const lastInitial = customer.lastname?.charAt(0).toUpperCase() || '';
-    return firstInitial + lastInitial;
-  };
-
-  const getDisplayName = () => {
-    if (!customer) return null;
-    return customer.name || customer.email.split('@')[0];
   };
 
   return {
     // ✅ Estados principales
     isAuthenticated,
     token,
-    customer, // Todos los datos del customer
+    customer,
     
-    // ✅ Datos específicos fáciles de usar
-    fullName: getFullName(),
-    displayName: getDisplayName(),
-    initials: getInitials(),
+    // ✅ OPTIMIZADOS: Campos derivados ya calculados y persistentes (NO se recalculan)
+    fullName,           // Ya viene calculado del store
+    displayName,        // Ya viene calculado del store  
+    initials,          // ✅ YA PERSISTENTE - no se pierde al refrescar
+    
+    // ✅ Datos específicos directos del customer
+    id: customer?.id,
     name: customer?.name,
     lastname: customer?.lastname,
     email: customer?.email,
