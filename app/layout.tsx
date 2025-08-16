@@ -1,16 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Poppins } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/layout/Header";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/layout/Footer";
-import CustomOrders from "@/components/CustomOrders";
-import { Toaster } from "@/components/ui/sonner";
 import { StoreProvider } from "@/components/Providers";
-import ChatWidget from "@/components/Chatbot";
-import OnlyHome from "@/components/OnlyHome";
-import ThemedProductsSection from "@/components/features/ThemedProductsSection";
-import LocalCardGrid from "@/app/contacto/components/LocalCardGrid";
+import LayoutShell from "@/components/layout/LayoutShell";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -47,23 +39,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${poppins.variable} antialiased overflow-x-hidden min-h-screen flex flex-col min-w-[350px]`}
       >
         <StoreProvider>
-          <Navbar />
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Toaster />
-          <CustomOrders />
-          <OnlyHome>
-            <ThemedProductsSection />
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center">
-              Locales más cercanos a tu ubicación
-            </h1>
-            <p className="text-center mt-4 text-muted-foreground text-xl">
-              Conoce un poco más de nuestros locales a nivel nacional
-            </p>
-            <LocalCardGrid limit={3}/>
-          </OnlyHome>
-          <Footer />
-          <ChatWidget />
+          <LayoutShell>{children}</LayoutShell>
         </StoreProvider>
       </body>
     </html>

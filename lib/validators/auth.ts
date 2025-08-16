@@ -29,7 +29,7 @@ export const loginSchema = z.object({
   password: z
     .string()
     .min(1, "La contraseña es obligatoria")
-    .min(6, "La contraseña debe tener al menos 6 caracteres")
+    .min(5, "La contraseña debe tener al menos 6 caracteres")
 })
 
 // Schema de validación
