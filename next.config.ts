@@ -11,8 +11,8 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'http',
-        hostname: '192.168.18.28',
-        port: '8000',
+        hostname: 'chantilly-app-px74f.ondigitalocean.app',
+        port: '',
         pathname: '/storage/**',
       },
     ],

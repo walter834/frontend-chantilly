@@ -1,52 +1,52 @@
 // store/slices/authSlice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-// Interfaces - CORREGIDAS para coincidir con la respuesta de la API
-interface User {
-  id?: number;
-  name: string; // ✅ Cambiado de 'nombres' a 'name'
-  lastname: string; // ✅ Cambiado de 'apellidos' a 'lastname'
+// Interface del Customer - coincide exactamente con tu respuesta de API
+interface Customer {
+  id: number; // ✅ OBLIGATORIO - siempre viene en la respuesta
+  name: string;
+  lastname: string;
   email: string;
-  id_document_type?: number; // ✅ Cambiado para coincidir con la respuesta
-  document_number?: string;
-  phone?: string; // ✅ Cambiado de 'celular' a 'phone'
-  address?: string; // ✅ Cambiado de 'direccion' a 'address'
-  deparment?: string;
-  province?: string;
-  district?: string;
+  email_verified_at?: string | null;
+  id_document_type: number;
+  document_number: string;
+  phone: string;
+  address: string;
+  deparment: string;
+  province: string;
+  district: string;
   status?: number;
   google_id?: string | null;
 }
 
+// Estado de autenticación - AMPLIADO para incluir todos los datos
 interface AuthState {
   isAuthenticated: boolean;
-  name: string | null;
   token: string | null;
+  customer: Customer | null; // ✅ Agregamos todos los datos del customer
 }
 
 interface LoginPayload {
-  customer: User; // ✅ Mantenemos customer como es consistente
+  customer: Customer;
   token: string;
 }
 
-// Función helper para extraer el nombre completo del usuario - CORREGIDA
+// Estado inicial
+const initialState: AuthState = {
+  isAuthenticated: false,
+  token: null,
+  customer: null, // ✅ Inicializar customer como null
+};
 
-const extractUserName = (user: User): string => {
-  const firstNameInitial = user.name?.trim().charAt(0).toUpperCase() || "";
-  const lastNameInitial = user.lastname?.trim().charAt(0).toUpperCase() || "";
+/* const initials = (customer: Customer): string => {
+  const firstNameInitial = customer.name?.trim().charAt(0).toUpperCase() || "";
+  const lastNameInitial = customer.lastname?.trim().charAt(0).toUpperCase() || "";
 
   const initials = `${firstNameInitial}${lastNameInitial}`;
 
   // Si no hay nombre/apellido, tomar primera letra antes del @
-  return initials || user.email.charAt(0).toUpperCase();
-};
-
-// Estado inicial - Redux Persist se encarga de restaurar desde localStorage
-const initialState: AuthState = {
-  isAuthenticated: false,
-  name: null,
-  token: null,
-};
+  return initials || customer.email.charAt(0).toUpperCase();
+}; */
 
 export const authSlice = createSlice({
   name: "auth",
@@ -55,31 +55,34 @@ export const authSlice = createSlice({
     // Acción principal para login exitoso
     loginSuccess: (state, action: PayloadAction<LoginPayload>) => {
       state.isAuthenticated = true;
-      state.name = extractUserName(action.payload.customer); // ✅ Usar customer
       state.token = action.payload.token;
-      // Redux Persist automáticamente guarda esto en localStorage
+      state.customer = action.payload.customer; // ✅ Guardar todos los datos del customer
+      // Extraer y guardar el nombre o iniciales
     },
 
     // Acción para logout
     logout: (state) => {
       state.isAuthenticated = false;
-      state.name = null;
       state.token = null;
-      // Redux Persist automáticamente limpia localStorage
+      state.customer = null; // ✅ Limpiar datos del customer
     },
 
-    // Acción para actualizar solo el nombre (si necesitas)
-    updateUserName: (state, action: PayloadAction<string>) => {
-      state.name = action.payload;
+    // Acción para actualizar datos del customer
+    updateCustomer: (state, action: PayloadAction<Partial<Customer>>) => {
+      if (state.customer) {
+        state.customer = { ...state.customer, ...action.payload };
+      }
     },
 
-    // Acción para actualizar solo el token (si necesitas)
+    // Acción para actualizar solo el token
     updateToken: (state, action: PayloadAction<string>) => {
       state.token = action.payload;
     },
   },
 });
 
-export const { loginSuccess, logout, updateUserName, updateToken } =
-  authSlice.actions;
+export const { loginSuccess, logout, updateCustomer, updateToken } = authSlice.actions;
 export default authSlice.reducer;
+
+// Exportar tipos para usar en otros archivos
+export type { Customer, AuthState };
