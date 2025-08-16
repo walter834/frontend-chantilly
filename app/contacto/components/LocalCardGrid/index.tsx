@@ -7,7 +7,7 @@ import { findNearbyLocals, clearError } from '@/store/slices/localSlice';
 import LocalCard from "../LocalCard";
 
 
-export default function LocalCardGrid() {
+export default function LocalCardGrid({limit}: {limit?: number}) {
   const dispatch = useDispatch<AppDispatch>();
   const { locals, loading, error } = useSelector(
     (state: RootState) => state.local
@@ -78,7 +78,7 @@ export default function LocalCardGrid() {
 
   return (
     <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {locals.map((local) => (
+      {locals.slice(0, limit).map((local) => (
         <LocalCard key={local.id} local={local} />
       ))}
     </div>

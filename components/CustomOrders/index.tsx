@@ -12,7 +12,7 @@ export default function CustomOrders() {
         className="absolute inset-0 bg-cover bg-center bg-no-repeat hidden md:block"
         style={{ backgroundImage: "url('/banner2.jpg')" }}
       />
-      <div className="relative z-10 w-full h-full px-4 sm:px-6 lg:px-8 xl:px-12 py-16 text-white">
+      <div className="relative z-10 w-full h-full px-4 sm:px-6 lg:px-6 py-16 text-white">
         <div className="w-[95%] mx-auto space-y-6">
           <h1 className="text-3xl md:text-4xl font-bold">
             ¡Pedidos Personalizados!!

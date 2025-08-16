@@ -20,7 +20,6 @@ import { loginSchema } from "@/lib/validators/auth";
 import { loginUser, loginWithGoogle } from "@/service/auth/authService";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import Image from "next/image";
 
 type LoginFormData = z.infer<typeof loginSchema>;
 

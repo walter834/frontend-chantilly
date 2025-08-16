@@ -65,7 +65,7 @@ export default function LocalCard({ local }: LocalCardProps) {
                 rel="noopener noreferrer"
                 className="flex-1"
               >
-                <Button className="w-full bg-[#c41d1ada] hover:bg-red-800 ">
+                <Button className="w-full bg-[#c41d1ada] hover:bg-red-800 cursor-pointer">
                   Más información <ChevronRight className="" />
                 </Button>
               </a>

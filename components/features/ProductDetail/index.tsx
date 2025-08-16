@@ -5,6 +5,7 @@ import { capitalizeFirstLetter } from '@/lib/utils';
 import { fetchAccessories, fetchProducts, getCakeFlavors, getProductVariantById } from '@/service/productService';
 import { TransformedProduct, TransformedProductVariant, TransformedCakeFlavor, TransformedProductAccessory } from '@/types/api';
 import FormCart from '@/components/formCart';
+import { toast } from 'sonner';
 
 interface ProductDetailProps {
   id: string;
@@ -51,7 +52,7 @@ console.log('Product detail:', id, name, price, originalPrice, theme, image, pro
       updatedItems[existingItemIndex] = {
         ...updatedItems[existingItemIndex],
         quantity: updatedItems[existingItemIndex].quantity + 1,
-        price: parseFloat(String(updatedItems[existingItemIndex].price)) + (isAccessory ? parseFloat((product as TransformedProductAccessory).max_price) : (product as TransformedProduct).price)
+        price: (isAccessory ? parseFloat((product as TransformedProductAccessory).max_price) : (product as TransformedProduct).price)
       };
     } else {
       const unitPrice = isAccessory ? parseFloat((product as TransformedProductAccessory).max_price) : (product as TransformedProduct).price;
@@ -83,15 +84,13 @@ console.log('Product detail:', id, name, price, originalPrice, theme, image, pro
     };
 
     localStorage.setItem('chantilly-cart', JSON.stringify(updatedCart));
-/*     window.dispatchEvent(new Event('storage'));
- */    window.dispatchEvent(new Event('chantilly-cart-updated'));
-    alert(existingItemIndex !== -1 ? '¡Cantidad actualizada en el carrito!' : '¡Producto agregado al carrito!');
+    window.dispatchEvent(new Event('chantilly-cart-updated'));
+    toast(existingItemIndex !== -1 ? '¡Cantidad actualizada en el carrito!' : '¡Producto agregado al carrito!');
 
   };
 
   const handlePortionChange = async (portion: string) => {
     if (!portion) {
-      // reset image when no portion
       setImageProduct(image);
       setProductVariant(null);
       return;
