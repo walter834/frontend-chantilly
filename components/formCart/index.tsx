@@ -92,6 +92,9 @@ const FormCart: React.FC<FormCartProps> = ({
         quantity: 1,
         price: parseFloat(productVariant?.price || initialPrice.toString())
       };
+
+      console.log('initialPrice', initialPrice);
+      console.log('productVariant', productVariant);
       updatedItems = [...currentCart.items, newItem];
     }
     
@@ -145,8 +148,8 @@ const FormCart: React.FC<FormCartProps> = ({
             }}
             className="w-full sm:flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#c41c1a] focus:border-[#c41c1a]"
           >
-            {Object.entries(portionsOptions).map(([key]) => (
-              <option key={key} value={key}>{key}</option>
+            {Object.entries(portionsOptions).map(([key, value]) => (
+              <option key={key} value={value.name}>{value.name} {value.size}</option>
             ))}
           </select>
         </div>

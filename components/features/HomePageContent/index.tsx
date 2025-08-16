@@ -6,7 +6,6 @@ import Paginations from '@/components/Paginations';
 import { TransformedProduct } from '@/types/api';
 import { fetchProducts } from '@/service/productService';
 import Spinner from '@/components/ui/spinner';
-import LocalCardGrid from "../../../app/contacto/components/LocalCardGrid/index";
 
 export default function HomePageContent() {
   const router = useRouter();
@@ -173,7 +172,6 @@ export default function HomePageContent() {
           <p className="mt-4 text-muted-foreground text-xl">
             Conoce un poco más de nuestros locales a nivel nacional
           </p>
-          <LocalCardGrid limit={3}/>
         </div>
       </div>
     </div>
