@@ -36,7 +36,7 @@ interface RegisterProps {
 
 export default function Register({
   onBackToLogin,
-  onGoToLogin
+  onGoToLogin,
 }: RegisterProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -88,6 +88,9 @@ export default function Register({
       provincia: "",
       distrito: "",
       password: "",
+      deparment_code:"",
+      province_code: "",
+      district_code: "",
       confirmPassword: "",
     },
   });
@@ -101,16 +104,19 @@ export default function Register({
       console.log("Datos del formulario (códigos):", data);
 
       // ✅ CONVERSIÓN: Convertir códigos a nombres antes de enviar
-      const dataWithNames = {
+      const dataWithCodesAndNames = {
         ...data,
-        departamento: getDepartmentName(data.departamento),
-        provincia: getProvinceName(data.provincia),
-        distrito: getDistrictName(data.distrito),
+        departamento: getDepartmentName(data.departamento), // nombre
+        provincia: getProvinceName(data.provincia), // nombre
+        distrito: getDistrictName(data.distrito), // nombre
+        deparment_code: data.departamento,                   
+      province_code: data.provincia,                       
+      district_code: data.distrito,                        
       };
 
-      console.log("Datos convertidos a nombres:", dataWithNames);
+      console.log("Datos convertidos a nombres:", dataWithCodesAndNames);
 
-      const response = await register(dataWithNames);
+      const response = await register(dataWithCodesAndNames);
 
       console.log("Respuesta del servidor:", response);
       console.log("Registro exitoso:", response.message);

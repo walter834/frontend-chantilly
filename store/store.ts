@@ -18,11 +18,12 @@ import authReducer from "./slices/authSlice";
 import localSlice from "./slices/localSlice";
 import chatbotReducer from './slices/chatbotSlice';
 
-// Configuración de persistencia para auth
+// ✅ AMPLIADA: Configuración de persistencia para auth (incluye más campos)
 const authPersistConfig = {
   key: 'auth',
   storage,
-  whitelist: ['isAuthenticated', 'name', 'token', 'id'], // Solo persiste estos campos
+  // ✅ Ahora persiste todo lo necesario para el perfil y navbar
+  whitelist: ['isAuthenticated', 'token', 'customer','initials'], // Persiste customer completo
 };
 
 // Configuración de persistencia para chatbot (mantienes tu configuración actual)
@@ -47,14 +48,13 @@ const persistedLocalReducer = persistReducer(localPersistConfig, localSlice);
 
 export const store = configureStore({
   reducer: {
-    auth: persistedAuthReducer,        // Ahora también persistido
+    auth: persistedAuthReducer,        
     chatbot: persistedChatbotReducer, 
-    local: persistedLocalReducer // Tu configuración actual
+    local: persistedLocalReducer 
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        // Agregar todas las acciones de redux-persist para evitar warnings
         ignoredActions: [
           FLUSH,
           REHYDRATE,
@@ -62,7 +62,6 @@ export const store = configureStore({
           PERSIST,
           PURGE,
           REGISTER,
-          // También mantener las anteriores por compatibilidad
           'persist/PERSIST', 
           'persist/REHYDRATE'
         ],
