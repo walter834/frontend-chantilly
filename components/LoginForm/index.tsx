@@ -34,7 +34,7 @@ export default function LoginForm() {
 
       <DialogContent className="max-h-[99vh] overflow-y-auto p-10">
         {/* Header */}
-        <div className="bg-red-600 text-white px-6 py-4  flex justify-center items-center">
+        <div className="bg-[#c41c1a] text-white px-6 py-4  flex justify-center items-center">
           <div className="relative w-full max-w-[320px] h-auto aspect-[320/50] ">
             <Image
               src="/logo.png"

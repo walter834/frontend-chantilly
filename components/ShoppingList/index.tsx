@@ -3,9 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Minus, Plus, Trash2 } from 'lucide-react';
+import { useAuth } from "@/hooks/useAuth";
 import Image from 'next/image';
-import Link from 'next/link';
-import Shopping from '../Shopping';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 interface CartItem {
     id: string;
@@ -34,6 +35,9 @@ interface Cart {
 }
 
 const ShoppingList = () => {
+    
+    const { isAuthenticated } = useAuth();
+    const router = useRouter();
     const [cart, setCart] = useState<Cart>({
         items: [],
         total: 0,
@@ -74,7 +78,7 @@ const ShoppingList = () => {
         window.dispatchEvent(new Event('storage'));
     };
 
-    const updateQuantity = (itemId: string, newQuantity: number) => {
+    const updateQuantity = (itemId: string, newQuantity: number) => {        
         if (newQuantity < 1) return;
         
         const updatedItems = items.map(item => 
@@ -109,6 +113,15 @@ const ShoppingList = () => {
             </div>
         );
     }
+
+    const handleCheckout = () => {
+
+        if (isAuthenticated) {
+            router.push('/checkout');
+        } else {
+            toast.warning('Debes iniciar sesión para continuar', { position: 'top-center' });
+        }
+    };
 
     return (
         <div className="h-full flex flex-col">
@@ -199,11 +212,9 @@ const ShoppingList = () => {
                     <span className="text-black font-bold text-lg">S/ {total.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-center flex-col space-y-2">
-                    <Link href="/checkout" className="w-full">
-                        <Button className="w-full bg-[#c41c1a] text-white hover:bg-[#a01818] transition-colors duration-300 h-12 text-base cursor-pointer">
-                            Procesar compra
-                        </Button>
-                    </Link>
+                    <Button onClick={() => handleCheckout()} className="w-full bg-[#c41c1a] text-white hover:bg-[#a01818] transition-colors duration-300 h-12 text-base cursor-pointer">
+                        Procesar compra
+                    </Button>
                     <Button 
                         variant="outline" 
                         className="w-full text-black border-[#c41c1a] hover:bg-[#FAFAFA] transition-colors duration-300 h-10 text-sm cursor-pointer"

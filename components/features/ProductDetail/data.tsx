@@ -1,7 +1,26 @@
-export const portionsOptions = {
-    "Elige una opción": 0,
-    "8 porciones (Diámetro 18cm)": 1,
-    "10 porciones (Diámetro 22cm)": 2,
-    "12 a 15 porciones (Diámetro 26cm)": 3,
-    "20 a 25 porciones (Diámetro 30cm)": 4,
-};
+export const portionsOptions = [
+    {
+        name: "Elige una opción",
+        valor: 0
+    },
+    {
+        name: "8 porciones",
+        size: "(Diámetro 18cm)",
+        valor: 1
+    },
+    {
+        name: "12 a 15 porciones",
+        size: "(Diámetro 22cm)",
+        valor: 3
+    },
+    {
+        name: "20 a 15 porciones",
+        size: "(Diámetro 26cm)",
+        valor: 4
+    },
+    {
+        name: "35 a 40 porciones",
+        size: "(Diámetro 32cm x 24cm)",
+        valor: 5
+    }
+]

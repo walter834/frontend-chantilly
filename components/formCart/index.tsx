@@ -2,6 +2,7 @@
 import React, { useState, useEffect, FormEvent } from 'react';
 import { TransformedCakeFlavor, TransformedProductVariant } from '@/types/api';
 import { portionsOptions } from '../features/ProductDetail/data';
+import { toast } from 'sonner';
 
 interface FormCartProps {
   productId: string;
@@ -68,10 +69,10 @@ const FormCart: React.FC<FormCartProps> = ({
       updatedItems[existingItemIndex] = {
         ...updatedItems[existingItemIndex],
         quantity: updatedItems[existingItemIndex].quantity + 1,
-        price: parseFloat(updatedItems[existingItemIndex].price) + parseFloat(productVariant?.price || '0')
+        // Keep price as unit price; total is computed as price * quantity
+        price: parseFloat(productVariant?.price || initialPrice.toString())
       };
     } else {
-      console.log('name', name);
       const newItem = {
         id: `${productId}-${Date.now()}`,
         productId: productId,
@@ -91,23 +92,25 @@ const FormCart: React.FC<FormCartProps> = ({
         quantity: 1,
         price: parseFloat(productVariant?.price || initialPrice.toString())
       };
+
+      console.log('initialPrice', initialPrice);
+      console.log('productVariant', productVariant);
       updatedItems = [...currentCart.items, newItem];
     }
     
     const total = updatedItems.reduce((sum, item) => sum + (parseFloat(item.price) * item.quantity), 0);
     const itemCount = updatedItems.reduce((sum, item) => sum + item.quantity, 0);
-    
     const updatedCart = {
       items: updatedItems,
       total,
       itemCount
     };
-    
+
     localStorage.setItem('chantilly-cart', JSON.stringify(updatedCart));
     window.dispatchEvent(new Event('chantilly-cart-updated'));
     
     console.log('Carrito actualizado:', updatedCart);
-    alert(existingItemIndex !== -1 ? '¡Cantidad actualizada en el carrito!' : '¡Producto agregado al carrito!');
+    toast(existingItemIndex !== -1 ? '¡Cantidad actualizada en el carrito!' : '¡Producto agregado al carrito!');
   }
 
   useEffect(() => {
@@ -145,8 +148,8 @@ const FormCart: React.FC<FormCartProps> = ({
             }}
             className="w-full sm:flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#c41c1a] focus:border-[#c41c1a]"
           >
-            {Object.entries(portionsOptions).map(([key]) => (
-              <option key={key} value={key}>{key}</option>
+            {Object.entries(portionsOptions).map(([key, value]) => (
+              <option key={key} value={value.name}>{value.name} {value.size}</option>
             ))}
           </select>
         </div>
@@ -207,6 +210,7 @@ const FormCart: React.FC<FormCartProps> = ({
       </div>
   
       {/* Dedicatoria — opcional siempre */}
+      {productType !== '4' && (
       <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
         <label className="text-sm font-medium text-black sm:w-32 sm:flex-shrink-0 sm:pt-2">Nombre o Dedicatoria</label>
         <textarea
@@ -218,6 +222,7 @@ const FormCart: React.FC<FormCartProps> = ({
           className="w-full sm:flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#c41c1a] focus:border-[#c41c1a] resize-none"
         />
       </div>
+      )}
   
       {/* Precio + botón */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-4">

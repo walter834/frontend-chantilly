@@ -20,7 +20,7 @@ export default function HomePageContent() {
     hasNextPage: boolean;
     hasPrevPage: boolean;
   } | null>(null);
-  
+
   const currentPage = parseInt(searchParams.get('page') || '1', 10);
   const searchTerm = searchParams.get('search') || '';
   const [searchValue, setSearchValue] = useState(searchTerm);
@@ -38,7 +38,7 @@ export default function HomePageContent() {
           '1'
         );
 
-        console.log('result',result);
+        console.log('result', result);
         setProducts(result.products);
         setPagination({
           currentPage: result.pagination.currentPage,
@@ -100,13 +100,13 @@ export default function HomePageContent() {
           {searchTerm ? `Resultados para "${searchTerm}"` : 'Productos Destacados'}
         </h2>
         <p className="text-gray-500 mt-2">
-          {searchTerm 
+          {searchTerm
             ? 'Encuentra los productos que estás buscando'
             : 'Las mejores tortas en la Casa del Chantilly, calidad y amor.'
           }
         </p>
       </div>
-      
+
       <div className="flex md:justify-between justify-center mx-4 mt-4">
         {pagination && (
           <p className="md:flex hidden text-muted-foreground">
@@ -139,9 +139,9 @@ export default function HomePageContent() {
           />
         </form>
       </div>
-      
+
       {pagination && (
-        <Paginations 
+        <Paginations
           currentPage={pagination.currentPage}
           totalPages={pagination.lastPage}
           onPageChange={handlePageChange}
@@ -149,7 +149,7 @@ export default function HomePageContent() {
           hasPrevPage={pagination.hasPrevPage}
         />
       )}
-      
+
       {loading ? (
         <div className="text-center py-12">
           <Spinner size="lg" className="mb-4" />
@@ -164,6 +164,16 @@ export default function HomePageContent() {
           />
         </div>
       )}
+      <div className="text-center mt-12">
+        <div className="mt-6">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">
+            Locales más cercanos a tu ubicación
+          </h1>
+          <p className="mt-4 text-muted-foreground text-xl">
+            Conoce un poco más de nuestros locales a nivel nacional
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

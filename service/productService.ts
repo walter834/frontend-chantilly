@@ -141,7 +141,6 @@ export async function fetchProducts(
     const endpoint = `${API_ROUTES.PRODUCTS}?${params.toString()}`;
     const { data: response } = await api.get<ApiProductsResponse>(endpoint);
     if (!response.data || !Array.isArray(response.data)) {
-        toast.error("No se encotraron productos", {position: "top-right"});
         return {
             products: [],
             pagination: {
