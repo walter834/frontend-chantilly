@@ -140,6 +140,7 @@ export const handleAuthCallbackWithData = async () => {
           decodeURIComponent(customerDataParam)
         );
         store.dispatch(loginSuccess({ customer, token }));
+        console.log("aswesome", customer);
       } catch (parseError) {
         console.error("Error procesando datos del usuario:", parseError);
         window.location.href = "/login?error=parse_error";
