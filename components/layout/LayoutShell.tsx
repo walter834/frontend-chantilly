@@ -17,7 +17,7 @@ export default function LayoutShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const isClean = pathname === "/checkout" || pathname.startsWith("/checkout/");
+  const isClean = pathname === "/checkout" || pathname.startsWith("/checkout/") || pathname === "/politicas-privacidad" || pathname.startsWith("/politicas-privacidad/") || pathname === "/terminos-condiciones" || pathname.startsWith("/terminos-condiciones/");
 
   if (isClean) {
     return (
