@@ -89,6 +89,61 @@ export const logoutUser = async (): Promise<void> => {
   }
 };
 
+export const getUser = async (): Promise<{
+  success: boolean;
+  customer?: Customer;
+  message?: string;
+}> => {
+  try {
+    // Verificar si hay token disponible
+    const currentState = store.getState();
+    const token = currentState.auth.token;
+
+    if (!token) {
+      return {
+        success: false,
+        message: "No hay token de autenticación disponible",
+      };
+    }
+
+    // El interceptor se encarga de añadir automáticamente el token Bearer
+    const response = await api.get<Customer>("/me");
+    const customer = response.data;
+
+    // Actualizar Redux con los datos más recientes del servidor
+    // Reutilizamos la variable currentState ya declarada
+    if (currentState.auth.token) {
+      store.dispatch(
+        loginSuccess({
+          customer,
+          token: currentState.auth.token,
+        })
+      );
+    }
+
+    return {
+      success: true,
+      customer,
+      message: "Datos del usuario obtenidos correctamente",
+    };
+  } catch (error: any) {
+    console.error("Error al obtener datos del usuario:", error);
+
+    // Si el error es de autenticación, hacer logout
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      store.dispatch(logout());
+    }
+
+    const errorMessage =
+      error.response?.data?.message || "Error al obtener datos del usuario";
+
+    return {
+      success: false,
+      message: errorMessage,
+    };
+  }
+};
+
 /**
  * Función principal para login con Google
  */
@@ -96,19 +151,19 @@ export const loginWithGoogle = () => {
   try {
     const baseURL = api.defaults.baseURL;
 
-    if (!baseURL) {  
+    if (!baseURL) {
       throw new Error("baseURL no está configurado en la instancia de api");
     }
 
-    // ✅ MEJORADO: Guardar URL de origen antes de redirigir
+    // Guardar URL de origen antes de redirigir
     if (typeof window !== "undefined") {
       const currentUrl = window.location.href;
       sessionStorage.setItem("redirectAfterLogin", currentUrl);
       console.log("🔍 URL guardada para redirección:", currentUrl);
     }
 
-    const redirectURL = encodeURIComponent(`${baseURL}/auth/google/callback`);
-    const googleAuthURL = `${baseURL}/auth/google/redirect?redirect_uri=${redirectURL}`;
+    // ✅ CORREGIDO: Tu backend usa /auth/google/redirect (no /auth/google/callback)
+    const googleAuthURL = `${baseURL}/auth/google/redirect`;
 
     console.log("🚀 Iniciando Google Auth:", googleAuthURL);
     window.location.href = googleAuthURL;
@@ -120,28 +175,14 @@ export const loginWithGoogle = () => {
   }
 };
 
-
 /**
  * Función para manejar el callback después del login con Google
  */
-export const handleAuthCallbackWithData = async () => {
-  try {
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get("token");
-    const customerData = urlParams.get("customer");
+/**
+ * ✅ MEJORADA: Función para manejar el callback con token usando getUser existente
+ */
 
-    if (token && customerData) {
-      const customer = JSON.parse(decodeURIComponent(customerData));
-      // Actualizar Redux antes de la redirección
-      store.dispatch(loginSuccess({ customer, token }));
-      return { success: true };
-    }
-    return { success: false, error: 'Missing data' };
-  } catch (error) {
-    console.error("Error processing callback:", error);
-    return { success: false, error: String(error) };
-  }
-};
+
 
 /**
  * Función alternativa para callback con endpoint
