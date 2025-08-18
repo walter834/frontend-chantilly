@@ -23,7 +23,7 @@ const authPersistConfig = {
   key: 'auth',
   storage,
   // ✅ Ahora persiste todo lo necesario para el perfil y navbar
-  whitelist: ['isAuthenticated', 'token', 'customer','initials'], // Persiste customer completo
+  whitelist: ['isAuthenticated', 'token', 'customer', 'initials'], // Persiste customer completo
 };
 
 // Configuración de persistencia para chatbot (mantienes tu configuración actual)
