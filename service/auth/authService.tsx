@@ -89,6 +89,61 @@ export const logoutUser = async (): Promise<void> => {
   }
 };
 
+export const getUser = async (): Promise<{
+  success: boolean;
+  customer?: Customer;
+  message?: string;
+}> => {
+  try {
+    // Verificar si hay token disponible
+    const currentState = store.getState();
+    const token = currentState.auth.token;
+
+    if (!token) {
+      return {
+        success: false,
+        message: "No hay token de autenticación disponible",
+      };
+    }
+
+    // El interceptor se encarga de añadir automáticamente el token Bearer
+    const response = await api.get<Customer>("/me");
+    const customer = response.data;
+
+    // Actualizar Redux con los datos más recientes del servidor
+    // Reutilizamos la variable currentState ya declarada
+    if (currentState.auth.token) {
+      store.dispatch(
+        loginSuccess({
+          customer,
+          token: currentState.auth.token,
+        })
+      );
+    }
+
+    return {
+      success: true,
+      customer,
+      message: "Datos del usuario obtenidos correctamente",
+    };
+  } catch (error: any) {
+    console.error("Error al obtener datos del usuario:", error);
+
+    // Si el error es de autenticación, hacer logout
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      store.dispatch(logout());
+    }
+
+    const errorMessage =
+      error.response?.data?.message || "Error al obtener datos del usuario";
+
+    return {
+      success: false,
+      message: errorMessage,
+    };
+  }
+};
+
 /**
  * Función principal para login con Google
  */
@@ -100,13 +155,17 @@ export const loginWithGoogle = () => {
       throw new Error("baseURL no está configurado en la instancia de api");
     }
 
+    // Guardar URL de origen antes de redirigir
     if (typeof window !== "undefined") {
-      sessionStorage.setItem("redirectAfterLogin", window.location.href);
+      const currentUrl = window.location.href;
+      sessionStorage.setItem("redirectAfterLogin", currentUrl);
+      console.log("🔍 URL guardada para redirección:", currentUrl);
     }
 
-    const redirectURL = encodeURIComponent(`${baseURL}/auth/google/callback`);
-    const googleAuthURL = `${baseURL}/auth/google/redirect?redirect_uri=${redirectURL}`;
+    // ✅ CORREGIDO: Tu backend usa /auth/google/redirect (no /auth/google/callback)
+    const googleAuthURL = `${baseURL}/auth/google/redirect`;
 
+    console.log("🚀 Iniciando Google Auth:", googleAuthURL);
     window.location.href = googleAuthURL;
   } catch (error) {
     console.error("Error al iniciar login con Google:", error);
@@ -119,95 +178,15 @@ export const loginWithGoogle = () => {
 /**
  * Función para manejar el callback después del login con Google
  */
-export const handleAuthCallbackWithData = async () => {
-  try {
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get("token");
-    const error = urlParams.get("error");
-    const customerDataParam = urlParams.get("customer");
+/**
+ * ✅ MEJORADA: Función para manejar el callback con token usando getUser existente
+ */
 
-    if (error) {
-      console.error("Error en autenticación:", error);
-      window.location.href = `/login?error=${encodeURIComponent(error)}`;
-      return;
-    }
 
-    if (token && customerDataParam) {
-      window.history.replaceState({}, document.title, window.location.pathname);
-
-      try {
-        const customer: Customer = JSON.parse(
-          decodeURIComponent(customerDataParam)
-        );
-        store.dispatch(loginSuccess({ customer, token }));
-        console.log("aswesome", customer);
-      } catch (parseError) {
-        console.error("Error procesando datos del usuario:", parseError);
-        window.location.href = "/login?error=parse_error";
-        return;
-      }
-
-      const redirectUrl = sessionStorage.getItem("redirectAfterLogin") || "/";
-      sessionStorage.removeItem("redirectAfterLogin");
-      window.location.href = redirectUrl;
-    } else {
-      console.error("No se recibió token o datos del customer");
-      window.location.href = "/login?error=missing_data";
-    }
-  } catch (error) {
-    console.error("Error procesando callback:", error);
-    window.location.href = "/login?error=callback_error";
-  }
-};
 
 /**
  * Función alternativa para callback con endpoint
  */
-export const handleAuthCallbackWithEndpoint = async () => {
-  try {
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get("token");
-    const error = urlParams.get("error");
-
-    if (error) {
-      console.error("Error en autenticación:", error);
-      window.location.href = `/login?error=${encodeURIComponent(error)}`;
-      return;
-    }
-
-    if (token) {
-      window.history.replaceState({}, document.title, window.location.pathname);
-
-      try {
-        const response = await api.get<{ customer: Customer }>(
-          "/auth/google/user",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-
-        const customer = response.data.customer;
-        store.dispatch(loginSuccess({ customer, token }));
-      } catch (apiError) {
-        console.error("Error obteniendo datos del usuario:", apiError);
-        window.location.href = "/login?error=user_fetch_error";
-        return;
-      }
-
-      const redirectUrl = sessionStorage.getItem("redirectAfterLogin") || "/";
-      sessionStorage.removeItem("redirectAfterLogin");
-      window.location.href = redirectUrl;
-    } else {
-      console.error("No se recibió token en el callback");
-      window.location.href = "/login?error=no_token";
-    }
-  } catch (error) {
-    console.error("Error procesando callback:", error);
-    window.location.href = "/login?error=callback_error";
-  }
-};
-
-export const handleAuthCallback = handleAuthCallbackWithData;
 
 /**
  * Función para registrar un nuevo usuario

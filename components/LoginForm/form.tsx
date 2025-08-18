@@ -84,7 +84,7 @@ export default function Login({ onCloseDialog, onOpenRegister }: LoginProps) {
 
       {/* Form */}
       <Form {...form}>
-        <form className="p-6 space-y-6 " onSubmit={form.handleSubmit(onSubmit)}>
+        <form className="p-6 space-y-5 " onSubmit={form.handleSubmit(onSubmit)}>
           {/* Email */}
           <FormField
             control={form.control}

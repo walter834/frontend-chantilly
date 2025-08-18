@@ -157,7 +157,7 @@ export default function Register({
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="p-6 space-y-4 max-w-[900px]"
+          className="p-6 space-y-2 max-w-[900px]"
         >
           {/* Mostrar mensajes de error/éxito */}
           {submitError && (
