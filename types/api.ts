@@ -1,5 +1,3 @@
-import { number, string } from "zod";
-
 export interface ApiPage {
   id: number;
   name: string;
@@ -7,6 +5,55 @@ export interface ApiPage {
   orden: number;
   status: boolean;
 }
+
+export interface ApiCustomer {
+  id: number;
+  name: string;
+  lastname: string;
+  id_document_type: number;
+  document_number: string;
+  email: string;
+  email_verified_at: string;
+  address: string;
+  phone: string;
+  deparment: string;
+  province: string;
+  district: string;
+  deparment_code: string;
+  province_code: string;
+  district_code: string;
+  status: number;
+  google_id: string;
+}
+
+export interface TransformedCustomer {
+  id: number;
+  name: string;
+  lastname: string;
+  id_document_type: number;
+  document_number: string;
+  email: string;
+  email_verified_at: string;
+  address: string;
+  phone: string;
+  deparment: string;
+  province: string;
+  district: string;
+  deparment_code: string;
+  province_code: string;
+  district_code: string;
+  status: number;
+  google_id: string;
+}
+
+export type UpdateCustomerPayload = Pick<ApiCustomer,
+  'name' |
+  'lastname' |
+  'address' |
+  'phone' |
+  'id_document_type' |
+  'document_number'
+>;
 
 export interface ApiTheme {
   id: number;
@@ -286,6 +333,28 @@ export function transformProductVariant(apiProductVariant: ApiProductVariant): T
     hours: variant.hours,
     sort: variant.sort,
     image: variant.image,
+  };
+}
+
+export function transformCustomer(apiCustomer: ApiCustomer): TransformedCustomer {
+  return {
+    id: apiCustomer.id,
+    name: apiCustomer.name,
+    lastname: apiCustomer.lastname,
+    id_document_type: apiCustomer.id_document_type,
+    document_number: apiCustomer.document_number,
+    email: apiCustomer.email,
+    email_verified_at: apiCustomer.email_verified_at,
+    address: apiCustomer.address,
+    phone: apiCustomer.phone,
+    deparment: apiCustomer.deparment,
+    province: apiCustomer.province,
+    district: apiCustomer.district,
+    deparment_code: apiCustomer.deparment_code,
+    province_code: apiCustomer.province_code,
+    district_code: apiCustomer.district_code,
+    status: apiCustomer.status,
+    google_id: apiCustomer.google_id,
   };
 }
 

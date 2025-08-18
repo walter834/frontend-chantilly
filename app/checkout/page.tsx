@@ -1,17 +1,169 @@
+'use client';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FaMagnifyingGlass, FaPencil } from "react-icons/fa6";
 import Header from "./components/header";
+import { useRouter } from 'next/navigation';
+import { store } from '@/store/store';
+import { useEffect, useState } from 'react';
+import { getCustomerById, updateCustomer } from '@/service/customerService';
+import { TransformedCustomer } from '@/types/api';
+import { toast } from 'sonner';
+import { LocalService } from '@/service/local/localService';
+import type { Local } from '@/service/local/localService';
+
+type FormData = {
+    name: string;
+    lastname: string;
+    address: string;
+    phone: string;
+    id_document_type: number;
+    document_number: string;
+};
+
+type TextKeys = 'name' | 'lastname' | 'address' | 'phone' | 'document_number';
 
 export default function Contact() {
+    const customer = store.getState().auth.customer;
+    const [isClickEdit, setIsClickEdit] = useState(false);
+    const [isClickFact, setIsClickFact] = useState(false);
+    const [listShopping, setListShopping] = useState([]);
+    const [ruc, setRuc] = useState('');
+    const [razonSocial, setRazonSocial] = useState('');
+    const [address, setAddress] = useState('');
+    const router = useRouter();
+
+    const [customerData, setCustomerData] = useState<TransformedCustomer | null>(null);
+    const [form, setForm] = useState<FormData>({
+        name: '',
+        lastname: '',
+        address: '',
+        phone: '',
+        id_document_type: 0,
+        document_number: '',
+    });
+    const [locals, setLocals] = useState<Local[]>([]);
+    const [loadingLocals, setLoadingLocals] = useState(false);
+    const [localsError, setLocalsError] = useState<string | null>(null);
+    const [localSelected, setLocalSelected] = useState<Local | null>(null);
+
+    useEffect(() => {
+        getCustomerById(customer?.id?.toString() || '').then((data) => {
+            setCustomerData(data);
+            if (data) {
+                setForm({
+                    name: data.name ?? '',
+                    lastname: data.lastname ?? '',
+                    address: data.address ?? '',
+                    phone: data.phone ?? '',
+                    id_document_type: data.id_document_type ?? 0,
+                    document_number: data.document_number ?? '',
+                });
+            }
+        });
+    }, []);
+
+    // Cargar locales cercanos al montar
+    useEffect(() => {
+        let active = true;
+        const run = async () => {
+            try {
+                setLoadingLocals(true);
+                setLocalsError(null);
+                const data = await LocalService.findNearbyLocals();
+                if (active) setLocals(data);
+            } catch (e: any) {
+                if (active) setLocalsError(e?.message || 'No se pudo obtener los locales.');
+            } finally {
+                if (active) setLoadingLocals(false);
+            }
+        };
+        run();
+        return () => {
+            active = false;
+        };
+    }, []);
+
+    useEffect(() => {
+        const loadCart = () => {
+            const savedCart = localStorage.getItem('chantilly-cart');
+            console.log('savedCart', savedCart);
+            if (savedCart) {
+                const parsed = JSON.parse(savedCart);
+                setListShopping(parsed?.items || []);
+            }
+        };
+
+        loadCart();
+
+        const handleStorageChange = () => loadCart();
+        window.addEventListener('storage', handleStorageChange);
+
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+        };
+    }, []);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement & { name: TextKeys }>) => {
+        const { name, value } = e.target;
+        setForm((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const { value } = e.target;
+        setForm((prev) => ({ ...prev, id_document_type: Number(value) }));
+    };
+
+    const handleEditClick = () => {
+        setIsClickEdit(true);
+    };
+
+    const handleLocalSelect = (local: Local) => {
+        setLocalSelected(local);
+    };
+
+    const handleConfirmData = () => {
+        try {
+            updateCustomer(customer?.id?.toString() || '', form);
+            setIsClickEdit(false);
+            toast.success('Datos actualizados exitosamente', { position: "top-center" });
+        } catch (error) {
+            console.error('Error updating customer:', error);
+            toast.error('Error al actualizar los datos', { position: "top-center" });
+        }
+    };
+
+    const searchCompany = async () => {
+        if (!ruc) {
+            toast.error('Ingresa un RUC para buscar', { position: 'top-center' });
+            return;
+        }
+        const url = `/api/sunat?ruc=${encodeURIComponent(ruc)}`;
+        try {
+            const response = await fetch(url);
+            const resultado = await response.json();
+            console.log(resultado.ruc);
+            if (resultado) {
+                setRuc(resultado.ruc);
+                setRazonSocial(resultado.razonSocial);
+                setAddress(resultado.direccion);
+            } else {
+                toast.error('Error al buscar la empresa', { position: "top-center" });
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    const total = (listShopping as any[]).reduce((sum, item) => sum + ((item?.price || 0) * (item?.quantity || 0)), 0);
+
     return (
         <>
             <Header />
             <main>
-                <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 pr-24 pl-24 pb-24'>
+                <div className='grid grid-cols-2 gap-6 pr-24 pl-24 pb-24'>
                     <div className='pl-5 pr-5 pt-5 bg-white'>
-                        <h1 className='text-[25px] font-bold text-black mb-5'>Confirma y paga tu compra
-                        </h1>
+                        <h1 className='text-[25px] font-bold text-black mb-5'>Confirma y paga tu compra</h1>
                         <div className='flex justify-center mb-2 bg-[#c41c1a] p-2'>
                             <h2 className='text-[18px] font-bold text-white'>Datos del Cliente</h2>
                         </div>
@@ -24,42 +176,170 @@ export default function Contact() {
                         <div className='grid grid-cols-2 gap-2'>
                             <div className='grid grid-cols-1'>
                                 <label htmlFor="name">Nombres (obligatorio)</label>
-                                <input className='border-2 border-[#c41c1a]' type="text" name="name" id="name" placeholder="Nombres" />
+                                <input disabled={!isClickEdit} className={`border-2 border-[#c41c1a] ${!isClickEdit ? 'text-gray-500' : 'text-black'}`} type="text" name="name" id="name" placeholder="Nombres" value={form.name} onChange={handleChange} />
                             </div>
                             <div className='grid grid-cols-1'>
                                 <label htmlFor="lastName">Apellidos (obligatorio)</label>
-                                <input className='border-2 border-[#c41c1a]' type="text" name="lastName" id="lastName" placeholder="Apellidos" />
+                                <input disabled={!isClickEdit} className={`border-2 border-[#c41c1a] ${!isClickEdit ? 'text-gray-500' : 'text-black'}`} type="text" name="lastname" id="lastName" placeholder="Apellidos" value={form.lastname} onChange={handleChange} />
                             </div>
                             <div className='grid grid-cols-1'>
                                 <label htmlFor="address">Dirección</label>
-                                <input className='border-2 border-[#c41c1a]' type="text" name="address" id="address" placeholder="Dirección" />
+                                <input disabled={!isClickEdit} className={`border-2 border-[#c41c1a] ${!isClickEdit ? 'text-gray-500' : 'text-black'}`} type="text" name="address" id="address" placeholder="Dirección" value={form.address} onChange={handleChange} />
                             </div>
                             <div className='grid grid-cols-1'>
                                 <label htmlFor="phone">Celular (obligatorio)</label>
-                                <input className='border-2 border-[#c41c1a]' type="tel" name="phone" id="phone" placeholder="Celular" />
+                                <input disabled={!isClickEdit} className={`border-2 border-[#c41c1a] ${!isClickEdit ? 'text-gray-500' : 'text-black'}`} type="tel" name="phone" id="phone" placeholder="Celular" value={form.phone} onChange={handleChange} />
                             </div>
                             <div className='grid grid-cols-1'>
                                 <label htmlFor="document">Documento de identidad</label>
-                                <select name="document" id="document" className='border-2 border-[#c41c1a]'>
-                                    <option value="CC">DOCUMENTO NACIONAL DE IDENTIDAD</option>
-                                    <option value="CE">CARNET DE EXTRANJERIA</option>
-                                    <option value="TI">PASAPORTE</option>
-                                    <option value="TI">CARNET PTP</option>
+                                <select disabled={!isClickEdit}
+                                    name="id_document_type"
+                                    id="document"
+                                    className={`border-2 border-[#c41c1a] ${!isClickEdit ? 'text-gray-500' : 'text-black'}`}
+                                    value={form.id_document_type}
+                                    onChange={handleSelectChange}
+                                >
+                                    <option value="1">DOCUMENTO NACIONAL DE IDENTIDAD</option>
+                                    <option value="2">CARNET DE EXTRANJERIA</option>
+                                    <option value="3">PASAPORTE</option>
+                                    <option value="4">CARNET PTP</option>
                                 </select>
                             </div>
                             <div className='grid grid-cols-1'>
                                 <label htmlFor="documentNumber">Numero de documento de identidad</label>
-                                <input className='border-2 border-[#c41c1a]' type="text" name="documentNumber" id="documentNumber" placeholder="Numero de documento de identidad" />
+                                <input disabled={!isClickEdit} className={`border-2 border-[#c41c1a] ${!isClickEdit ? 'text-gray-500' : 'text-black'}`} type="text" name="document_number" id="documentNumber" placeholder="Numero de documento de identidad" value={form.document_number} onChange={handleChange} />
                             </div>
                         </div>
-                        <div className='flex justify-center mt-4'>
-                            <button className='bg-[#c41c1a] text-white py-2 px-4 rounded cursor-pointer'>Confirmar tus datos</button>
+                        <div className='flex justify-center mt-4 pb-4'>
+                            {isClickEdit ? (
+                                <button className='bg-[#c41c1a] text-white py-2 px-4 rounded cursor-pointer' onClick={handleConfirmData}>Confirmar tus Datos</button>
+                            ) : (
+                                <a className='flex items-center gap-2 text-[#c41c1a] hover:text-[#c41c1a] cursor-pointer' onClick={handleEditClick}> <FaPencil /> Editar Datos </a>
+                            )}
+                        </div>
+
+                        {/* DATOS DE FACTURACION */}
+
+                        <div className='flex justify-center mb-2 bg-[#c41c1a] p-2'>
+                            <h2 className='text-[18px] font-bold text-white'>Datos de facturación</h2>
+                        </div>
+                        <div className='border-b-2 border-[#c41c1a] pt-3'>
+                            <h2 className='text-[18px] font-bold text-[#c41c1a]'>DOCUMENTO DE VENTA</h2>
+                        </div>
+                        <div className='flex justify-around items-center gap-5'>
+                            <div className='pb-5 pt-2 text-[15px]'>
+                                <input type="radio" name="receipt" value="receipt" id='receipt' onChange={() => setIsClickFact(false)} defaultChecked/>
+                                <label className="ml-2" htmlFor="receipt">BOLETA DE VENTA</label>
+                            </div>
+                            <div className='pb-5 pt-2 text-[15px]'>
+                                <input type="radio" name="receipt" value="invoice" id='invoice' onChange={() => setIsClickFact(true)} />
+                                <label className="ml-2" htmlFor="invoice">FACTURA</label>
+                            </div>
+                        </div>
+                        {isClickFact && (
+                            <>
+                                <div className='border-b-2 border-[#c41c1a] pb-3'>
+                                    <h2 className='text-[18px] font-bold text-black'>Datos de la Empresa</h2>
+                                </div>
+                                <div className='grid grid-cols-1 gap-2 pt-3'>
+                                    <div className="grid grid-cols-1">
+                                        <label htmlFor="ruc">RUC</label>
+                                        <div className="grid grid-cols-[1fr_auto] gap-2">
+                                            <input className="border-2 border-[#c41c1a]" type="text" name="ruc" id="ruc" placeholder="RUC" value={ruc} onChange={(e) => setRuc(e.target.value)} />
+                                            <button className="bg-[#c41c1a] text-white py-2 px-4 rounded cursor-pointer" onClick={() => searchCompany()}>
+                                                <FaMagnifyingGlass />
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className='grid grid-cols-1'>
+                                        <label htmlFor="razonSocial">Razón Social</label>
+                                        <input className='border-2 border-[#c41c1a]' type="text" name="razonSocial" id="razonSocial" placeholder="Razón Social" value={razonSocial} onChange={(e) => setRazonSocial(e.target.value)} />
+                                    </div>
+                                    <div className='grid grid-cols-1'>
+                                        <label htmlFor="address">Domicilio Fiscal</label>
+                                        <input className='border-2 border-[#c41c1a]' type="text" name="address" id="address" placeholder="Domicilio Fiscal" value={address} onChange={(e) => setAddress(e.target.value)} />
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                        <div className='pt-5'>
+                            <div className='flex justify-center mb-2 bg-[#c41c1a] p-2'>
+                                <h2 className='text-[18px] font-bold text-white'>Datos para la entrega</h2>
+                            </div>
+                            <div className='border-b-2 border-[#c41c1a] pt-3'>
+                                <h2 className='text-[18px] font-bold text-[#c41c1a]'>TIPO DE ENTREGA</h2>
+                            </div>
+                            <div className='flex justify-around items-center gap-5'>
+                                <div className='pb-5 pt-2 text-[15px]'>
+                                    <input type="radio" name="deliveryType" value="deliveryType" id='deliveryType' defaultChecked />
+                                    <label className="ml-2" htmlFor="deliveryType">Recoger <b>GRATIS</b> en tienda</label>
+                                </div>
+                            </div>
+                            <div className='pb-3'>
+                                <h2 className='text-[18px] font-bold text-black'>Elige el local más cercano a ti:</h2>
+                            </div>
+                            {localSelected ? (
+                                <div className='space-y-3 pt-2'>
+                                    <div className='flex justify-between items-start'>
+                                        <div>
+                                            <div className='text-[#c41c1a] font-extrabold text-lg uppercase'>
+                                                {localSelected.name}
+                                            </div>
+                                            <div className='text-black font-semibold'>
+                                                {localSelected.address}
+                                            </div>
+                                            <div className='text-gray-700'>
+                                                Lunes a Domingo de {localSelected.start_time} a {localSelected.end_time} horas
+                                            </div>
+                                        </div>
+                                        <button
+                                            type='button'
+                                            className='text-[#0C37ED] underline cursor-pointer'
+                                            onClick={() => setLocalSelected(null)}
+                                        >
+                                            Cambiar tienda
+                                        </button>
+                                    </div>
+                                    {localSelected.link_local && (
+                                        <iframe
+                                            src={localSelected.link_local}
+                                            width="100%"
+                                            height="300"
+                                            loading='lazy'
+                                            referrerPolicy='no-referrer-when-downgrade'
+                                        />
+                                    )}
+                                </div>
+                            ) : (
+                                <div className='grid grid-cols-1 gap-2 pt-3 scroll-y h-[450px] overflow-y-auto'>
+                                    {loadingLocals && <p>Buscando locales cercanos...</p>}
+                                    {localsError && <p className='text-red-600'>{localsError}</p>}
+                                    {!loadingLocals && !localsError && locals.length === 0 && (
+                                        <p>No se encontraron locales cercanos.</p>
+                                    )}
+                                    {!loadingLocals && !localsError && locals.map((local) => (
+                                        <div key={local.id} className='border border-gray-300 rounded p-3 bg-[#c41c1a] cursor-pointer' onClick={() => handleLocalSelect(local)}>
+                                            <div className='font-bold text-white'>{local.name}</div>
+                                            <div className='text-sm text-white'>{local.address}</div>
+                                            <div className='text-xs text-white'>Horario: {local.start_time} - {local.end_time}</div>
+                                            {local.link_local && (
+                                                <a href={local.link_local} target='_blank' rel='noreferrer' className='text-white text-sm mt-1 inline-block'>Ver en mapa</a>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
                     <div className='p-6 bg-white'>
                         <div className='flex justify-between'>
                             <h1 className='text-[25px] font-bold text-black mb-2'>Resumen de la compra</h1>
-                            <a href="#" className='flex items-center gap-2 text-[#c41c1a] hover:text-[#c41c1a]'> <FaPencil /> Editar carrito </a>
+                            <a
+                                className='flex items-center gap-2 text-[#c41c1a] hover:text-[#c41c1a] cursor-pointer'
+                                onClick={() => router.push('/?openCart=1')}
+                            >
+                                <FaPencil /> Editar carrito
+                            </a>
                         </div>
                         <div>
                             <table className='w-full'>
@@ -73,27 +353,28 @@ export default function Contact() {
                                     </tr>
                                 </thead>
                                 <tbody className='bg-[#f5f5f5] text-center border-b-2 border-[#c41c1a]'>
-                                    <tr>
-                                        <td><Image src="/logo.png" alt="logo" width={50} height={50} /></td>
-                                        <td className='text-left max-w-[200px]'>TORTA BAUTIZO NIÑO CELESTE CON NUBES
-                                            <ul className='list-none text-gray-500'>
-                                                <li>Porciones: 35 a 40 porciones</li>
-                                                <li>Medidas: 32cm x 24cm</li>
-                                                <li>Keke: Keke de Novia</li>
-                                                <li>Relleno: Manjar de Casa</li>
-                                                <li>Recojo: 2025-08-20</li>
-                                                <li>Dedicatoria: 1</li>
-                                            </ul>
-                                        </td>
-                                        <td>1</td>
-                                        <td>100.00</td>
-                                        <td>100.00</td>
-                                    </tr>
+                                    {(listShopping as any[]).map((item: any) => (
+                                        <tr key={item?.id} className='border-b-2 border-gray-500'>
+                                            <td>
+                                                {item?.product?.image ? (
+                                                    <Image src={item.product.image} alt={item?.product?.name || 'Producto'} width={150} height={150} />
+                                                ) : (
+                                                    <span>-</span>
+                                                )}
+                                            </td>
+                                            <td className='text-left max-w-[200px]'>
+                                                {item?.product?.name || '-'}
+                                            </td>
+                                            <td>{item?.quantity ?? 0}</td>
+                                            <td>{item?.price.toFixed(2) ?? 0.00}</td>
+                                            <td>{((item?.price.toFixed(2) || 0.00) * (item?.quantity || 0)).toFixed(2)}</td>
+                                        </tr>
+                                    ))}
                                 </tbody>
                                 <tfoot className='text-[#c41c1a]'>
                                     <tr className='text-[20px]'>
                                         <td colSpan={4} className="text-left font-bold pr-4">TOTAL</td>
-                                        <td className="text-right font-bold">S/ 100.00</td>
+                                        <td className="text-right font-bold">S/ {total}</td>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -110,66 +391,6 @@ export default function Contact() {
                         </div>
                         <div className='flex justify-center mt-4'>
                             <button className='bg-[#c41c1a] text-white py-2 w-full rounded cursor-pointer'>PAGAR</button>
-                        </div>
-                    </div>
-                    <div className='pl-5 pr-5 p-5 bg-white'>
-                        <div className='flex justify-center mb-2 bg-[#c41c1a] p-2'>
-                            <h2 className='text-[18px] font-bold text-white'>Datos de facturación</h2>
-                        </div>
-                        <div className='border-b-2 border-[#c41c1a] pt-3'>
-                            <h2 className='text-[18px] font-bold text-[#c41c1a]'>DOCUMENTO DE VENTA                            </h2>
-                        </div>
-                        <div className='flex justify-around items-center gap-5'>
-                            <div className='pb-5 pt-2 text-[15px]'>
-                                <input type="radio" name="receipt" value="receipt" id='receipt' />
-                                <label className="ml-2" htmlFor="receipt">BOLETA DE VENTA</label>
-                            </div>
-                            <div className='pb-5 pt-2 text-[15px]'>
-                                <input type="radio" name="receipt" value="invoice" id='invoice' />
-                                <label className="ml-2" htmlFor="invoice">FACTURA</label>
-                            </div>
-                        </div>
-                        <div className='border-b-2 border-[#c41c1a] pb-3'>
-                            <h2 className='text-[18px] font-bold text-black'>Datos de la Empresa</h2>
-                        </div>
-                        <div className='grid grid-cols-1 gap-2 pt-3'>
-                            <div className="grid grid-cols-1">
-                                <label htmlFor="ruc">RUC</label>
-                                <div className="grid grid-cols-[1fr_auto] gap-2">
-                                    <input className="border-2 border-[#c41c1a]" type="text" name="ruc" id="ruc" placeholder="RUC" />
-                                    <button className="bg-[#c41c1a] text-white py-2 px-4 rounded cursor-pointer">
-                                        <FaMagnifyingGlass />
-                                    </button>
-                                </div>
-                            </div>
-                            <div className='grid grid-cols-1'>
-                                <label htmlFor="razonSocial">Razón Social</label>
-                                <input className='border-2 border-[#c41c1a]' type="text" name="razonSocial" id="razonSocial" placeholder="Razón Social" />
-                            </div>
-                            <div className='grid grid-cols-1'>
-                                <label htmlFor="address">Domicilio Fiscal</label>
-                                <input className='border-2 border-[#c41c1a]' type="text" name="address" id="address" placeholder="Domicilio Fiscal" />
-                            </div>
-                        </div>
-                        <div className='pt-5'>
-                            <div className='flex justify-center mb-2 bg-[#c41c1a] p-2'>
-                                <h2 className='text-[18px] font-bold text-white'>Datos para la entrega</h2>
-                            </div>
-                            <div className='border-b-2 border-[#c41c1a] pt-3'>
-                                <h2 className='text-[18px] font-bold text-[#c41c1a]'>TIPO DE ENTREGA                            </h2>
-                            </div>
-                            <div className='flex justify-around items-center gap-5'>
-                                <div className='pb-5 pt-2 text-[15px]'>
-                                    <input type="radio" name="deliveryType" value="deliveryType" id='deliveryType' defaultChecked />
-                                    <label className="ml-2" htmlFor="deliveryType">Recoger <b>GRATIS</b> en tienda</label>
-                                </div>
-                            </div>
-                            <div className='border-b-2 border-[#c41c1a] pb-3'>
-                                <h2 className='text-[18px] font-bold text-black'>Elige el local más cercano a ti:</h2>
-                            </div>
-                            <div className='grid grid-cols-1 gap-2 pt-3'>
-
-                            </div>
                         </div>
                     </div>
                 </div>

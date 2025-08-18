@@ -11,6 +11,7 @@ export const API_ROUTES = {
   CATEGORIES: '/categories',
   PRODUCTS_VARIANT: '/products-variant',
   CAKE_FLAVORS: '/cake-flavors',
+  CUSTOMERS: '/customers',
 } as const;
 
 const api = axios.create({

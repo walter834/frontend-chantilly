@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { store } from '@/store/store';
 
 interface CartItem {
     id: string;
@@ -124,6 +125,7 @@ const ShoppingList = () => {
             toast.warning('Debes iniciar sesión para continuar', { position: 'top-center' });
         }
     };
+
 
     return (
         <div className="h-full flex flex-col">
