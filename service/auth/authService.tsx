@@ -312,48 +312,60 @@ export const validateToken = async (): Promise<boolean> => {
 /**
  * ✅ Función para actualizar perfil completa
  */
-export const updateProfile = async (data: Partial<Customer>) => {
+export const updateProfile = async (data: Partial<Customer> & { id: number }) => {
   try {
     const currentCustomer = getCurrentCustomer();
     console.log("datos del usuarioRedux", currentCustomer);
-
-    if (!currentCustomer?.id) {
+    
+    // ✅ CAMBIO PRINCIPAL: Usar el ID que viene en data, no solo del Redux
+    const customerId = data.id || currentCustomer?.id;
+    
+    if (!customerId) {
       throw new Error("No se encontró el ID del customer");
     }
 
-    console.log(`🔍 Actualizando customer ID: ${currentCustomer.id}`);
+    console.log(`🔍 Actualizando customer ID: ${customerId}`);
+    console.log("📤 Datos a enviar:", data);
 
-    const response = await api.put(`/customers/${currentCustomer.id}`, data);
+    // ✅ Crear una copia de los datos sin el ID para el body (el ID va en la URL)
+    const { id, ...dataToSend } = data;
+
+    const response = await api.put(`/customers/${customerId}`, dataToSend);
     console.log("Response del update:", response);
 
     // Actualizar los datos en Redux con la respuesta del servidor
     if (response.data.customer) {
-      store.dispatch(
-        loginSuccess({
-          customer: response.data.customer,
-          token: store.getState().auth.token!,
-        })
-      );
+      const currentToken = store.getState().auth.token;
+      if (currentToken) {
+        store.dispatch(
+          loginSuccess({
+            customer: response.data.customer,
+            token: currentToken,
+          })
+        );
+      }
     }
 
     return {
       success: true,
-      message: response.data.message,
+      message: response.data.message || "Perfil actualizado exitosamente",
       customer: response.data.customer,
     };
   } catch (error: any) {
-    const currentCustomer = getCurrentCustomer();
+    const customerId = data.id || getCurrentCustomer()?.id;
     console.error(
-      `❌ Error actualizando customer ID ${currentCustomer?.id}:`,
+      `❌ Error actualizando customer ID ${customerId}:`,
       error
     );
+    console.error("Error response:", error.response?.data);
+    
     throw {
       success: false,
       message: error.response?.data?.message || "Error al actualizar perfil",
+      status: error.response?.status,
     };
   }
 };
-
 /**
  * ✅ NUEVA: Función para refrescar datos del customer después de una actualización
  * Si tu API devuelve los datos actualizados en algún endpoint, puedes usar esta función

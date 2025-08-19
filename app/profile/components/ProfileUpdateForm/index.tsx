@@ -187,11 +187,11 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
         document_number: data.documentNumber.trim(),
         phone: data.celular.trim(),
         address: data.direccion?.trim() || "",
-        department: getDepartmentName(data.departamento),
-        province: getProvinceName(data.provincia),
+        department: "Lima",
+        province: "Lima",
         district: getDistrictName(data.distrito),
-        deparment_code: "",
-        province_code: "",
+        deparment_code: "15",
+        province_code: "1501",
         district_code: data.distrito,
       };
 
