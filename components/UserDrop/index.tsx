@@ -83,8 +83,8 @@ export default function UserDrop() {
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <AlertDialogAction onClick={logoutUser}>
+                <AlertDialogCancel className="cursor-pointer">Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={logoutUser} className="bg-[#c41c1a] hover:bg-[#c41c1a]/80 cursor-pointer">
                   Sí, cerrar sesión
                 </AlertDialogAction>
               </AlertDialogFooter>

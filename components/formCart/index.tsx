@@ -2,7 +2,7 @@
 import React, { useState, useEffect, FormEvent } from 'react';
 import { TransformedCakeFlavor, TransformedProductVariant } from '@/types/api';
 import { portionsOptions } from '../features/ProductDetail/data';
-import { toast } from 'sonner';
+import { CustomAlert } from '@/components/ui/custom-alert';
 
 interface FormCartProps {
   productId: string;
@@ -37,6 +37,7 @@ const FormCart: React.FC<FormCartProps> = ({
   const [fillings, setFillings] = useState<Array<{id: number, name: string, status: boolean}>>([]);
   const [pickupDate, setPickupDate] = useState('');
   const [dedication, setDedication] = useState('');
+  
 
   // Cart item shape used in localStorage
   interface LocalCartItem {
@@ -45,21 +46,40 @@ const FormCart: React.FC<FormCartProps> = ({
       portion?: string;
       cakeFlavor?: string;
       fillingName?: string;
+      pickupDate?: string;
     };
     price: number | string;
     quantity: number;
   }
 
   function arrayDataToCart(event: FormEvent<HTMLFormElement>) {
+    
     event.preventDefault();
+
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 2);
+
+    if(productType === '2') {
+      if(pickupDate <=  today.toISOString().split('T')[0]) {
+        CustomAlert(`Ingrese una fecha mayor a ${today.toISOString().split('T')[0]}`, 'error', 'top-right');
+        return;
+      }else if(pickupDate < tomorrow.toISOString().split('T')[0]) {
+        CustomAlert(`Ingrese una fecha mayor a ${tomorrow.toISOString().split('T')[0]}`, 'error', 'top-right');
+        return;
+      }
+    }
     
     const currentCart = JSON.parse(localStorage.getItem('chantilly-cart') || '{"items":[],"total":0,"itemCount":0}');
-    
+
+    console.log('currentCart', currentCart);
     const existingItemIndex = currentCart.items.findIndex((item: LocalCartItem) => 
+      
       item.productId === productId && 
       item.product.portion === selectedPortion &&
       item.product.cakeFlavor === selectedCake &&
-      item.product.fillingName === selectedFilling
+      item.product.fillingName === selectedFilling &&
+      item.product.pickupDate === pickupDate
     );
 
     let updatedItems;
@@ -69,7 +89,6 @@ const FormCart: React.FC<FormCartProps> = ({
       updatedItems[existingItemIndex] = {
         ...updatedItems[existingItemIndex],
         quantity: updatedItems[existingItemIndex].quantity + 1,
-        // Keep price as unit price; total is computed as price * quantity
         price: parseFloat(productVariant?.price || initialPrice.toString())
       };
     } else {
@@ -108,9 +127,8 @@ const FormCart: React.FC<FormCartProps> = ({
 
     localStorage.setItem('chantilly-cart', JSON.stringify(updatedCart));
     window.dispatchEvent(new Event('chantilly-cart-updated'));
-    
-    console.log('Carrito actualizado:', updatedCart);
-    toast(existingItemIndex !== -1 ? '¡Cantidad actualizada en el carrito!' : '¡Producto agregado al carrito!');
+    window.dispatchEvent(new Event('open-cart'));
+  
   }
 
   useEffect(() => {
@@ -134,7 +152,6 @@ const FormCart: React.FC<FormCartProps> = ({
       <input type="hidden" name="imageProduct" value={imageProduct || ''} />
       <input type="hidden" name="cakeName" value={cakeName || ''} />
   
-      {/* Porciones — solo para Tortas temáticas */}
       {(productType === '1' || productType === '2') && (
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
           <label className="text-sm font-medium text-black sm:w-32 sm:flex-shrink-0">Porciones</label>
@@ -155,7 +172,6 @@ const FormCart: React.FC<FormCartProps> = ({
         </div>
       )}
   
-      {/* Opciones de cake — solo para Tortas temáticas */}
       {productType === '2' && (
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
           <label className="text-sm font-medium text-black sm:w-32 sm:flex-shrink-0">Opciones de cake</label>
@@ -174,7 +190,6 @@ const FormCart: React.FC<FormCartProps> = ({
         </div>
       )}
   
-      {/* Relleno — solo para Tortas temáticas */}
       {productType === '2' && (
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
           <label className="text-sm font-medium text-black sm:w-32 sm:flex-shrink-0">Relleno</label>
@@ -196,20 +211,18 @@ const FormCart: React.FC<FormCartProps> = ({
         </div>
       )}
   
-      {/* Día de recojo — requerido para todos los tipos */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
         <label className="text-sm font-medium text-black sm:w-32 sm:flex-shrink-0">Día de recojo</label>
         <input
           type="date"
           value={pickupDate}
           name="pickupDate"
-          required // siempre requerido según tu especificación
+          required 
           onChange={(e) => setPickupDate(e.target.value)}
           className="w-full sm:flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#c41c1a] focus:border-[#c41c1a]"
         />
       </div>
   
-      {/* Dedicatoria — opcional siempre */}
       {productType !== '4' && (
       <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">
         <label className="text-sm font-medium text-black sm:w-32 sm:flex-shrink-0 sm:pt-2">Nombre o Dedicatoria</label>
@@ -224,7 +237,6 @@ const FormCart: React.FC<FormCartProps> = ({
       </div>
       )}
   
-      {/* Precio + botón */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-4">
         <div className="text-3xl font-bold text-[#c41c1a] sm:w-32 sm:flex-shrink-0 text-center sm:text-left">
           S/

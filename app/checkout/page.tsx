@@ -9,8 +9,10 @@ import { useEffect, useState } from 'react';
 import { getCustomerById, updateCustomer } from '@/service/customerService';
 import { TransformedCustomer } from '@/types/api';
 import { toast } from 'sonner';
+import Loading from './components/loading';
 import { LocalService } from '@/service/local/localService';
 import type { Local } from '@/service/local/localService';
+import { CustomAlert } from '@/components/ui/custom-alert';
 
 type FormData = {
     name: string;
@@ -31,7 +33,9 @@ export default function Contact() {
     const [ruc, setRuc] = useState('');
     const [razonSocial, setRazonSocial] = useState('');
     const [address, setAddress] = useState('');
+    const [loading, setLoading] = useState(false);
     const router = useRouter();
+    const [loadingText, setLoadingText] = useState('');
 
     const [customerData, setCustomerData] = useState<TransformedCustomer | null>(null);
     const [form, setForm] = useState<FormData>({
@@ -76,20 +80,33 @@ export default function Contact() {
     };
 
     useEffect(() => {
-        getCustomerById(customer?.id?.toString() || '').then((data) => {
-            setCustomerData(data);
-            if (data) {
-                setForm({
-                    name: data.name ?? '',
-                    lastname: data.lastname ?? '',
-                    address: data.address ?? '',
-                    phone: data.phone ?? '',
-                    id_document_type: data.id_document_type ?? 0,
-                    document_number: data.document_number ?? '',
-                });
+        let active = true;
+        const load = async () => {
+            setLoading(true);
+            setLoadingText('Cargando datos del cliente...');
+            try {
+                const data = await getCustomerById(customer?.id?.toString() || '');
+                if (!active) return;
+                setCustomerData(data);
+                if (data) {
+                    setForm({
+                        name: data.name ?? '',
+                        lastname: data.lastname ?? '',
+                        address: data.address ?? '',
+                        phone: data.phone ?? '',
+                        id_document_type: data.id_document_type ?? 0,
+                        document_number: data.document_number ?? '',
+                    });
+                }
+            } finally {
+                if (active) setLoading(false);
             }
-        });
-    }, []);
+        };
+        load();
+        return () => {
+            active = false;
+        };
+    }, [customer?.id]);
 
     useEffect(() => {
         let active = true;
@@ -149,46 +166,59 @@ export default function Contact() {
         setLocalSelected(local);
     };
 
-    const handleConfirmData = () => {
+    const handleConfirmData = async () => {
+        setLoadingText('Actualizando datos...');
+        setLoading(true);
         try {
-            updateCustomer(customer?.id?.toString() || '', form);
+            await updateCustomer(customer?.id?.toString() || '', form);
             setIsClickEdit(false);
-            toast.success('Datos actualizados exitosamente', { position: "top-center" });
-        } catch (error) {
+            CustomAlert('Datos actualizados exitosamente', 'success', 'bottom-right');
+         } catch (error) {
             console.error('Error updating customer:', error);
-            toast.error('Error al actualizar los datos', { position: "top-center" });
+            CustomAlert('Error al actualizar los datos', 'error', 'bottom-right')
+        } finally {
+            setLoading(false);
         }
     };
 
     const searchCompany = async () => {
         if (!ruc) {
-            toast.error('Ingresa un RUC para buscar', { position: 'top-center' });
+            CustomAlert('Ingresa un RUC para buscar', 'error', 'bottom-right');
             return;
         }
+        setLoadingText('Buscando...');
+        setLoading(true);
         const url = `/api/sunat?ruc=${encodeURIComponent(ruc)}`;
         try {
             const response = await fetch(url);
             const resultado = await response.json();
-            console.log(resultado.ruc);
-            if (resultado) {
+            console.log(resultado);
+            if (resultado !== 'No se ha encontrado el RUC consultado') {
                 setRuc(resultado.ruc);
                 setRazonSocial(resultado.razonSocial);
                 setAddress(resultado.direccion);
+                CustomAlert('Empresa encontrada', 'success', 'bottom-right');
             } else {
-                toast.error('Error al buscar la empresa', { position: "top-center" });
+                setRuc('');
+                setRazonSocial('');
+                setAddress('');
+                CustomAlert(resultado, 'error', 'bottom-right');
             }
         } catch (err) {
             console.error(err);
+        } finally {
+            setLoading(false);
         }
     }
 
     const total = (listShopping as any[]).reduce((sum, item) => sum + ((item?.price || 0) * (item?.quantity || 0)), 0);
-
     return (
         <>
+            {console.log(loadingText)}
+            {loading && <Loading text={loadingText} />}
             <Header />
             <main>
-                <div className='grid grid-cols-2 gap-6 pr-24 pl-24 pb-24'>
+                <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 px-4 sm:px-6 lg:px-24 pb-24'>
                     <div className='pl-5 pr-5 pt-5 bg-white'>
                         <h1 className='text-[25px] font-bold text-black mb-5'>Confirma y paga tu compra</h1>
                         <div className='flex justify-center mb-2 bg-[#c41c1a] p-2'>
@@ -200,29 +230,29 @@ export default function Contact() {
                         <div className='pb-5 pt-2 font-bold text-[15px]'>
                             Solicitamos unicamente la información esencial para la finalización de la compra
                         </div>
-                        <div className='grid grid-cols-2 gap-2'>
+                        <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
                             <div className='grid grid-cols-1'>
                                 <label htmlFor="name">Nombres (obligatorio)</label>
-                                <input disabled={!isClickEdit} className={`pl-2 pr-2 border-2 border-[#c41c1a] ${!isClickEdit ? 'text-gray-500' : 'text-black'}`} type="text" name="name" id="name" placeholder="Nombres" value={form.name} onChange={handleChange} />
+                                <input disabled={!isClickEdit} className={`w-full py-2 pl-2 pr-2 rounded border-2 border-[#c41c1a] ${!isClickEdit ? 'text-gray-500' : 'text-black'}`} type="text" name="name" id="name" placeholder="Nombres" value={form.name} onChange={handleChange} />
                             </div>
                             <div className='grid grid-cols-1'>
                                 <label htmlFor="lastName">Apellidos (obligatorio)</label>
-                                <input disabled={!isClickEdit} className={`pl-2 pr-2 border-2 border-[#c41c1a] ${!isClickEdit ? 'text-gray-500' : 'text-black'}`} type="text" name="lastname" id="lastName" placeholder="Apellidos" value={form.lastname} onChange={handleChange} />
+                                <input disabled={!isClickEdit} className={`w-full py-2 pl-2 pr-2 rounded border-2 border-[#c41c1a] ${!isClickEdit ? 'text-gray-500' : 'text-black'}`} type="text" name="lastname" id="lastName" placeholder="Apellidos" value={form.lastname} onChange={handleChange} />
                             </div>
                             <div className='grid grid-cols-1'>
                                 <label htmlFor="address">Dirección</label>
-                                <input disabled={!isClickEdit} className={`pl-2 pr-2 border-2 border-[#c41c1a] ${!isClickEdit ? 'text-gray-500' : 'text-black'}`} type="text" name="address" id="address" placeholder="Dirección" value={form.address} onChange={handleChange} />
+                                <input disabled={!isClickEdit} className={`w-full py-2 pl-2 pr-2 rounded border-2 border-[#c41c1a] ${!isClickEdit ? 'text-gray-500' : 'text-black'}`} type="text" name="address" id="address" placeholder="Dirección" value={form.address} onChange={handleChange} />
                             </div>
                             <div className='grid grid-cols-1'>
                                 <label htmlFor="phone">Celular (obligatorio)</label>
-                                <input disabled={!isClickEdit} className={`pl-2 pr-2 border-2 border-[#c41c1a] ${!isClickEdit ? 'text-gray-500' : 'text-black'}`} type="tel" name="phone" id="phone" placeholder="Celular" value={form.phone} onChange={handleChange} />
+                                <input disabled={!isClickEdit} className={`w-full py-2 pl-2 pr-2 rounded border-2 border-[#c41c1a] ${!isClickEdit ? 'text-gray-500' : 'text-black'}`} type="tel" name="phone" id="phone" placeholder="Celular" value={form.phone} onChange={handleChange} />
                             </div>
                             <div className='grid grid-cols-1'>
                                 <label htmlFor="document">Documento de identidad</label>
                                 <select disabled={!isClickEdit}
                                     name="id_document_type"
                                     id="document"
-                                    className={`pl-2 pr-2 border-2 border-[#c41c1a] ${!isClickEdit ? 'text-gray-500' : 'text-black'}`}
+                                    className={`w-full py-2 pl-2 pr-2 rounded border-2 border-[#c41c1a] ${!isClickEdit ? 'text-gray-500' : 'text-black'}`}
                                     value={form.id_document_type}
                                     onChange={handleSelectChange}
                                 >
@@ -234,7 +264,7 @@ export default function Contact() {
                             </div>
                             <div className='grid grid-cols-1'>
                                 <label htmlFor="documentNumber">Numero de documento de identidad</label>
-                                <input disabled={!isClickEdit} className={`pl-2 pr-2 border-2 border-[#c41c1a] ${!isClickEdit ? 'text-gray-500' : 'text-black'}`} type="text" name="document_number" id="documentNumber" placeholder="Numero de documento de identidad" value={form.document_number} onChange={handleChange} />
+                                <input disabled={!isClickEdit} className={`w-full py-2 pl-2 pr-2 rounded border-2 border-[#c41c1a] ${!isClickEdit ? 'text-gray-500' : 'text-black'}`} type="text" name="document_number" id="documentNumber" placeholder="Numero de documento de identidad" value={form.document_number} onChange={handleChange} />
                             </div>
                         </div>
                         <div className='flex justify-center mt-4 pb-4'>
@@ -253,9 +283,9 @@ export default function Contact() {
                         <div className='border-b-2 border-[#c41c1a] pt-3'>
                             <h2 className='text-[18px] font-bold text-[#c41c1a]'>DOCUMENTO DE VENTA</h2>
                         </div>
-                        <div className='flex justify-around items-center gap-5'>
+                        <div className='flex flex-col sm:flex-row sm:justify-around items-start sm:items-center gap-3 sm:gap-5'>
                             <div className='pb-5 pt-2 text-[15px]'>
-                                <input type="radio" name="receipt" value="receipt" id='receipt' onChange={() => setIsClickFact(false)} defaultChecked/>
+                                <input type="radio" name="receipt" value="receipt" id='receipt' onChange={() => setIsClickFact(false)} defaultChecked />
                                 <label className="ml-2" htmlFor="receipt">BOLETA DE VENTA</label>
                             </div>
                             <div className='pb-5 pt-2 text-[15px]'>
@@ -271,8 +301,8 @@ export default function Contact() {
                                 <div className='grid grid-cols-1 gap-2 pt-3'>
                                     <div className="grid grid-cols-1">
                                         <label htmlFor="ruc">RUC</label>
-                                        <div className="grid grid-cols-[1fr_auto] gap-2">
-                                            <input className="pl-2 pr-2 border-2 border-[#c41c1a]" type="text" name="ruc" id="ruc" placeholder="RUC" value={ruc} onChange={(e) => setRuc(e.target.value)} />
+                                        <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2">
+                                            <input className="w-full py-2 pl-2 pr-2 rounded border-2 border-[#c41c1a]" type="text" name="ruc" id="ruc" placeholder="RUC" value={ruc} onChange={(e) => setRuc(e.target.value)} />
                                             <button className="bg-[#c41c1a] text-white py-2 px-4 rounded cursor-pointer" onClick={() => searchCompany()}>
                                                 <FaMagnifyingGlass />
                                             </button>
@@ -280,11 +310,11 @@ export default function Contact() {
                                     </div>
                                     <div className='grid grid-cols-1'>
                                         <label htmlFor="razonSocial">Razón Social</label>
-                                        <input className='pl-2 pr-2 border-2 border-[#c41c1a]' type="text" name="razonSocial" id="razonSocial" placeholder="Razón Social" value={razonSocial} onChange={(e) => setRazonSocial(e.target.value)} />
+                                        <input className='w-full py-2 pl-2 pr-2 rounded border-2 border-[#c41c1a]' type="text" name="razonSocial" id="razonSocial" placeholder="Razón Social" value={razonSocial} onChange={(e) => setRazonSocial(e.target.value)} />
                                     </div>
                                     <div className='grid grid-cols-1'>
                                         <label htmlFor="address">Domicilio Fiscal</label>
-                                        <input className='pl-2 pr-2 border-2 border-[#c41c1a]' type="text" name="address" id="address" placeholder="Domicilio Fiscal" value={address} onChange={(e) => setAddress(e.target.value)} />
+                                        <input className='w-full py-2 pl-2 pr-2 rounded border-2 border-[#c41c1a]' type="text" name="address" id="address" placeholder="Domicilio Fiscal" value={address} onChange={(e) => setAddress(e.target.value)} />
                                     </div>
                                 </div>
                             </>
@@ -296,7 +326,7 @@ export default function Contact() {
                             <div className='border-b-2 border-[#c41c1a] pt-3'>
                                 <h2 className='text-[18px] font-bold text-[#c41c1a]'>TIPO DE ENTREGA</h2>
                             </div>
-                            <div className='flex justify-around items-center gap-5'>
+                            <div className='flex flex-col sm:flex-row sm:justify-around items-start sm:items-center gap-3 sm:gap-5'>
                                 <div className='pb-5 pt-2 text-[15px]'>
                                     <input type="radio" name="deliveryType" value="deliveryType" id='deliveryType' defaultChecked />
                                     <label className="ml-2" htmlFor="deliveryType">Recoger <b>GRATIS</b> en tienda</label>
@@ -374,8 +404,8 @@ export default function Contact() {
                                 <FaPencil /> Editar carrito
                             </a>
                         </div>
-                        <div>
-                            <table className='w-full'>
+                        <div className='overflow-x-auto'>
+                            <table className='w-full min-w-[640px]'>
                                 <thead className='bg-[#c41c1a] text-white h-12'>
                                     <tr>
                                         <th>Imagen</th>

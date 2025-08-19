@@ -13,7 +13,7 @@ import {
 import { ShoppingCart } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 
-export default function Shopping({ showCount }: { showCount: boolean }) {
+export default function Shopping({ showCount, isPrimary = true }: { showCount: boolean; isPrimary?: boolean }) {
   const [count, setCount] = useState(0);
   const [open, setOpen] = useState(false);
   const openedFromQueryRef = useRef(false);
@@ -32,24 +32,44 @@ export default function Shopping({ showCount }: { showCount: boolean }) {
     updateCount();
 
     window.addEventListener("chantilly-cart-updated", handleCartChange);
-    window.addEventListener('open-cart', handleOpenCart as EventListener);
 
-    try {
-      const url = new URL(window.location.href);
-      const shouldOpen = url.searchParams.get('openCart') === '1';
-      if (shouldOpen && !openedFromQueryRef.current) {
-        openedFromQueryRef.current = true;
-        setOpen(true);
-        url.searchParams.delete('openCart');
-        window.history.replaceState({}, '', url.toString());
-      }
-    } catch {}
+    if (isPrimary) {
+      window.addEventListener('open-cart', handleOpenCart as EventListener);
+
+      try {
+        const url = new URL(window.location.href);
+        const shouldOpen = url.searchParams.get('openCart') === '1';
+        if (shouldOpen && !openedFromQueryRef.current) {
+          openedFromQueryRef.current = true;
+          setOpen(true);
+          url.searchParams.delete('openCart');
+          window.history.replaceState({}, '', url.toString());
+        }
+      } catch { }
+    }
 
     return () => {
       window.removeEventListener("chantilly-cart-updated", handleCartChange);
-      window.removeEventListener('open-cart', handleOpenCart as EventListener);
+      if (isPrimary) {
+        window.removeEventListener('open-cart', handleOpenCart as EventListener);
+      }
     };
-  }, [handleCartChange, handleOpenCart]);
+  }, [handleCartChange, handleOpenCart, isPrimary]);
+
+  if (!isPrimary) {
+    return (
+      <div className="z-50">
+        <Button
+          variant="ghost"
+          className="cursor-pointer"
+          onClick={() => window.dispatchEvent(new Event('open-cart'))}
+        >
+          <ShoppingCart size={26} />
+          <span className="text-xs">{count || "0"}</span>
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="z-50">

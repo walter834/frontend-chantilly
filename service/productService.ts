@@ -26,6 +26,30 @@ export async function getProductById(id: string): Promise<TransformedProduct | n
   }
 }
 
+export async function getProductBySlug(slug: string): Promise<TransformedProduct | null> {
+  try {
+    const search = slug.replace(/-/g, ' ');
+    const { products } = await fetchProducts(1, undefined, undefined, undefined, search);
+    if (!products || products.length === 0) return null;
+
+    const matched = products.find(p => {
+      try {
+        const url = new URL(p.product_link);
+        const last = url.pathname.split('/').filter(Boolean).pop();
+        return last === slug;
+      } catch {
+
+        return p.product_link.endsWith(slug) || p.product_link === slug;
+      }
+    }) || null;
+
+    return matched || products[0] || null;
+  } catch (error) {
+    console.error('Error fetching product by slug:', error);
+    return null;
+  }
+}
+
 export async function getProductVariantById(id: string, portion: string): Promise<TransformedProductVariant | null> {
   try {
     if(portion === "Elige una opción"){
@@ -139,6 +163,7 @@ export async function fetchProducts(
     if (bestStatus) params.append('best_status', bestStatus);
     const endpoint = `${API_ROUTES.PRODUCTS}?${params.toString()}`;
     const { data: response } = await api.get<ApiProductsResponse>(endpoint);
+    console.log('API Response:', response);
     if (!response.data || !Array.isArray(response.data)) {
         return {
             products: [],

@@ -57,6 +57,7 @@ export default function ProductGrid({
           price={product.price}
           originalPrice={product.originalPrice}
           image={product.image}
+          product_link={product.product_link}
         />
       ))}
     </div>

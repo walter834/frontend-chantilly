@@ -5,7 +5,7 @@ import { capitalizeFirstLetter } from '@/lib/utils';
 import { fetchAccessories, fetchProducts, getCakeFlavors, getProductVariantById } from '@/service/productService';
 import { TransformedProduct, TransformedProductVariant, TransformedCakeFlavor, TransformedProductAccessory } from '@/types/api';
 import FormCart from '@/components/formCart';
-import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
 interface ProductDetailProps {
   id: string;
@@ -16,10 +16,11 @@ interface ProductDetailProps {
   image: string; 
   productType: string;
   description: string;
+  product_link: string;
 }
 
-const ProductDetail = ({ id, name, price, originalPrice, theme, image, productType, description}: ProductDetailProps) => {
-console.log('Product detail:', id, name, price, originalPrice, theme, image, productType);
+const ProductDetail = ({ id, name, price, originalPrice, theme, image, productType, description, product_link}: ProductDetailProps) => {
+  const router = useRouter();
   const [cakeFlavors, setCakeFlavors] = useState<TransformedCakeFlavor[]>([]);
   const [selectedCake, setSelectedCake] = useState(''); 
   const [accessories, setAccessories] = useState<TransformedProductAccessory[]>([]);  const [bocaditos, setBocaditos] = useState<TransformedProduct[]>([]);
@@ -28,7 +29,6 @@ console.log('Product detail:', id, name, price, originalPrice, theme, image, pro
   const [productVariant, setProductVariant] = useState<TransformedProductVariant | null>(null);
   const [imageProduct, setImageProduct] = useState<string>('');
   
-  // Cart item shape stored in localStorage
   interface LocalCartItem {
     productId: string;
     product: { id: string | number; name: string; description: string; price: number; image: string; type: string };
@@ -85,7 +85,7 @@ console.log('Product detail:', id, name, price, originalPrice, theme, image, pro
 
     localStorage.setItem('chantilly-cart', JSON.stringify(updatedCart));
     window.dispatchEvent(new Event('chantilly-cart-updated'));
-    toast(existingItemIndex !== -1 ? '¡Cantidad actualizada en el carrito!' : '¡Producto agregado al carrito!');
+    window.dispatchEvent(new Event('open-cart'));
 
   };
 
@@ -154,6 +154,10 @@ console.log('Product detail:', id, name, price, originalPrice, theme, image, pro
     
     fetchProductVariant();
   }, [id]);
+
+  const handleViewDetails = (productId: string) => {
+    router.push(`/detalle/${productId}`);
+  };
 
   return (
     <div className="mx-auto">
@@ -260,13 +264,14 @@ console.log('Product detail:', id, name, price, originalPrice, theme, image, pro
             <div className="col-span-full text-center text-gray-500">Cargando bocaditos...</div>
           ) : (
             bocaditos.map((bocadito) => (
-              <div key={bocadito.id} className="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow">
+              <div key={bocadito.id} className="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow cursor-pointer">
                 <div className="aspect-square overflow-hidden rounded-md mb-2">
                   <Image
                     src={bocadito.image}
                     alt={bocadito.name}
                     width={150}
                     height={150}
+                    onClick={() => handleViewDetails(bocadito.id.toString())}
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -283,7 +288,7 @@ console.log('Product detail:', id, name, price, originalPrice, theme, image, pro
                     </span>
                   )}
                 </div>
-                <button 
+                {/* <button 
                   onClick={(e) => {
                     e.stopPropagation();
                     handleAddToCart(bocadito, false);
@@ -291,7 +296,7 @@ console.log('Product detail:', id, name, price, originalPrice, theme, image, pro
                   className="w-full bg-[#c41c1a] text-white text-sm px-2 py-1 rounded cursor-pointer hover:bg-[#a01818] transition-colors"
                 >
                   Agregar
-                </button>
+                </button> */}
               </div>
             ))
           )}

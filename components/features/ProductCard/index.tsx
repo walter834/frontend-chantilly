@@ -10,6 +10,7 @@ interface ProductCardProps {
   price: number;
   originalPrice?: number;
   image: string;
+  product_link: string;
 }
 
 export default function ProductCard({
@@ -18,13 +19,15 @@ export default function ProductCard({
   description,
   price,
   originalPrice,
-  image
+  image,
+  product_link
 }: ProductCardProps) {
   const router = useRouter();
 
   const handleViewDetails = () => {
+    console.log(product_link);
     // Navegación segura: solo pasamos el ID
-    router.push(`/detalle/${id}`);
+    router.push(product_link);
   };
   return (
     <div className="text-center group">

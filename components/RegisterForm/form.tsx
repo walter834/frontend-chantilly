@@ -538,7 +538,7 @@ export default function Register({
           {/* Submit button */}
           <Button
             type="submit"
-            className="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-3 mt-6"
+            className="w-full bg-[#c41c1a] hover:bg-[#c41c1a]/80 text-white font-medium py-3 mt-6"
             disabled={isLoading}
           >
             {isLoading ? (
