@@ -164,16 +164,6 @@ export default function HomePageContent() {
           />
         </div>
       )}
-      <div className="text-center mt-12">
-        <div className="mt-6">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">
-            Locales más cercanos a tu ubicación
-          </h1>
-          <p className="mt-4 text-muted-foreground text-xl">
-            Conoce un poco más de nuestros locales a nivel nacional
-          </p>
-        </div>
-      </div>
     </div>
   );
 }

@@ -11,32 +11,49 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { ShoppingCart } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 export default function Shopping({ showCount }: { showCount: boolean }) {
   const [count, setCount] = useState(0);
+  const [open, setOpen] = useState(false);
+  const openedFromQueryRef = useRef(false);
   const updateCount = () => {
     const cart = JSON.parse(localStorage.getItem("chantilly-cart") || '{"itemCount":0}');
     setCount(cart.itemCount || 0);
   };
 
+  const handleCartChange = useCallback(() => {
+    updateCount();
+  }, []);
+
+  const handleOpenCart = useCallback(() => setOpen(true), []);
+
   useEffect(() => {
     updateCount();
 
-    const handleCartChange = () => {
-      updateCount();
-    };
-
     window.addEventListener("chantilly-cart-updated", handleCartChange);
+    window.addEventListener('open-cart', handleOpenCart as EventListener);
+
+    try {
+      const url = new URL(window.location.href);
+      const shouldOpen = url.searchParams.get('openCart') === '1';
+      if (shouldOpen && !openedFromQueryRef.current) {
+        openedFromQueryRef.current = true;
+        setOpen(true);
+        url.searchParams.delete('openCart');
+        window.history.replaceState({}, '', url.toString());
+      }
+    } catch {}
 
     return () => {
       window.removeEventListener("chantilly-cart-updated", handleCartChange);
+      window.removeEventListener('open-cart', handleOpenCart as EventListener);
     };
-  }, []);
+  }, [handleCartChange, handleOpenCart]);
 
   return (
     <div className="z-50">
-      <Sheet>
+      <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
           <Button variant="ghost" className="cursor-pointer">
             <ShoppingCart size={26} />
