@@ -42,7 +42,7 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
   const [loadingDocs, setLoadingDocs] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
+
   // Flag para controlar si ya se cargaron los datos iniciales
   const initialDataLoaded = useRef(false);
 
@@ -61,7 +61,8 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
     district,
     updateCustomerData,
   } = useAuth();
-
+  console.log(customer);
+  
   const {
     departments,
     provinces,
@@ -84,8 +85,8 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
       celular: "",
       email: "",
       direccion: "",
-      departamento: "",
-      provincia: "",
+      departamento: "15",
+      provincia: "1501",
       distrito: "",
       password: "",
       confirmPassword: "",
@@ -123,25 +124,22 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
       form.setValue("celular", phone || "");
       form.setValue("email", email || "");
       form.setValue("direccion", address || "");
+      form.setValue("departamento", "15");
+      form.setValue("provincia", "1501");
 
-      // ✅ Cargar ubigeo usando códigos
-      if (customer.deparment_code) {
-        form.setValue("departamento", customer.deparment_code);
-        await handleDepartmentChange(customer.deparment_code);
-
-        if (customer.province_code) {
-          // Esperar a que se carguen las provincias
-          await new Promise(resolve => setTimeout(resolve, 100));
-          form.setValue("provincia", customer.province_code);
-          await handleProvinceChange(customer.province_code);
-
-          if (customer.district_code) {
-            // Esperar a que se carguen los distritos
-            await new Promise(resolve => setTimeout(resolve, 100));
-            form.setValue("distrito", customer.district_code);
-            handleDistrictChange(customer.district_code);
-          }
-        }
+      // Inicializar Lima en el hook
+      await handleDepartmentChange("15");
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      await handleProvinceChange("1501");
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      // Cargar distrito si está disponible
+      if (customer.district_code) {
+        console.log("Cargando distrito desde BD:", customer.district_code);
+        form.setValue("distrito", customer.district_code);
+        handleDistrictChange(customer.district_code);
+      } else {
+        console.log("No hay distrito en BD, quedará vacío para seleccionar");
+        form.setValue("distrito", "");
       }
 
       setIsLoadingForm(false);
@@ -153,7 +151,7 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
     }
   }, [departments.length, customer, isAuthenticated]);
 
-  // ✅ Si los departamentos se cargan después, completar la carga
+  // Si los departamentos se cargan después, completar la carga
   useEffect(() => {
     if (departments.length > 0 && !initialDataLoaded.current && customer) {
       // Trigger el efecto anterior
@@ -161,8 +159,18 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
     }
   }, [departments.length, customer]);
 
-  // ✅ onSubmit mejorado
   const onSubmit = async (data: FormData) => {
+    // Agregar estos logs al inicio
+    console.log("Customer completo:", customer);
+    console.log("Customer ID:", customer?.id);
+    console.log("Props ID:", id);
+
+    // Verificar que tenemos un ID válido
+    const userId = customer?.id || parseInt(id);
+    if (!userId) {
+      setSubmitError("No se puede identificar al usuario. Recargue la página.");
+      return;
+    }
     setIsLoading(true);
     setSubmitError("");
     setSubmitSuccess("");
@@ -171,7 +179,7 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
       console.log("Datos del formulario (códigos):", data);
 
       const dataWithCodes: any = {
-        id: customer?.id || parseInt(id),
+        id: userId,
         name: data.nombres.trim(),
         lastname: data.apellidos.trim(),
         email: data.email.trim().toLowerCase(),
@@ -179,13 +187,12 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
         document_number: data.documentNumber.trim(),
         phone: data.celular.trim(),
         address: data.direccion?.trim() || "",
-        // ✅ Enviar tanto nombres como códigos
-        deparment: getDepartmentName(data.departamento ),
-        province: getProvinceName(data.provincia ),
+        deparment: "Lima",
+        province: "Lima",
         district: getDistrictName(data.distrito),
-        deparment_code: data.departamento,
-        province_code: data.provincia,
-        district_code: data.distrito
+        deparment_code: "15",
+        province_code: "1501",
+        district_code: data.distrito,
       };
 
       // Solo incluir contraseña si se proporcionó
@@ -220,7 +227,8 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
       if (error && typeof error === "object") {
         const err = error as { status?: number; message?: string };
         if (err.status === 422) {
-          errorMessage = err.message || "Error de validación. Revise los datos ingresados.";
+          errorMessage =
+            err.message || "Error de validación. Revise los datos ingresados.";
         } else if (err.status === 409) {
           errorMessage = "El email o número de documento ya están registrados.";
         } else if (err.status === 400) {
@@ -242,7 +250,8 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
         <div className="flex items-center gap-2">
           <AlertCircle className="h-6 w-6 text-red-500" />
           <span>
-            No se encontraron datos del usuario. Por favor, inicie sesión nuevamente.
+            No se encontraron datos del usuario. Por favor, inicie sesión
+            nuevamente.
           </span>
         </div>
       </div>
@@ -469,7 +478,7 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
                       await handleDepartmentChange(value);
                     }}
                     value={field.value}
-                    disabled={isLoading}
+                    disabled={true}
                   >
                     <FormControl className="w-full">
                       <SelectTrigger>
@@ -506,7 +515,7 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
                       await handleProvinceChange(value);
                     }}
                     value={field.value}
-                    disabled={isLoading}
+                    disabled={true}
                   >
                     <FormControl className="w-full">
                       <SelectTrigger>
@@ -570,7 +579,8 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-sm font-medium text-gray-700">
-                    Nueva Contraseña <span className="text-gray-400">(Opcional)</span>
+                    Nueva Contraseña{" "}
+                    <span className="text-gray-400">(Opcional)</span>
                   </FormLabel>
                   <FormControl>
                     <div className="relative">
@@ -608,7 +618,8 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-sm font-medium text-gray-700">
-                    Confirmar Nueva Contraseña <span className="text-gray-400">(Opcional)</span>
+                    Confirmar Nueva Contraseña{" "}
+                    <span className="text-gray-400">(Opcional)</span>
                   </FormLabel>
                   <FormControl>
                     <div className="relative">

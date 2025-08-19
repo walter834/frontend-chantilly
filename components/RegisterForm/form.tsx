@@ -74,6 +74,21 @@ export default function Register({
     fetchDocumentTypes();
   }, []);
 
+  useEffect(() => {
+  // Solo inicializar cuando departments tenga datos
+  if (departments.length > 0) {
+    console.log("Inicializando Lima...");
+    
+    // Primero seleccionar departamento Lima (código 15)
+    handleDepartmentChange("15");
+    
+    // Esperar un poco para que se carguen las provincias y luego seleccionar Lima provincia
+    setTimeout(() => {
+      handleProvinceChange("1501");
+    }, 100);
+  }
+}, [departments]); // ✅ Dependencia: departments
+
   const form = useForm<FormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -84,12 +99,12 @@ export default function Register({
       celular: "",
       email: "",
       direccion: "",
-      departamento: "",
-      provincia: "",
+      departamento: "15",
+      provincia: "1501",
       distrito: "",
       password: "",
-      deparment_code:"",
-      province_code: "",
+      deparment_code: "15",
+      province_code: "1501",
       district_code: "",
       confirmPassword: "",
     },
@@ -109,9 +124,9 @@ export default function Register({
         departamento: getDepartmentName(data.departamento), // nombre
         provincia: getProvinceName(data.provincia), // nombre
         distrito: getDistrictName(data.distrito), // nombre
-        deparment_code: data.departamento,                   
-      province_code: data.provincia,                       
-      district_code: data.distrito,                        
+        deparment_code: data.departamento,
+        province_code: data.provincia,
+        district_code: data.distrito,
       };
 
       console.log("Datos convertidos a nombres:", dataWithCodesAndNames);
@@ -363,6 +378,7 @@ export default function Register({
                       handleDepartmentChange(value);
                     }}
                     value={field.value}
+                    disabled={true}
                   >
                     <FormControl className="w-full">
                       <SelectTrigger>
@@ -398,8 +414,10 @@ export default function Register({
                       form.setValue("distrito", "");
 
                       handleProvinceChange(value);
+                      
                     }}
                     value={field.value}
+                    disabled={true}   
                   >
                     <FormControl className="w-full">
                       <SelectTrigger>
