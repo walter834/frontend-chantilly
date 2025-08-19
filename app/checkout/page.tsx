@@ -47,6 +47,34 @@ export default function Contact() {
     const [localsError, setLocalsError] = useState<string | null>(null);
     const [localSelected, setLocalSelected] = useState<Local | null>(null);
 
+    const getMapEmbedUrl = (local: Local): string | null => {
+        if (!local) return null;
+        const lat = (local.latitud || '').toString().trim();
+        const lng = (local.longitud || '').toString().trim();
+
+        if (lat && lng) {
+            return `https://www.google.com/maps?q=${encodeURIComponent(lat)},${encodeURIComponent(lng)}&z=15&output=embed`;
+        }
+
+        if (local.link_local) {
+            try {
+                const url = new URL(local.link_local);
+                const isGoogleMaps = /(^|\.)google\.(com|[a-z]{2})(\.[a-z]{2})?$/i.test(url.hostname) && url.pathname.startsWith('/maps');
+                if (isGoogleMaps) {
+                    if (!url.searchParams.has('output')) {
+                        url.searchParams.set('output', 'embed');
+                    }
+                    return url.toString();
+                }
+                return local.link_local;
+            } catch {
+                return null;
+            }
+        }
+
+        return null;
+    };
+
     useEffect(() => {
         getCustomerById(customer?.id?.toString() || '').then((data) => {
             setCustomerData(data);
@@ -63,7 +91,6 @@ export default function Contact() {
         });
     }, []);
 
-    // Cargar locales cercanos al montar
     useEffect(() => {
         let active = true;
         const run = async () => {
@@ -176,26 +203,26 @@ export default function Contact() {
                         <div className='grid grid-cols-2 gap-2'>
                             <div className='grid grid-cols-1'>
                                 <label htmlFor="name">Nombres (obligatorio)</label>
-                                <input disabled={!isClickEdit} className={`border-2 border-[#c41c1a] ${!isClickEdit ? 'text-gray-500' : 'text-black'}`} type="text" name="name" id="name" placeholder="Nombres" value={form.name} onChange={handleChange} />
+                                <input disabled={!isClickEdit} className={`pl-2 pr-2 border-2 border-[#c41c1a] ${!isClickEdit ? 'text-gray-500' : 'text-black'}`} type="text" name="name" id="name" placeholder="Nombres" value={form.name} onChange={handleChange} />
                             </div>
                             <div className='grid grid-cols-1'>
                                 <label htmlFor="lastName">Apellidos (obligatorio)</label>
-                                <input disabled={!isClickEdit} className={`border-2 border-[#c41c1a] ${!isClickEdit ? 'text-gray-500' : 'text-black'}`} type="text" name="lastname" id="lastName" placeholder="Apellidos" value={form.lastname} onChange={handleChange} />
+                                <input disabled={!isClickEdit} className={`pl-2 pr-2 border-2 border-[#c41c1a] ${!isClickEdit ? 'text-gray-500' : 'text-black'}`} type="text" name="lastname" id="lastName" placeholder="Apellidos" value={form.lastname} onChange={handleChange} />
                             </div>
                             <div className='grid grid-cols-1'>
                                 <label htmlFor="address">Dirección</label>
-                                <input disabled={!isClickEdit} className={`border-2 border-[#c41c1a] ${!isClickEdit ? 'text-gray-500' : 'text-black'}`} type="text" name="address" id="address" placeholder="Dirección" value={form.address} onChange={handleChange} />
+                                <input disabled={!isClickEdit} className={`pl-2 pr-2 border-2 border-[#c41c1a] ${!isClickEdit ? 'text-gray-500' : 'text-black'}`} type="text" name="address" id="address" placeholder="Dirección" value={form.address} onChange={handleChange} />
                             </div>
                             <div className='grid grid-cols-1'>
                                 <label htmlFor="phone">Celular (obligatorio)</label>
-                                <input disabled={!isClickEdit} className={`border-2 border-[#c41c1a] ${!isClickEdit ? 'text-gray-500' : 'text-black'}`} type="tel" name="phone" id="phone" placeholder="Celular" value={form.phone} onChange={handleChange} />
+                                <input disabled={!isClickEdit} className={`pl-2 pr-2 border-2 border-[#c41c1a] ${!isClickEdit ? 'text-gray-500' : 'text-black'}`} type="tel" name="phone" id="phone" placeholder="Celular" value={form.phone} onChange={handleChange} />
                             </div>
                             <div className='grid grid-cols-1'>
                                 <label htmlFor="document">Documento de identidad</label>
                                 <select disabled={!isClickEdit}
                                     name="id_document_type"
                                     id="document"
-                                    className={`border-2 border-[#c41c1a] ${!isClickEdit ? 'text-gray-500' : 'text-black'}`}
+                                    className={`pl-2 pr-2 border-2 border-[#c41c1a] ${!isClickEdit ? 'text-gray-500' : 'text-black'}`}
                                     value={form.id_document_type}
                                     onChange={handleSelectChange}
                                 >
@@ -207,7 +234,7 @@ export default function Contact() {
                             </div>
                             <div className='grid grid-cols-1'>
                                 <label htmlFor="documentNumber">Numero de documento de identidad</label>
-                                <input disabled={!isClickEdit} className={`border-2 border-[#c41c1a] ${!isClickEdit ? 'text-gray-500' : 'text-black'}`} type="text" name="document_number" id="documentNumber" placeholder="Numero de documento de identidad" value={form.document_number} onChange={handleChange} />
+                                <input disabled={!isClickEdit} className={`pl-2 pr-2 border-2 border-[#c41c1a] ${!isClickEdit ? 'text-gray-500' : 'text-black'}`} type="text" name="document_number" id="documentNumber" placeholder="Numero de documento de identidad" value={form.document_number} onChange={handleChange} />
                             </div>
                         </div>
                         <div className='flex justify-center mt-4 pb-4'>
@@ -245,7 +272,7 @@ export default function Contact() {
                                     <div className="grid grid-cols-1">
                                         <label htmlFor="ruc">RUC</label>
                                         <div className="grid grid-cols-[1fr_auto] gap-2">
-                                            <input className="border-2 border-[#c41c1a]" type="text" name="ruc" id="ruc" placeholder="RUC" value={ruc} onChange={(e) => setRuc(e.target.value)} />
+                                            <input className="pl-2 pr-2 border-2 border-[#c41c1a]" type="text" name="ruc" id="ruc" placeholder="RUC" value={ruc} onChange={(e) => setRuc(e.target.value)} />
                                             <button className="bg-[#c41c1a] text-white py-2 px-4 rounded cursor-pointer" onClick={() => searchCompany()}>
                                                 <FaMagnifyingGlass />
                                             </button>
@@ -253,11 +280,11 @@ export default function Contact() {
                                     </div>
                                     <div className='grid grid-cols-1'>
                                         <label htmlFor="razonSocial">Razón Social</label>
-                                        <input className='border-2 border-[#c41c1a]' type="text" name="razonSocial" id="razonSocial" placeholder="Razón Social" value={razonSocial} onChange={(e) => setRazonSocial(e.target.value)} />
+                                        <input className='pl-2 pr-2 border-2 border-[#c41c1a]' type="text" name="razonSocial" id="razonSocial" placeholder="Razón Social" value={razonSocial} onChange={(e) => setRazonSocial(e.target.value)} />
                                     </div>
                                     <div className='grid grid-cols-1'>
                                         <label htmlFor="address">Domicilio Fiscal</label>
-                                        <input className='border-2 border-[#c41c1a]' type="text" name="address" id="address" placeholder="Domicilio Fiscal" value={address} onChange={(e) => setAddress(e.target.value)} />
+                                        <input className='pl-2 pr-2 border-2 border-[#c41c1a]' type="text" name="address" id="address" placeholder="Domicilio Fiscal" value={address} onChange={(e) => setAddress(e.target.value)} />
                                     </div>
                                 </div>
                             </>
@@ -300,15 +327,21 @@ export default function Contact() {
                                             Cambiar tienda
                                         </button>
                                     </div>
-                                    {localSelected.link_local && (
-                                        <iframe
-                                            src={localSelected.link_local}
-                                            width="100%"
-                                            height="300"
-                                            loading='lazy'
-                                            referrerPolicy='no-referrer-when-downgrade'
-                                        />
-                                    )}
+                                    {(() => {
+                                        const embedUrl = localSelected ? getMapEmbedUrl(localSelected) : null;
+                                        return embedUrl ? (
+                                            <iframe
+                                                src={embedUrl}
+                                                width="100%"
+                                                height="300"
+                                                loading='lazy'
+                                                referrerPolicy='no-referrer-when-downgrade'
+                                                style={{ border: 0 }}
+                                                allowFullScreen
+                                                aria-label={`Mapa de ${localSelected?.name || 'local'}`}
+                                            />
+                                        ) : null;
+                                    })()}
                                 </div>
                             ) : (
                                 <div className='grid grid-cols-1 gap-2 pt-3 scroll-y h-[450px] overflow-y-auto'>
@@ -374,7 +407,7 @@ export default function Contact() {
                                 <tfoot className='text-[#c41c1a]'>
                                     <tr className='text-[20px]'>
                                         <td colSpan={4} className="text-left font-bold pr-4">TOTAL</td>
-                                        <td className="text-right font-bold">S/ {total}</td>
+                                        <td className="text-right font-bold">S/ {total.toFixed(2)}</td>
                                     </tr>
                                 </tfoot>
                             </table>
