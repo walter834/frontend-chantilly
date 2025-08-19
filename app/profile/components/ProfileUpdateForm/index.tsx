@@ -61,7 +61,8 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
     district,
     updateCustomerData,
   } = useAuth();
-
+  console.log(customer);
+  
   const {
     departments,
     provinces,
@@ -126,12 +127,11 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
       form.setValue("departamento", "15");
       form.setValue("provincia", "1501");
 
-
       // Inicializar Lima en el hook
       await handleDepartmentChange("15");
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
       await handleProvinceChange("1501");
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
       // Cargar distrito si está disponible
       if (customer.district_code) {
         console.log("Cargando distrito desde BD:", customer.district_code);
@@ -160,6 +160,17 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
   }, [departments.length, customer]);
 
   const onSubmit = async (data: FormData) => {
+    // Agregar estos logs al inicio
+    console.log("Customer completo:", customer);
+    console.log("Customer ID:", customer?.id);
+    console.log("Props ID:", id);
+
+    // Verificar que tenemos un ID válido
+    const userId = customer?.id || parseInt(id);
+    if (!userId) {
+      setSubmitError("No se puede identificar al usuario. Recargue la página.");
+      return;
+    }
     setIsLoading(true);
     setSubmitError("");
     setSubmitSuccess("");
@@ -168,7 +179,7 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
       console.log("Datos del formulario (códigos):", data);
 
       const dataWithCodes: any = {
-        id: customer?.id || parseInt(id),
+        id: userId,
         name: data.nombres.trim(),
         lastname: data.apellidos.trim(),
         email: data.email.trim().toLowerCase(),
@@ -176,7 +187,7 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
         document_number: data.documentNumber.trim(),
         phone: data.celular.trim(),
         address: data.direccion?.trim() || "",
-        deparmento: getDepartmentName(data.departamento),
+        deparment: getDepartmentName(data.departamento),
         province: getProvinceName(data.provincia),
         district: getDistrictName(data.distrito),
         deparment_code: "15",
