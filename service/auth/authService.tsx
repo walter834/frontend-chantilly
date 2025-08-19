@@ -315,7 +315,7 @@ export const validateToken = async (): Promise<boolean> => {
 export const updateProfile = async (data: Partial<Customer>) => {
   try {
     const currentCustomer = getCurrentCustomer();
-    console.log("datos del usuario", currentCustomer);
+    console.log("datos del usuarioRedux", currentCustomer);
 
     if (!currentCustomer?.id) {
       throw new Error("No se encontró el ID del customer");
