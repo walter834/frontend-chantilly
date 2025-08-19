@@ -11,9 +11,7 @@ import {
 import { User } from "lucide-react";
 import Register from "../RegisterForm/form";
 import Login from "./form";
-import Link from "next/link";
 import Image from "next/image";
-import { DialogDescription } from "@radix-ui/react-dialog";
 
 export default function LoginForm() {
   const [isOpen, setIsOpen] = useState(false);
