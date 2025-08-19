@@ -113,65 +113,53 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
       if (!isAuthenticated || !customer || initialDataLoaded.current) return;
 
       console.log("✅ Cargando datos iniciales del formulario...");
-      console.log("Customer data:", customer); // 🔍 Debug
       initialDataLoaded.current = true;
 
-      try {
-        // Cargar datos básicos
-        form.setValue("nombres", name || "");
-        form.setValue("apellidos", lastname || "");
-        form.setValue("documentType", String(documentType) || "");
-        form.setValue("documentNumber", documentNumber || "");
-        form.setValue("celular", phone || "");
-        form.setValue("email", email || "");
-        form.setValue("direccion", address || "");
-        form.setValue("departamento", "15");
-        form.setValue("provincia", "1501");
+      // Cargar datos básicos
+      form.setValue("nombres", name || "");
+      form.setValue("apellidos", lastname || "");
+      form.setValue("documentType", String(documentType) || "");
+      form.setValue("documentNumber", documentNumber || "");
+      form.setValue("celular", phone || "");
+      form.setValue("email", email || "");
+      form.setValue("direccion", address || "");
+      form.setValue("departamento", "15");
+      form.setValue("provincia", "1501");
 
-        // Inicializar Lima en el hook de forma secuencial
-        console.log("Inicializando departamento Lima...");
-        await handleDepartmentChange("15");
-        
-        console.log("Inicializando provincia Lima...");
-        await handleProvinceChange("1501");
-        
-        // Pequeña pausa para asegurar que los distritos se carguen
-        await new Promise(resolve => setTimeout(resolve, 200));
-        
-        // Cargar distrito si está disponible
-        if (customer.district_code) {
-          console.log("Cargando distrito desde BD:", customer.district_code);
-          form.setValue("distrito", customer.district_code);
-          handleDistrictChange(customer.district_code);
-        } else {
-          console.log("No hay distrito en BD, quedará vacío para seleccionar");
-          form.setValue("distrito", "");
-        }
 
-        console.log("✅ Datos iniciales cargados correctamente");
-      } catch (error) {
-        console.error("❌ Error cargando datos iniciales:", error);
-      } finally {
-        setIsLoadingForm(false);
+      // Inicializar Lima en el hook
+      await handleDepartmentChange("15");
+      await new Promise(resolve => setTimeout(resolve, 100));
+      await handleProvinceChange("1501");
+      await new Promise(resolve => setTimeout(resolve, 100));
+      // Cargar distrito si está disponible
+      if (customer.district_code) {
+        console.log("Cargando distrito desde BD:", customer.district_code);
+        form.setValue("distrito", customer.district_code);
+        handleDistrictChange(customer.district_code);
+      } else {
+        console.log("No hay distrito en BD, quedará vacío para seleccionar");
+        form.setValue("distrito", "");
       }
+
+      setIsLoadingForm(false);
+      console.log("✅ Datos iniciales cargados");
     };
 
-    // Esperar a que tanto los departamentos como el customer estén disponibles
-    if (departments.length > 0 && customer && isAuthenticated) {
+    if (departments.length > 0) {
       loadInitialData();
     }
-  }, [departments.length, customer, isAuthenticated, form, name, lastname, documentType, documentNumber, phone, email, address]);
+  }, [departments.length, customer, isAuthenticated]);
+
+  // Si los departamentos se cargan después, completar la carga
+  useEffect(() => {
+    if (departments.length > 0 && !initialDataLoaded.current && customer) {
+      // Trigger el efecto anterior
+      setIsLoadingForm(true);
+    }
+  }, [departments.length, customer]);
 
   const onSubmit = async (data: FormData) => {
-    console.log("🔄 Iniciando actualización de perfil...");
-    console.log("Customer actual:", customer); // 🔍 Debug crítico
-    
-    if (!customer || !customer.id) {
-      console.error("❌ No hay customer o ID disponible");
-      setSubmitError("Error: No se encontraron datos del usuario. Por favor, recargue la página.");
-      return;
-    }
-
     setIsLoading(true);
     setSubmitError("");
     setSubmitSuccess("");
@@ -180,7 +168,7 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
       console.log("Datos del formulario (códigos):", data);
 
       const dataWithCodes: any = {
-        id: customer.id, // ✅ Usar directamente customer.id
+        id: customer?.id || parseInt(id),
         name: data.nombres.trim(),
         lastname: data.apellidos.trim(),
         email: data.email.trim().toLowerCase(),
@@ -188,11 +176,10 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
         document_number: data.documentNumber.trim(),
         phone: data.celular.trim(),
         address: data.direccion?.trim() || "",
-        // ✅ Enviar tanto nombres como códigos
-        deparment: "Lima", // 🔧 Corregir typo: deparment -> department
+        deparment: "Lima",
         province: "Lima",
-        district: getDistrictName(data.distrito) || "",
-        deparment_code: "15", // 🔧 Mantener consistencia con el backend
+        district: getDistrictName(data.distrito),
+        deparment_code: "15",
         province_code: "1501",
         district_code: data.distrito,
       };
@@ -207,16 +194,12 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
       const response = await updateProfile(dataWithCodes);
       console.log("Respuesta del servidor:", response);
 
-      // ✅ Verificar que la respuesta tenga customer antes de actualizar
-      if (response && response.customer) {
-        console.log("Actualizando datos del customer:", response.customer);
+      if (response.customer) {
         updateCustomerData(response.customer);
         console.log("✅ Datos actualizados en Redux");
-      } else {
-        console.warn("⚠️  Respuesta del servidor sin customer data");
       }
 
-      setSubmitSuccess(response?.message || "Perfil actualizado exitosamente");
+      setSubmitSuccess(response.message || "Perfil actualizado exitosamente");
 
       // Limpiar campos de contraseña después del éxito
       form.setValue("password", "");
@@ -225,16 +208,16 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
       setTimeout(() => {
         setSubmitSuccess("");
       }, 3000);
-
     } catch (error: unknown) {
-      console.error("❌ Error completo:", error);
+      console.error("Error completo:", error);
 
       let errorMessage = "Error al actualizar perfil";
 
       if (error && typeof error === "object") {
         const err = error as { status?: number; message?: string };
         if (err.status === 422) {
-          errorMessage = err.message || "Error de validación. Revise los datos ingresados.";
+          errorMessage =
+            err.message || "Error de validación. Revise los datos ingresados.";
         } else if (err.status === 409) {
           errorMessage = "El email o número de documento ya están registrados.";
         } else if (err.status === 400) {
@@ -250,30 +233,21 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
     }
   };
 
-  // ✅ Mejorar validaciones de carga
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !customer) {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="flex items-center gap-2">
           <AlertCircle className="h-6 w-6 text-red-500" />
-          <span>Por favor, inicie sesión para acceder a esta página.</span>
+          <span>
+            No se encontraron datos del usuario. Por favor, inicie sesión
+            nuevamente.
+          </span>
         </div>
       </div>
     );
   }
 
-  if (!customer) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="flex items-center gap-2">
-          <Loader2 className="h-6 w-6 animate-spin" />
-          <span>Cargando datos del usuario...</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (isLoadingForm || departments.length === 0) {
+  if (isLoadingForm) {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="flex items-center gap-2">
@@ -487,16 +461,17 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
                   <Select
                     onValueChange={async (value) => {
                       field.onChange(value);
+                      // Limpiar provincia y distrito sin resetear todo el form
                       form.setValue("provincia", "");
                       form.setValue("distrito", "");
                       await handleDepartmentChange(value);
                     }}
                     value={field.value}
-                    disabled={true} // Mantener Lima fijo
+                    disabled={true}
                   >
                     <FormControl className="w-full">
                       <SelectTrigger>
-                        <SelectValue placeholder="Lima" />
+                        <SelectValue placeholder="Seleccionar" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -524,15 +499,16 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
                   <Select
                     onValueChange={async (value) => {
                       field.onChange(value);
+                      // Solo limpiar distrito
                       form.setValue("distrito", "");
                       await handleProvinceChange(value);
                     }}
                     value={field.value}
-                    disabled={true} // Mantener Lima fijo
+                    disabled={true}
                   >
                     <FormControl className="w-full">
                       <SelectTrigger>
-                        <SelectValue placeholder="Lima" />
+                        <SelectValue placeholder="Seleccionar" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -567,7 +543,7 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
                   >
                     <FormControl className="w-full">
                       <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar distrito" />
+                        <SelectValue placeholder="Seleccionar" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
