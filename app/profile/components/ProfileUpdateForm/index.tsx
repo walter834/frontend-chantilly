@@ -84,8 +84,8 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
       celular: "",
       email: "",
       direccion: "",
-      departamento: "",
-      provincia: "",
+      departamento: "15",
+      provincia: "1501",
       distrito: "",
       password: "",
       confirmPassword: "",
@@ -126,6 +126,12 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
       form.setValue("departamento", "15");
       form.setValue("provincia", "1501");
 
+
+      // Inicializar Lima en el hook
+      await handleDepartmentChange("15");
+      await new Promise(resolve => setTimeout(resolve, 100));
+      await handleProvinceChange("1501");
+      await new Promise(resolve => setTimeout(resolve, 100));
       // Cargar distrito si está disponible
       if (customer.district_code) {
         console.log("Cargando distrito desde BD:", customer.district_code);
