@@ -309,43 +309,21 @@ export const validateToken = async (): Promise<boolean> => {
   }
 };
 
-/**
- * ✅ Función para actualizar perfil completa - CORREGIDA
- */
 export const updateProfile = async (data: Partial<Customer> & { id: number }) => {
   try {
     const currentCustomer = getCurrentCustomer();
-    console.log("datos del usuarioRedux", currentCustomer);
-    
-    // ✅ CAMBIO PRINCIPAL: Usar el ID que viene en data, no solo del Redux
     const customerId = data.id || currentCustomer?.id;
     
     if (!customerId) {
       throw new Error("No se encontró el ID del customer");
     }
 
-    console.log(`🔍 Actualizando customer ID: ${customerId}`);
-    console.log("📤 Datos originales recibidos:", data);
-
-    // ✅ CORRECCIÓN: Crear una copia de los datos sin el ID para el body
+    // ✅ SIMPLE: Solo quitar el ID, enviar el resto tal como viene del componente
     const { id, ...dataToSend } = data;
-    
-    // ✅ NUEVO: Asegurarse de que los códigos estén incluidos correctamente
-    const finalDataToSend = {
-      ...dataToSend,
-      // Asegurar que los códigos de ubigeo estén presentes
-      deparment_code: dataToSend.deparment_code || "15",
-      province_code: dataToSend.province_code || "1501",
-      district_code: dataToSend.district_code, // Este debe venir del formulario
-      
-      // Asegurar que el tipo de documento esté como número
-      id_document_type: dataToSend.id_document_type ? Number(dataToSend.id_document_type) : undefined,
-    };
 
-    console.log("📤 Datos finales a enviar:", finalDataToSend);
+    console.log("📤 Datos a enviar:", dataToSend);
 
-    const response = await api.put(`/customers/${customerId}`, finalDataToSend);
-    console.log("Response del update:", response);
+    const response = await api.put(`/customers/${customerId}`, dataToSend);
 
     // Actualizar los datos en Redux con la respuesta del servidor
     if (response.data.customer) {
@@ -366,12 +344,7 @@ export const updateProfile = async (data: Partial<Customer> & { id: number }) =>
       customer: response.data.customer,
     };
   } catch (error: any) {
-    const customerId = data.id || getCurrentCustomer()?.id;
-    console.error(
-      `❌ Error actualizando customer ID ${customerId}:`,
-      error
-    );
-    console.error("Error response:", error.response?.data);
+    console.error(`❌ Error actualizando customer:`, error);
     
     throw {
       success: false,
