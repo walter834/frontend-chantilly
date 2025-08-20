@@ -90,7 +90,7 @@ export default function Register({
       department_code: "15", // Corregido: department_code
       province_code: "01",
       district_code: "",
-      confirmPassword: "",
+      password_confirmation: "",
     },
   });
 
@@ -513,7 +513,7 @@ export default function Register({
 
             <FormField
               control={form.control}
-              name="confirmPassword"
+              name="password_confirmation"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-sm font-medium text-gray-700">

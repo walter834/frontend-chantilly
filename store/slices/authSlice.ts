@@ -19,8 +19,11 @@ interface Customer {
   department_code: string;
   province_code: string;
   district_code: string;
+  //password?:string;
+  //password_confirmation?: string;
   status?: number;
   google_id?: string | null;
+
 }
 
 // ✅ AMPLIADO: Estado de autenticación incluye campos derivados persistentes

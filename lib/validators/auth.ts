@@ -28,11 +28,11 @@ export const registerSchema = z
     district_code: z.string(),
 
     password: z.string().min(8, "Mínimo 8 caracteres"),
-    confirmPassword: z.string().min(8, "Confirme su contraseña"),
+    password_confirmation: z.string().min(8, "Confirme su contraseña"),
   })
-  .refine((data) => data.password === data.confirmPassword, {
+  .refine((data) => data.password === data.password_confirmation, {
     message: "Las contraseñas no coinciden",
-    path: ["confirmPassword"],
+    path: ["password_confirmation"],
   });
 
 export const loginSchema = z.object({
@@ -108,13 +108,13 @@ export const profileUpdateSchema = z
     provincia: z.string(),
     distrito: z.string(),
     password: z.string().optional(),
-    confirmPassword: z.string().optional(),
+    password_confirmation: z.string().optional(),
   })
   .refine(
     (data: any) => {
       const hasPassword = data.password && data.password.trim().length > 0;
       const hasConfirmPassword =
-        data.confirmPassword && data.confirmPassword.trim().length > 0;
+        data.password_confirmation && data.password_confirmation.trim().length > 0;
 
       // Si ninguno tiene valor, está bien
       if (!hasPassword && !hasConfirmPassword) {
@@ -128,7 +128,7 @@ export const profileUpdateSchema = z
           return false;
         }
         // Validar que coincidan
-        return data.password.trim() === data.confirmPassword.trim();
+        return data.password.trim() === data.password_confirmation.trim();
       }
 
       // Si solo uno tiene valor, es inválido
@@ -137,6 +137,6 @@ export const profileUpdateSchema = z
     {
       message:
         "Si desea cambiar la contraseña, complete ambos campos. Las contraseñas deben coincidir y tener al menos 8 caracteres",
-      path: ["confirmPassword"],
+      path: ["password_confirmation"],
     }
   );

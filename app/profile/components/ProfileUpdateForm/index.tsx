@@ -48,14 +48,14 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // ✅ ESTADOS PARA MANEJAR LOS CÓDIGOS SELECCIONADOS
-  const [selectedDepCode, setSelectedDepCode] = useState(""); 
-  const [selectedProCode, setSelectedProCode] = useState(""); 
+  const [selectedDepCode, setSelectedDepCode] = useState("");
+  const [selectedProCode, setSelectedProCode] = useState("");
   const [selectedDistCode, setSelectedDistCode] = useState("");
 
   const { departamentos } = useDepartamentos();
   const { provincias } = useProvincias(selectedDepCode);
   const { distritos } = useDistritos(selectedDepCode, selectedProCode);
-  
+
   const initialDataLoaded = useRef(false);
 
   const {
@@ -98,7 +98,7 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
       provincia: "",
       distrito: "",
       password: "",
-      confirmPassword: "",
+      password_confirmation: "",
     },
   });
 
@@ -151,10 +151,12 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
 
       setIsLoadingForm(false);
       console.log("✅ Datos iniciales cargados:", {
-        depCode, proCode, distCode,
+        depCode,
+        proCode,
+        distCode,
         depName: getDepartamentoName(depCode),
         proName: getProvinciaName(proCode),
-        distName: getDistritoName(distCode)
+        distName: getDistritoName(distCode),
       });
     };
 
@@ -166,7 +168,11 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
   // ✅ FUNCIÓN SUBMIT CORREGIDA
   const onSubmit = async (data: FormData) => {
     console.log("Customer completo:", customer);
-    console.log("Códigos seleccionados:", { selectedDepCode, selectedProCode, selectedDistCode });
+    console.log("Códigos seleccionados:", {
+      selectedDepCode,
+      selectedProCode,
+      selectedDistCode,
+    });
 
     const userId = customer?.id || parseInt(id);
     if (!userId) {
@@ -189,12 +195,12 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
         document_number: data.documentNumber.trim(),
         phone: data.celular.trim(),
         address: data.direccion?.trim() || "",
-        
+
         // ✅ ENVIAR NOMBRES PARA COMPATIBILIDAD CON EL BACKEND
         department: getDepartamentoName(selectedDepCode),
         province: getProvinciaName(selectedProCode),
         district: getDistritoName(selectedDistCode),
-        
+
         // ✅ ENVIAR CÓDIGOS CORRECTOS
         department_code: selectedDepCode,
         province_code: selectedProCode,
@@ -202,9 +208,9 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
       };
 
       // Solo incluir contraseña si se proporcionó
-      if (data.password && data.password.trim()) {
-        dataWithCodes.password = data.password.trim();
-        dataWithCodes.confirmPassword = data.confirmPassword;
+      if (data.password) {
+        dataWithCodes.password = data.password;
+        dataWithCodes.password_confirmation = data.password_confirmation; // Corregido a confirmPassword
       }
 
       console.log("📤 Datos a enviar (CORREGIDOS):", dataWithCodes);
@@ -226,7 +232,7 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
 
       // Limpiar campos de contraseña
       form.setValue("password", "");
-      form.setValue("confirmPassword", "");
+      form.setValue("password_confirmation", "");
 
       setTimeout(() => {
         setSubmitSuccess("");
@@ -239,7 +245,8 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
       if (error && typeof error === "object") {
         const err = error as { status?: number; message?: string };
         if (err.status === 422) {
-          errorMessage = err.message || "Error de validación. Revise los datos ingresados.";
+          errorMessage =
+            err.message || "Error de validación. Revise los datos ingresados.";
         } else if (err.status === 409) {
           errorMessage = "El email o número de documento ya están registrados.";
         } else if (err.status === 400) {
@@ -261,7 +268,8 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
         <div className="flex items-center gap-2">
           <AlertCircle className="h-6 w-6 text-red-500" />
           <span>
-            No se encontraron datos del usuario. Por favor, inicie sesión nuevamente.
+            No se encontraron datos del usuario. Por favor, inicie sesión
+            nuevamente.
           </span>
         </div>
       </div>
@@ -466,7 +474,7 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
               </FormItem>
             )}
           />
-         
+
           {/* ✅ UBIGEO CORREGIDO */}
           <div className="flex flex-col gap-3 md:grid md:grid-cols-3 md:gap-2">
             {/* Departamento */}
@@ -639,7 +647,7 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
 
             <FormField
               control={form.control}
-              name="confirmPassword"
+              name="password_confirmation"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-sm font-medium text-gray-700">
