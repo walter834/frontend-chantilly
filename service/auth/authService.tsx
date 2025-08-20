@@ -310,7 +310,7 @@ export const validateToken = async (): Promise<boolean> => {
 };
 
 /**
- * ✅ Función para actualizar perfil completa
+ * ✅ Función para actualizar perfil completa - CORREGIDA
  */
 export const updateProfile = async (data: Partial<Customer> & { id: number }) => {
   try {
@@ -325,12 +325,26 @@ export const updateProfile = async (data: Partial<Customer> & { id: number }) =>
     }
 
     console.log(`🔍 Actualizando customer ID: ${customerId}`);
-    console.log("📤 Datos a enviar:", data);
+    console.log("📤 Datos originales recibidos:", data);
 
-    // ✅ Crear una copia de los datos sin el ID para el body (el ID va en la URL)
+    // ✅ CORRECCIÓN: Crear una copia de los datos sin el ID para el body
     const { id, ...dataToSend } = data;
+    
+    // ✅ NUEVO: Asegurarse de que los códigos estén incluidos correctamente
+    const finalDataToSend = {
+      ...dataToSend,
+      // Asegurar que los códigos de ubigeo estén presentes
+      deparment_code: dataToSend.deparment_code || "15",
+      province_code: dataToSend.province_code || "1501",
+      district_code: dataToSend.district_code, // Este debe venir del formulario
+      
+      // Asegurar que el tipo de documento esté como número
+      id_document_type: dataToSend.id_document_type ? Number(dataToSend.id_document_type) : undefined,
+    };
 
-    const response = await api.put(`/customers/${customerId}`, dataToSend);
+    console.log("📤 Datos finales a enviar:", finalDataToSend);
+
+    const response = await api.put(`/customers/${customerId}`, finalDataToSend);
     console.log("Response del update:", response);
 
     // Actualizar los datos en Redux con la respuesta del servidor
