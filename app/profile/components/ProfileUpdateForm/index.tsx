@@ -242,7 +242,7 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
         province: "Lima",
         district: getDistrictName(data.distrito),
         deparment_code: "15",
-        province_code: "1501",
+        province_code: "01",
         district_code: data.distrito,
       };
 
