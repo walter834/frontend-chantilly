@@ -36,10 +36,10 @@ interface RegisterPayload {
   lastname: string;
   address: string;
   phone: string;
-  deparment: string;
+  department: string;
   province: string;
   district: string;
-  deparment_code: string;
+  department_code: string;
   province_code: string;
   district_code: string;
   password_confirmation: string;
@@ -211,10 +211,10 @@ export const register = async (formData: RegisterFormData) => {
       lastname: formData.apellidos.trim(),
       address: formData.direccion?.trim() || "",
       phone: formData.celular.trim(),
-      deparment: formData.departamento,
+      department: formData.departamento,
       province: formData.provincia,
       district: formData.distrito,
-      deparment_code: formData.deparment_code,
+      department_code: formData.department_code,
       province_code: formData.province_code,
       district_code: formData.district_code,
       password_confirmation: formData.confirmPassword,

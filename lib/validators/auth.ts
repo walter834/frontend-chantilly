@@ -23,7 +23,7 @@ export const registerSchema = z
     departamento: z.string().min(1, "Seleccione un departamento"),
     provincia: z.string().min(1, "Seleccione una provincia"),
     distrito: z.string().min(1, "Seleccione un distrito de la lista"),
-    deparment_code: z.string(),
+    department_code: z.string(),
     province_code: z.string(),
     district_code: z.string(),
 

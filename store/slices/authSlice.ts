@@ -12,11 +12,11 @@ interface Customer {
   document_number: string;
   phone: string;
   address: string;
-  deparment: string;
+  department: string;
   province: string;
   district: string;
   // ✅ Agregar códigos de ubigeo
-  deparment_code: string;
+  department_code: string;
   province_code: string;
   district_code: string;
   status?: number;

@@ -23,10 +23,28 @@ import {
 } from "@/components/ui/form";
 import { AlertCircle, CheckCircle, Eye, EyeOff, Loader2 } from "lucide-react";
 import { getDocumentTypes, updateProfile } from "@/service/auth/authService";
-import { useUbigeo } from "@/hooks/useUbigeo";
+import {
+  useDepartamentos,
+  useDistritos,
+  useProvincias,
+} from "@/hooks/useUbigeo";
 import { useAuth } from "@/hooks/useAuth";
 import { profileUpdateSchema } from "@/lib/validators/auth";
-import { log } from "console";
+
+interface Departamento {
+  coddep: string;
+  nomdep: string;
+}
+
+interface Provincia {
+  codpro: string;
+  nompro: string;
+}
+
+interface Distrito {
+  coddis: string;
+  nomdis: string;
+}
 
 type FormData = z.infer<typeof profileUpdateSchema>;
 
@@ -44,6 +62,14 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  const [selectedDepCode, setSelectedDepCode] = useState("15"); // Lima por defecto
+  const [selectedProCode, setSelectedProCode] = useState("01"); // Lima Metropolitana por defecto
+
+  // Hooks de ubigeo
+  const { departamentos } = useDepartamentos();
+  const { provincias } = useProvincias(selectedDepCode);
+  const { distritos } = useDistritos(selectedDepCode, selectedProCode);
+
   // Flag para controlar si ya se cargaron los datos iniciales
   const initialDataLoaded = useRef(false);
 
@@ -57,24 +83,38 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
     address,
     documentNumber,
     documentType,
-    department,
-    province,
-    district,
     updateCustomerData,
   } = useAuth();
-  console.log(customer);
 
-  const {
-    departments,
-    provinces,
-    districts,
-    handleDepartmentChange,
-    handleProvinceChange,
-    handleDistrictChange,
-    getDepartmentName,
-    getProvinceName,
-    getDistrictName,
-  } = useUbigeo();
+  // ✅ FUNCIONES AUXILIARES CON TIPADO CORRECTO
+  const getDepartamentoName = (codigo: string): string => {
+    return (
+      (departamentos as Departamento[]).find((d) => d.coddep === codigo)
+        ?.nomdep || ""
+    );
+  };
+
+  const getProvinciaName = (codigo: string): string => {
+    return (
+      (provincias as Provincia[]).find((p) => p.codpro === codigo)?.nompro || ""
+    );
+  };
+
+  const getDistritoName = (codigo: string): string => {
+    return (
+      (distritos as Distrito[]).find((d) => d.coddis === codigo)?.nomdis || ""
+    );
+  };
+
+  // ✅ FUNCIÓN getDistrictName QUE ESTABA FALTANDO
+  const getDistrictName = (nombreDistrito: string): string => {
+    const distrito = (distritos as Distrito[]).find(
+      (d) => d.nomdis === nombreDistrito
+    );
+    return distrito?.nomdis || nombreDistrito;
+  };
+
+  console.log("Customer data:", customer);
 
   const form = useForm<FormData>({
     resolver: zodResolver(profileUpdateSchema),
@@ -87,14 +127,14 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
       email: "",
       direccion: "",
       departamento: "15",
-      provincia: "1501",
+      provincia: "01",
       distrito: "",
       password: "",
       confirmPassword: "",
     },
   });
 
-  // ✅ Cargar tipos de documento (solo una vez)
+  // Cargar tipos de documento (solo una vez)
   useEffect(() => {
     const fetchDocumentTypes = async () => {
       try {
@@ -109,7 +149,7 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
     fetchDocumentTypes();
   }, []);
 
-  // ✅ Cargar datos iniciales SOLO UNA VEZ
+  // Cargar datos iniciales SOLO UNA VEZ
   useEffect(() => {
     const loadInitialData = async () => {
       if (!isAuthenticated || !customer || initialDataLoaded.current) return;
@@ -125,41 +165,50 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
       form.setValue("celular", phone || "");
       form.setValue("email", email || "");
       form.setValue("direccion", address || "");
-      form.setValue("departamento", "15");
-      form.setValue("provincia", "1501");
 
-      // Inicializar Lima en el hook
-      await handleDepartmentChange("15");
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      await handleProvinceChange("1501");
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      console.log(customer.district_code);
-      // Cargar distrito si está disponible
-      if (customer.district_code) {
-        console.log("Cargando distrito desde BD:", customer.district_code);
-        form.setValue("distrito", customer.district_code);
-        handleDistrictChange(customer.district_code);
-      } else {
-        console.log("No hay distrito en BD, quedará vacío para seleccionar");
-        form.setValue("distrito", "");
+      // Determinar códigos a usar
+      let depCode = "15"; // Lima por defecto
+      let proCode = "01"; // Lima por defecto
+      let distCode = "";
+
+      // Si el usuario tiene códigos guardados, usarlos
+      if (customer.department_code) {
+        depCode = customer.department_code;
+        setSelectedDepCode(depCode);
       }
+      if (customer.province_code) {
+        proCode = customer.province_code;
+        setSelectedProCode(proCode);
+      }
+      if (customer.district_code) {
+        distCode = customer.district_code;
+      }
+
+      // Establecer valores en el formulario
+      form.setValue("departamento", getDepartamentoName(depCode) || "Lima");
+      form.setValue("provincia", getProvinciaName(proCode) || "Lima");
+      form.setValue("distrito", distCode ? getDistritoName(distCode) : "");
 
       setIsLoadingForm(false);
       console.log("✅ Datos iniciales cargados");
     };
 
-    if (departments.length > 0) {
+    if (departamentos.length > 0) {
       loadInitialData();
     }
-  }, [departments.length, customer, isAuthenticated]);
-
-  // Si los departamentos se cargan después, completar la carga
-  useEffect(() => {
-    if (departments.length > 0 && !initialDataLoaded.current && customer) {
-      // Trigger el efecto anterior
-      setIsLoadingForm(true);
-    }
-  }, [departments.length, customer]);
+  }, [
+    departamentos.length,
+    customer,
+    isAuthenticated,
+    name,
+    lastname,
+    documentType,
+    documentNumber,
+    phone,
+    email,
+    address,
+    form,
+  ]);
 
   const onSubmit = async (data: FormData) => {
     // Agregar estos logs al inicio
@@ -201,7 +250,8 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
       if (data.password && data.password.trim()) {
         dataWithCodes.password = data.password.trim();
       }
-      // ✅ AGREGAR ESTOS LOGS PARA DEBUGGING:
+
+      // Debug logs
       console.log("🔍 Debug - Formulario data.distrito:", data.distrito);
       console.log(
         "🔍 Debug - getDistrictName result:",
@@ -273,10 +323,12 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
 
   if (isLoadingForm) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <div className="flex items-center gap-2">
-          <Loader2 className="h-6 w-6 animate-spin" />
-          <span>Cargando formulario...</span>
+      <div className="flex justify-center items-center py-12">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#c41d1ada]"></div>
+          <span className="text-gray-600 text-sm">
+            Cargando datos del perfil...
+          </span>
         </div>
       </div>
     );
@@ -296,7 +348,6 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
               {submitError}
             </div>
           )}
-
           {submitSuccess && (
             <div className="bg-green-50 border border-green-400 text-green-700 px-4 py-3 rounded flex items-center gap-2">
               <CheckCircle className="h-5 w-5" />
@@ -483,15 +534,21 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
                     Departamento <span className="text-red-500">*</span>
                   </FormLabel>
                   <Select
-                    onValueChange={async (value) => {
-                      field.onChange(value);
-                      // Limpiar provincia y distrito sin resetear todo el form
+                    onValueChange={(codigo) => {
+                      // Actualizar estado local
+                      setSelectedDepCode(codigo);
+                      setSelectedProCode(""); // Reset provincia
+
+                      // Actualizar formulario con nombre
+                      const nombreDep = getDepartamentoName(codigo);
+                      form.setValue("departamento", nombreDep);
+
+                      // Resetear provincia y distrito
                       form.setValue("provincia", "");
                       form.setValue("distrito", "");
-                      await handleDepartmentChange(value);
                     }}
-                    value={field.value}
-                    disabled={true}
+                    value={selectedDepCode}
+                    disabled={isLoading}
                   >
                     <FormControl className="w-full">
                       <SelectTrigger>
@@ -499,9 +556,9 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {departments.map((dept) => (
-                        <SelectItem key={dept.code} value={dept.code}>
-                          {dept.name}
+                      {(departamentos as Departamento[]).map((dep) => (
+                        <SelectItem key={dep.coddep} value={dep.coddep}>
+                          {dep.nomdep}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -521,24 +578,29 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
                     Provincia <span className="text-red-500">*</span>
                   </FormLabel>
                   <Select
-                    onValueChange={async (value) => {
-                      field.onChange(value);
-                      // Solo limpiar distrito
+                    onValueChange={(codigo) => {
+                      // Actualizar estado local
+                      setSelectedProCode(codigo);
+
+                      // Actualizar formulario con nombre
+                      const nombreProv = getProvinciaName(codigo);
+                      form.setValue("provincia", nombreProv);
+
+                      // Resetear distrito
                       form.setValue("distrito", "");
-                      await handleProvinceChange(value);
                     }}
-                    value={field.value}
-                    disabled={true}
+                    value={selectedProCode}
+                    disabled={isLoading || !selectedDepCode}
                   >
                     <FormControl className="w-full">
                       <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar" />
+                        <SelectValue placeholder="Seleccionar provincia" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {provinces.map((prov) => (
-                        <SelectItem key={prov.code} value={prov.code}>
-                          {prov.name}
+                      {(provincias as Provincia[]).map((prov) => (
+                        <SelectItem key={prov.codpro} value={prov.codpro}>
+                          {prov.nompro}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -558,22 +620,27 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
                     Distrito <span className="text-red-500">*</span>
                   </FormLabel>
                   <Select
-                    onValueChange={(value) => {
-                      field.onChange(value);
-                      handleDistrictChange(value);
+                    onValueChange={(codigo) => {
+                      // Actualizar formulario con nombre
+                      const nombreDist = getDistritoName(codigo);
+                      form.setValue("distrito", nombreDist);
                     }}
-                    value={field.value}
-                    disabled={isLoading}
+                    value={
+                      (distritos as Distrito[]).find(
+                        (d) => d.nomdis === form.watch("distrito")
+                      )?.coddis || ""
+                    }
+                    disabled={isLoading || !selectedProCode}
                   >
                     <FormControl className="w-full">
                       <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar" />
+                        <SelectValue placeholder="Seleccionar distrito" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {districts.map((dist) => (
-                        <SelectItem key={dist.code} value={dist.code}>
-                          {dist.name}
+                      {(distritos as Distrito[]).map((dist) => (
+                        <SelectItem key={dist.coddis} value={dist.coddis}>
+                          {dist.nomdis}
                         </SelectItem>
                       ))}
                     </SelectContent>
