@@ -31,21 +31,6 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { profileUpdateSchema } from "@/lib/validators/auth";
 
-interface Departamento {
-  coddep: string;
-  nomdep: string;
-}
-
-interface Provincia {
-  codpro: string;
-  nompro: string;
-}
-
-interface Distrito {
-  coddis: string;
-  nomdis: string;
-}
-
 type FormData = z.infer<typeof profileUpdateSchema>;
 
 interface ProfileUpdateFormProps {
@@ -62,15 +47,15 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const [selectedDepCode, setSelectedDepCode] = useState("15"); // Lima por defecto
-  const [selectedProCode, setSelectedProCode] = useState("01"); // Lima Metropolitana por defecto
+  // ✅ ESTADOS PARA MANEJAR LOS CÓDIGOS SELECCIONADOS
+  const [selectedDepCode, setSelectedDepCode] = useState(""); 
+  const [selectedProCode, setSelectedProCode] = useState(""); 
+  const [selectedDistCode, setSelectedDistCode] = useState("");
 
-  // Hooks de ubigeo
   const { departamentos } = useDepartamentos();
   const { provincias } = useProvincias(selectedDepCode);
   const { distritos } = useDistritos(selectedDepCode, selectedProCode);
-
-  // Flag para controlar si ya se cargaron los datos iniciales
+  
   const initialDataLoaded = useRef(false);
 
   const {
@@ -86,35 +71,18 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
     updateCustomerData,
   } = useAuth();
 
-  // ✅ FUNCIONES AUXILIARES CON TIPADO CORRECTO
-  const getDepartamentoName = (codigo: string): string => {
-    return (
-      (departamentos as Departamento[]).find((d) => d.coddep === codigo)
-        ?.nomdep || ""
-    );
+  // ✅ FUNCIONES AUXILIARES UNIFICADAS (solo estas 3)
+  const getDepartamentoName = (codigo: string) => {
+    return departamentos.find((d: any) => d.coddep === codigo)?.nomdep || "";
   };
 
-  const getProvinciaName = (codigo: string): string => {
-    return (
-      (provincias as Provincia[]).find((p) => p.codpro === codigo)?.nompro || ""
-    );
+  const getProvinciaName = (codigo: string) => {
+    return provincias.find((p: any) => p.codpro === codigo)?.nompro || "";
   };
 
-  const getDistritoName = (codigo: string): string => {
-    return (
-      (distritos as Distrito[]).find((d) => d.coddis === codigo)?.nomdis || ""
-    );
+  const getDistritoName = (codigo: string) => {
+    return distritos.find((d: any) => d.coddis === codigo)?.nomdis || "";
   };
-
-  // ✅ FUNCIÓN getDistrictName QUE ESTABA FALTANDO
-  const getDistrictName = (nombreDistrito: string): string => {
-    const distrito = (distritos as Distrito[]).find(
-      (d) => d.nomdis === nombreDistrito
-    );
-    return distrito?.nomdis || nombreDistrito;
-  };
-
-  console.log("Customer data:", customer);
 
   const form = useForm<FormData>({
     resolver: zodResolver(profileUpdateSchema),
@@ -126,15 +94,15 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
       celular: "",
       email: "",
       direccion: "",
-      departamento: "15",
-      provincia: "01",
+      departamento: "",
+      provincia: "",
       distrito: "",
       password: "",
       confirmPassword: "",
     },
   });
 
-  // Cargar tipos de documento (solo una vez)
+  // Cargar tipos de documento
   useEffect(() => {
     const fetchDocumentTypes = async () => {
       try {
@@ -149,7 +117,7 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
     fetchDocumentTypes();
   }, []);
 
-  // Cargar datos iniciales SOLO UNA VEZ
+  // ✅ CARGAR DATOS INICIALES CORREGIDO
   useEffect(() => {
     const loadInitialData = async () => {
       if (!isAuthenticated || !customer || initialDataLoaded.current) return;
@@ -166,69 +134,52 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
       form.setValue("email", email || "");
       form.setValue("direccion", address || "");
 
-      // Determinar códigos a usar
-      let depCode = "15"; // Lima por defecto
-      let proCode = "01"; // Lima por defecto
-      let distCode = "";
+      // ✅ LÓGICA MEJORADA PARA UBIGEO
+      let depCode = customer.department_code || "15"; // Lima por defecto si no existe
+      let proCode = customer.province_code || "01"; // Lima por defecto
+      let distCode = customer.district_code || "";
 
-      // Si el usuario tiene códigos guardados, usarlos
-      if (customer.department_code) {
-        depCode = customer.department_code;
-        setSelectedDepCode(depCode);
-      }
-      if (customer.province_code) {
-        proCode = customer.province_code;
-        setSelectedProCode(proCode);
-      }
-      if (customer.district_code) {
-        distCode = customer.district_code;
-      }
+      // Establecer códigos seleccionados
+      setSelectedDepCode(depCode);
+      setSelectedProCode(proCode);
+      setSelectedDistCode(distCode);
 
-      // Establecer valores en el formulario
-      form.setValue("departamento", getDepartamentoName(depCode) || "Lima");
-      form.setValue("provincia", getProvinciaName(proCode) || "Lima");
-      form.setValue("distrito", distCode ? getDistritoName(distCode) : "");
+      // Establecer valores NOMBRES en el formulario (para mostrar)
+      form.setValue("departamento", getDepartamentoName(depCode));
+      form.setValue("provincia", getProvinciaName(proCode));
+      form.setValue("distrito", getDistritoName(distCode));
 
       setIsLoadingForm(false);
-      console.log("✅ Datos iniciales cargados");
+      console.log("✅ Datos iniciales cargados:", {
+        depCode, proCode, distCode,
+        depName: getDepartamentoName(depCode),
+        proName: getProvinciaName(proCode),
+        distName: getDistritoName(distCode)
+      });
     };
 
     if (departamentos.length > 0) {
       loadInitialData();
     }
-  }, [
-    departamentos.length,
-    customer,
-    isAuthenticated,
-    name,
-    lastname,
-    documentType,
-    documentNumber,
-    phone,
-    email,
-    address,
-    form,
-  ]);
+  }, [departamentos.length, customer, isAuthenticated]);
 
+  // ✅ FUNCIÓN SUBMIT CORREGIDA
   const onSubmit = async (data: FormData) => {
-    // Agregar estos logs al inicio
     console.log("Customer completo:", customer);
-    console.log("Customer ID:", customer?.id);
-    console.log("Props ID:", id);
+    console.log("Códigos seleccionados:", { selectedDepCode, selectedProCode, selectedDistCode });
 
-    // Verificar que tenemos un ID válido
     const userId = customer?.id || parseInt(id);
     if (!userId) {
       setSubmitError("No se puede identificar al usuario. Recargue la página.");
       return;
     }
+
     setIsLoading(true);
     setSubmitError("");
     setSubmitSuccess("");
 
     try {
-      console.log("Datos del formulario (códigos):", data);
-
+      // ✅ ENVIAR CÓDIGOS EN LUGAR DE NOMBRES
       const dataWithCodes: any = {
         id: userId,
         name: data.nombres.trim(),
@@ -238,35 +189,33 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
         document_number: data.documentNumber.trim(),
         phone: data.celular.trim(),
         address: data.direccion?.trim() || "",
-        deparment: "Lima",
-        province: "Lima",
-        district: getDistrictName(data.distrito),
-        deparment_code: "15",
-        province_code: "01",
-        district_code: data.distrito,
+        
+        // ✅ ENVIAR NOMBRES PARA COMPATIBILIDAD CON EL BACKEND
+        department: getDepartamentoName(selectedDepCode),
+        province: getProvinciaName(selectedProCode),
+        district: getDistritoName(selectedDistCode),
+        
+        // ✅ ENVIAR CÓDIGOS CORRECTOS
+        department_code: selectedDepCode,
+        province_code: selectedProCode,
+        district_code: selectedDistCode,
       };
 
       // Solo incluir contraseña si se proporcionó
       if (data.password && data.password.trim()) {
         dataWithCodes.password = data.password.trim();
+        dataWithCodes.confirmPassword = data.confirmPassword;
       }
 
-      // Debug logs
-      console.log("🔍 Debug - Formulario data.distrito:", data.distrito);
-      console.log(
-        "🔍 Debug - getDistrictName result:",
-        getDistrictName(data.distrito)
-      );
-      console.log("🔍 Debug - dataWithCodes completo:", dataWithCodes);
-      console.log("🔍 Debug - Códigos específicos:", {
+      console.log("📤 Datos a enviar (CORREGIDOS):", dataWithCodes);
+      console.log("📋 Códigos específicos:", {
         deparment_code: dataWithCodes.deparment_code,
         province_code: dataWithCodes.province_code,
         district_code: dataWithCodes.district_code,
       });
-      console.log("Datos convertidos para envío:", dataWithCodes);
 
       const response = await updateProfile(dataWithCodes);
-      console.log("Respuesta del servidor:", response);
+      console.log("✅ Respuesta del servidor:", response);
 
       if (response.customer) {
         updateCustomerData(response.customer);
@@ -275,7 +224,7 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
 
       setSubmitSuccess(response.message || "Perfil actualizado exitosamente");
 
-      // Limpiar campos de contraseña después del éxito
+      // Limpiar campos de contraseña
       form.setValue("password", "");
       form.setValue("confirmPassword", "");
 
@@ -283,15 +232,14 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
         setSubmitSuccess("");
       }, 3000);
     } catch (error: unknown) {
-      console.error("Error completo:", error);
+      console.error("❌ Error completo:", error);
 
       let errorMessage = "Error al actualizar perfil";
 
       if (error && typeof error === "object") {
         const err = error as { status?: number; message?: string };
         if (err.status === 422) {
-          errorMessage =
-            err.message || "Error de validación. Revise los datos ingresados.";
+          errorMessage = err.message || "Error de validación. Revise los datos ingresados.";
         } else if (err.status === 409) {
           errorMessage = "El email o número de documento ya están registrados.";
         } else if (err.status === 400) {
@@ -313,8 +261,7 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
         <div className="flex items-center gap-2">
           <AlertCircle className="h-6 w-6 text-red-500" />
           <span>
-            No se encontraron datos del usuario. Por favor, inicie sesión
-            nuevamente.
+            No se encontraron datos del usuario. Por favor, inicie sesión nuevamente.
           </span>
         </div>
       </div>
@@ -323,12 +270,10 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
 
   if (isLoadingForm) {
     return (
-      <div className="flex justify-center items-center py-12">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#c41d1ada]"></div>
-          <span className="text-gray-600 text-sm">
-            Cargando datos del perfil...
-          </span>
+      <div className="flex items-center justify-center p-8">
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>Cargando formulario...</span>
         </div>
       </div>
     );
@@ -521,8 +466,8 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
               </FormItem>
             )}
           />
-
-          {/* Ubigeo: Departamento, Provincia, Distrito */}
+         
+          {/* ✅ UBIGEO CORREGIDO */}
           <div className="flex flex-col gap-3 md:grid md:grid-cols-3 md:gap-2">
             {/* Departamento */}
             <FormField
@@ -535,15 +480,15 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
                   </FormLabel>
                   <Select
                     onValueChange={(codigo) => {
-                      // Actualizar estado local
+                      console.log("🏛️ Departamento seleccionado:", codigo);
+                      // Actualizar estados
                       setSelectedDepCode(codigo);
                       setSelectedProCode(""); // Reset provincia
+                      setSelectedDistCode(""); // Reset distrito
 
                       // Actualizar formulario con nombre
                       const nombreDep = getDepartamentoName(codigo);
                       form.setValue("departamento", nombreDep);
-
-                      // Resetear provincia y distrito
                       form.setValue("provincia", "");
                       form.setValue("distrito", "");
                     }}
@@ -556,7 +501,7 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {(departamentos as Departamento[]).map((dep) => (
+                      {departamentos.map((dep: any) => (
                         <SelectItem key={dep.coddep} value={dep.coddep}>
                           {dep.nomdep}
                         </SelectItem>
@@ -579,14 +524,14 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
                   </FormLabel>
                   <Select
                     onValueChange={(codigo) => {
-                      // Actualizar estado local
+                      console.log("🏙️ Provincia seleccionada:", codigo);
+                      // Actualizar estados
                       setSelectedProCode(codigo);
+                      setSelectedDistCode(""); // Reset distrito
 
                       // Actualizar formulario con nombre
                       const nombreProv = getProvinciaName(codigo);
                       form.setValue("provincia", nombreProv);
-
-                      // Resetear distrito
                       form.setValue("distrito", "");
                     }}
                     value={selectedProCode}
@@ -598,7 +543,7 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {(provincias as Provincia[]).map((prov) => (
+                      {provincias.map((prov: any) => (
                         <SelectItem key={prov.codpro} value={prov.codpro}>
                           {prov.nompro}
                         </SelectItem>
@@ -621,15 +566,15 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
                   </FormLabel>
                   <Select
                     onValueChange={(codigo) => {
+                      console.log("🏘️ Distrito seleccionado:", codigo);
+                      // Actualizar estado
+                      setSelectedDistCode(codigo);
+
                       // Actualizar formulario con nombre
                       const nombreDist = getDistritoName(codigo);
                       form.setValue("distrito", nombreDist);
                     }}
-                    value={
-                      (distritos as Distrito[]).find(
-                        (d) => d.nomdis === form.watch("distrito")
-                      )?.coddis || ""
-                    }
+                    value={selectedDistCode}
                     disabled={isLoading || !selectedProCode}
                   >
                     <FormControl className="w-full">
@@ -638,7 +583,7 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {(distritos as Distrito[]).map((dist) => (
+                      {distritos.map((dist: any) => (
                         <SelectItem key={dist.coddis} value={dist.coddis}>
                           {dist.nomdis}
                         </SelectItem>

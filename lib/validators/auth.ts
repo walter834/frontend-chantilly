@@ -75,6 +75,8 @@ export const ResetPasswordSchema = z
     path: ["password_confirmation"],
   });
 
+// Reemplaza tu profileUpdateSchema con esta versión mejorada:
+
 export const profileUpdateSchema = z
   .object({
     nombres: z
@@ -109,21 +111,32 @@ export const profileUpdateSchema = z
     confirmPassword: z.string().optional(),
   })
   .refine(
-    (data) => {
-      // Solo validar contraseñas si se proporciona una
-      if (data.password || data.confirmPassword) {
-        if (!data.password || data.password.length < 8) {
-          return false;
-        }
-        if (!data.confirmPassword || data.confirmPassword.length < 8) {
-          return false;
-        }
-        return data.password === data.confirmPassword;
+    (data: any) => {
+      const hasPassword = data.password && data.password.trim().length > 0;
+      const hasConfirmPassword =
+        data.confirmPassword && data.confirmPassword.trim().length > 0;
+
+      // Si ninguno tiene valor, está bien
+      if (!hasPassword && !hasConfirmPassword) {
+        return true;
       }
-      return true;
+
+      // Si ambos tienen valor, validar
+      if (hasPassword && hasConfirmPassword) {
+        // Validar longitud mínima
+        if (data.password.trim().length < 8) {
+          return false;
+        }
+        // Validar que coincidan
+        return data.password.trim() === data.confirmPassword.trim();
+      }
+
+      // Si solo uno tiene valor, es inválido
+      return false;
     },
     {
-      message: "Las contraseñas deben coincidir y tener al menos 8 caracteres",
+      message:
+        "Si desea cambiar la contraseña, complete ambos campos. Las contraseñas deben coincidir y tener al menos 8 caracteres",
       path: ["confirmPassword"],
     }
   );
