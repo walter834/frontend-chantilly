@@ -309,29 +309,21 @@ export const validateToken = async (): Promise<boolean> => {
   }
 };
 
-/**
- * ✅ Función para actualizar perfil completa
- */
 export const updateProfile = async (data: Partial<Customer> & { id: number }) => {
   try {
     const currentCustomer = getCurrentCustomer();
-    console.log("datos del usuarioRedux", currentCustomer);
-    
-    // ✅ CAMBIO PRINCIPAL: Usar el ID que viene en data, no solo del Redux
     const customerId = data.id || currentCustomer?.id;
     
     if (!customerId) {
       throw new Error("No se encontró el ID del customer");
     }
 
-    console.log(`🔍 Actualizando customer ID: ${customerId}`);
-    console.log("📤 Datos a enviar:", data);
-
-    // ✅ Crear una copia de los datos sin el ID para el body (el ID va en la URL)
+    // ✅ SIMPLE: Solo quitar el ID, enviar el resto tal como viene del componente
     const { id, ...dataToSend } = data;
 
+    console.log("📤 Datos a enviar:", dataToSend);
+
     const response = await api.put(`/customers/${customerId}`, dataToSend);
-    console.log("Response del update:", response);
 
     // Actualizar los datos en Redux con la respuesta del servidor
     if (response.data.customer) {
@@ -352,12 +344,7 @@ export const updateProfile = async (data: Partial<Customer> & { id: number }) =>
       customer: response.data.customer,
     };
   } catch (error: any) {
-    const customerId = data.id || getCurrentCustomer()?.id;
-    console.error(
-      `❌ Error actualizando customer ID ${customerId}:`,
-      error
-    );
-    console.error("Error response:", error.response?.data);
+    console.error(`❌ Error actualizando customer:`, error);
     
     throw {
       success: false,

@@ -26,6 +26,7 @@ import { getDocumentTypes, updateProfile } from "@/service/auth/authService";
 import { useUbigeo } from "@/hooks/useUbigeo";
 import { useAuth } from "@/hooks/useAuth";
 import { profileUpdateSchema } from "@/lib/validators/auth";
+import { log } from "console";
 
 type FormData = z.infer<typeof profileUpdateSchema>;
 
@@ -62,7 +63,7 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
     updateCustomerData,
   } = useAuth();
   console.log(customer);
-  
+
   const {
     departments,
     provinces,
@@ -132,6 +133,7 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
       await new Promise((resolve) => setTimeout(resolve, 100));
       await handleProvinceChange("1501");
       await new Promise((resolve) => setTimeout(resolve, 100));
+      console.log(customer.district_code);
       // Cargar distrito si está disponible
       if (customer.district_code) {
         console.log("Cargando distrito desde BD:", customer.district_code);
@@ -199,7 +201,18 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
       if (data.password && data.password.trim()) {
         dataWithCodes.password = data.password.trim();
       }
-
+      // ✅ AGREGAR ESTOS LOGS PARA DEBUGGING:
+      console.log("🔍 Debug - Formulario data.distrito:", data.distrito);
+      console.log(
+        "🔍 Debug - getDistrictName result:",
+        getDistrictName(data.distrito)
+      );
+      console.log("🔍 Debug - dataWithCodes completo:", dataWithCodes);
+      console.log("🔍 Debug - Códigos específicos:", {
+        deparment_code: dataWithCodes.deparment_code,
+        province_code: dataWithCodes.province_code,
+        district_code: dataWithCodes.district_code,
+      });
       console.log("Datos convertidos para envío:", dataWithCodes);
 
       const response = await updateProfile(dataWithCodes);
