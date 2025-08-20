@@ -7,7 +7,6 @@ import { useAuth } from "@/hooks/useAuth";
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { store } from '@/store/store';
 
 interface CartItem {
     id: string;
@@ -19,6 +18,7 @@ interface CartItem {
         price: number;
         image: string;
         portion: string;
+        diameter?: string;
         cakeFlavorName: string;
         cakeFlavor: string;
         fillingName: string;
@@ -155,6 +155,9 @@ const ShoppingList = () => {
                                         <>
                                             <p className="text-black/60 text-sm mt-1 line-clamp-3">
                                                 Porción: {item.product.portion || 'No especificado'}
+                                            </p>
+                                            <p className="text-black/60 text-sm mt-1 line-clamp-3">
+                                                Diámetro: {item.product.diameter || 'No especificado'}
                                             </p>
                                             <p className="text-black/60 text-sm mt-1 line-clamp-3">
                                                 Keke: {item.product.cakeFlavorName || 'No especificado'}

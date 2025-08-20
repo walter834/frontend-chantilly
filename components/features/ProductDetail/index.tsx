@@ -6,6 +6,7 @@ import { fetchAccessories, fetchProducts, getCakeFlavors, getProductVariantById 
 import { TransformedProduct, TransformedProductVariant, TransformedCakeFlavor, TransformedProductAccessory } from '@/types/api';
 import FormCart from '@/components/formCart';
 import { useRouter } from 'next/navigation';
+import { portionsOptions } from './data';
 
 interface ProductDetailProps {
   id: string;
@@ -28,6 +29,7 @@ const ProductDetail = ({ id, name, price, originalPrice, theme, image, productTy
   const [loadingBocaditos, setLoadingBocaditos] = useState(true);
   const [productVariant, setProductVariant] = useState<TransformedProductVariant | null>(null);
   const [imageProduct, setImageProduct] = useState<string>('');
+  const [diameter, setDiameter] = useState<string>('');
   
   interface LocalCartItem {
     productId: string;
@@ -93,8 +95,11 @@ const ProductDetail = ({ id, name, price, originalPrice, theme, image, productTy
     if (!portion) {
       setImageProduct(image);
       setProductVariant(null);
+      setDiameter('');
       return;
     }
+    const d = portionsOptions.find((p: any) => p.name === portion)?.size || '';
+    setDiameter(d);
     try {
       const variant = await getProductVariantById(id, portion);
       if (variant) {
@@ -133,7 +138,10 @@ const ProductDetail = ({ id, name, price, originalPrice, theme, image, productTy
       try {
         const cakeFlavorResponse = await getCakeFlavors();
         setCakeFlavors(cakeFlavorResponse);
-        setSelectedCake(cakeFlavorResponse[0].name.toString());
+        if (productType === '2' && cakeFlavorResponse.length) {
+          setSelectedCake(cakeFlavorResponse[0].id.toString());
+        }
+
       } catch (error) {
         console.error('Error fetching cake flavors:', error);
       }
@@ -197,6 +205,7 @@ const ProductDetail = ({ id, name, price, originalPrice, theme, image, productTy
               {capitalizeFirstLetter(description)}<br />
               <span className="text-[#c41c1a]"></span> Tiempo elaboración: - horas
             </p>
+            {/* Diámetro visible solo en carrito */}
           </div>
           <FormCart 
             productId={id}

@@ -55,7 +55,6 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       <HeroBanner slides={bannerSlides} />
-      
       <Suspense fallback={
         <div className="w-[95%] mx-auto px-2 sm:px-6 lg:px-8 xl:px-12 py-12">
           <div className="text-center py-12">

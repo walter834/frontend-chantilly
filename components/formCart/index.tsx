@@ -44,7 +44,9 @@ const FormCart: React.FC<FormCartProps> = ({
     productId: string;
     product: {
       portion?: string;
+      diameter?: string;
       cakeFlavor?: string;
+      fillingId?: string;
       fillingName?: string;
       pickupDate?: string;
     };
@@ -55,7 +57,7 @@ const FormCart: React.FC<FormCartProps> = ({
   function arrayDataToCart(event: FormEvent<HTMLFormElement>) {
     
     event.preventDefault();
-
+    console.log('selectedCake', selectedCake);
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 2);
@@ -71,14 +73,11 @@ const FormCart: React.FC<FormCartProps> = ({
     }
     
     const currentCart = JSON.parse(localStorage.getItem('chantilly-cart') || '{"items":[],"total":0,"itemCount":0}');
-
-    console.log('currentCart', currentCart);
-    const existingItemIndex = currentCart.items.findIndex((item: LocalCartItem) => 
-      
-      item.productId === productId && 
+    const existingItemIndex = currentCart.items.findIndex((item: LocalCartItem) =>
+      item.productId === productId &&
       item.product.portion === selectedPortion &&
-      item.product.cakeFlavor === selectedCake &&
-      item.product.fillingName === selectedFilling &&
+      (productType !== '2' || item.product.cakeFlavor === selectedCake) &&
+      (productType !== '2' || item.product.fillingId === selectedFilling) &&
       item.product.pickupDate === pickupDate
     );
 
@@ -92,19 +91,28 @@ const FormCart: React.FC<FormCartProps> = ({
         price: parseFloat(productVariant?.price || initialPrice.toString())
       };
     } else {
+      const selectedDiameter = (portionsOptions.find((p: any) => p.name === selectedPortion)?.size) || '';
+      const selectedCakeName = cakeFlavors.find(c => c.id.toString() === selectedCake)?.name || '';
+      const selectedFillingName = fillings.find(f => f.id.toString() === selectedFilling)?.name || '';
       const newItem = {
         id: `${productId}-${Date.now()}`,
         productId: productId,
         product: {
           id: productId,
           name: productVariant?.description || name,
-          description: `Tema: ${theme || 'No especificado'}, Relleno: ${selectedFilling || 'No especificado'}`,
+          description: `Tema: ${theme || 'No especificado'}`
+            + (selectedDiameter ? `, Diámetro: ${selectedDiameter}` : '')
+            + (productType === '2' ? `, Relleno: ${selectedFillingName || 'No especificado'}` : ''),
           price: parseFloat(productVariant?.price || initialPrice.toFixed(2)),
           image: imageProduct || initialImage,
           portion: selectedPortion,
-          cakeFlavor: selectedCake,
-          cakeFlavorName: cakeName,
-          fillingName: selectedFilling,
+          diameter: selectedDiameter,
+          ...(productType === '2' ? {
+            cakeFlavor: selectedCake,
+            cakeFlavorName: selectedCakeName,
+            fillingId: selectedFilling,
+            fillingName: selectedFillingName,
+          } : {}),
           dedication: dedication,
           pickupDate: pickupDate,
         },
@@ -112,8 +120,6 @@ const FormCart: React.FC<FormCartProps> = ({
         price: parseFloat(productVariant?.price || initialPrice.toString())
       };
 
-      console.log('initialPrice', initialPrice);
-      console.log('productVariant', productVariant);
       updatedItems = [...currentCart.items, newItem];
     }
     
@@ -124,6 +130,8 @@ const FormCart: React.FC<FormCartProps> = ({
       total,
       itemCount
     };
+
+    console.log('newItems', updatedItems);
 
     localStorage.setItem('chantilly-cart', JSON.stringify(updatedCart));
     window.dispatchEvent(new Event('chantilly-cart-updated'));

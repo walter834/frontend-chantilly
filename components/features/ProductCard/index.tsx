@@ -25,8 +25,6 @@ export default function ProductCard({
   const router = useRouter();
 
   const handleViewDetails = () => {
-    console.log(product_link);
-    // Navegación segura: solo pasamos el ID
     router.push(product_link);
   };
   return (
