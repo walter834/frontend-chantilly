@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CustomAlert } from "@/components/ui/custom-alert";
 import {
   Form,
   FormControl,
@@ -19,7 +20,6 @@ import Link from "next/link";
 import { loginSchema } from "@/lib/validators/auth";
 import { loginUser, loginWithGoogle } from "@/service/auth/authService";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
@@ -51,10 +51,10 @@ export default function Login({ onCloseDialog, onOpenRegister }: LoginProps) {
         password: data.password,
       });
       router.push("/");
-      toast.success("Usuario registrado");
+      CustomAlert("login exitoso", "success", "top-center");
     } catch (error) {
       console.error("Error en login:", error);
-      toast.error("Credenciales inválidas. Verifique su email y contraseña.");
+      CustomAlert("Credenciales inválidas. Verifique su email y contraseña.", "error", "top-center");
     } finally {
       setIsLoading(false);
     }

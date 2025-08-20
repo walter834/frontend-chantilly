@@ -7,14 +7,12 @@ interface ProductData {
 }
 
 export const productStorage = {
-  // Guardar producto en sessionStorage (se borra al cerrar pestaña)
   setProduct: (product: ProductData) => {
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('selectedProduct', JSON.stringify(product));
     }
   },
 
-  // Obtener producto del sessionStorage
   getProduct: (): ProductData | null => {
     if (typeof window !== 'undefined') {
       const stored = sessionStorage.getItem('selectedProduct');
@@ -23,7 +21,6 @@ export const productStorage = {
     return null;
   },
 
-  // Limpiar producto del storage
   clearProduct: () => {
     if (typeof window !== 'undefined') {
       sessionStorage.removeItem('selectedProduct');

@@ -92,6 +92,7 @@ export interface ApiProduct {
     id: number;
     name: string;
   };
+  product_link: string;
 }
 
 export interface ApiProductAccessory {
@@ -229,6 +230,7 @@ export interface TransformedProduct {
   product_type_id: string;
   theme_id?: string;
   isBestSeller: boolean;
+  product_link: string;
 }
 
 export interface TransformedProductAccessory {
@@ -302,6 +304,7 @@ export function transformProduct(apiProduct: ApiProduct): TransformedProduct {
     product_type_id: apiProduct.product_type_id?.id?.toString() || '',
     theme_id: apiProduct.theme_id?.id?.toString() || '',
     isBestSeller: apiProduct.best_status || false,
+    product_link: apiProduct.product_link,
   };
 
 }

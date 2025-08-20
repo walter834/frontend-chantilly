@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import ProductDetail from '../../../components/features/ProductDetail';
-import { getProductById } from '../../../service/productService';
+import { getProductById, getProductBySlug } from '../../../service/productService';
 import { TransformedProduct } from '../../../types/api';
 import Spinner from '@/components/ui/spinner';
 
@@ -16,11 +16,21 @@ export default function DetallePage() {
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        const productData = await getProductById(params.id as string);
+        const rawParam = params.id as string;
+        let candidate = rawParam;
+        try {
+          const url = new URL(rawParam);
+          const parts = url.pathname.split('/').filter(Boolean);
+          candidate = parts[parts.length - 1] || rawParam;
+        } catch {}
+
+        const isNumeric = /^\d+$/.test(candidate);
+        const productData = isNumeric
+          ? await getProductById(candidate)
+          : await getProductBySlug(candidate);
         if (!productData) {
           throw new Error('Producto no encontrado');
-        }
-        
+        }        
         setProduct(productData);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error al cargar el producto');
@@ -73,6 +83,7 @@ export default function DetallePage() {
         theme={product.theme_id}
         image={product.image}
         productType={product.product_type_id}
+        product_link={product.product_link}
       />
     </div>
   );
