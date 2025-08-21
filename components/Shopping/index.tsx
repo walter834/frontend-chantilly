@@ -61,28 +61,27 @@ export default function Shopping({ showCount, isPrimary = true }: { showCount: b
       <div className="z-50">
         <Button
           variant="ghost"
-          className="cursor-pointer"
+          className="cursor-pointer relative border border-[2px] border-yellow-300 rounded-full h-10 w-10 hover:bg-yellow-300"
           onClick={() => window.dispatchEvent(new Event('open-cart'))}
         >
-          <ShoppingCart size={26} />
-          <span className="text-xs">{count || "0"}</span>
+          <ShoppingCart size={26} className="text-yellow-300"  />
+          <span className="absolute font-bold rounded-full h-4 w-4 top-0 right-0 bg-yellow-300 text-xs text-[#c41c1a] hover:bg-yellow-300 hover:text-[#c41c1a]">{count || "0"}</span>
         </Button>
       </div>
     );
   }
-
   return (
     <div className="z-50">
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
-          <Button variant="ghost" className="cursor-pointer">
-            <ShoppingCart size={26} />
-            <span className="text-xs">{count || "0"}</span>
+          <Button variant="ghost" className="cursor-pointer relative border border-[2px] border-yellow-300 rounded-full h-10 w-10 hover:bg-[#c41c1a]">
+            <ShoppingCart size={26} className="text-yellow-300 hover:text-[#c41c1a]" />
+            <span className="absolute font-bold rounded-full h-4 w-4 top-0 right-0 bg-yellow-300 text-xs text-[#c41c1a]">{count || "0"}</span>
           </Button>
         </SheetTrigger>
         <SheetContent side="right">
-          <SheetHeader className="bg-white">
-            <SheetTitle className="text-black text-center">MI CARRITO</SheetTitle>
+          <SheetHeader className="bg-[#c41c1a] text-white">
+            <SheetTitle className="text-center font-bold text-white">MI CARRITO</SheetTitle>
             <SheetDescription />
           </SheetHeader>
           <ShoppingList />
@@ -91,3 +90,4 @@ export default function Shopping({ showCount, isPrimary = true }: { showCount: b
     </div>
   );
 }
+
