@@ -1,0 +1,229 @@
+"use client";
+
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { useRouter } from "next/navigation";
+import { useForm, type SubmitHandler } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { useState, useEffect } from "react";
+import { Loader2 } from "lucide-react";
+import passwordRecoveryService from "@/service/passsword/passwordRecoveryService";
+
+const SmsResetPasswordSchema = z
+  .object({
+    password: z
+      .string()
+      .min(8, "La contraseña debe tener al menos 8 caracteres"),
+    password_confirmation: z.string(),
+  })
+  .refine((data) => data.password === data.password_confirmation, {
+    message: "Las contraseñas no coinciden",
+    path: ["password_confirmation"],
+  });
+
+type SmsResetValues = z.infer<typeof SmsResetPasswordSchema>;
+
+export default function SmsResetForm() {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [phone, setPhone] = useState<string>("");
+  const [code, setCode] = useState<string>("");
+  const [isDataLoaded, setIsDataLoaded] = useState(false); // 🔑 Estado para controlar la carga
+
+  // Cargar datos desde sessionStorage
+  useEffect(() => {
+    const recoveryPhone = sessionStorage.getItem('recovery_phone');
+    const recoveryCode = sessionStorage.getItem('recovery_code');
+    
+    if (!recoveryPhone || !recoveryCode) {
+      // Si no hay datos, redirigir al inicio del flujo
+      router.push('/forgot-sms');
+      return;
+    }
+
+    setPhone(recoveryPhone);
+    setCode(recoveryCode);
+    setIsDataLoaded(true); // 🔑 Marcar como cargado
+  }, [router]);
+
+  const form = useForm<SmsResetValues>({
+    resolver: zodResolver(SmsResetPasswordSchema),
+    defaultValues: {
+      password: "",
+      password_confirmation: "",
+    },
+  });
+
+  const onSubmit: SubmitHandler<SmsResetValues> = async (values) => {
+    setIsLoading(true);
+    try {
+      await passwordRecoveryService.resetPassword({
+        phone: phone,
+        code: code,
+        password: values.password,
+        password_confirmation: values.password_confirmation,
+      });
+      
+      toast.success("Contraseña restablecida exitosamente.");
+      
+      // Limpiar sessionStorage después del éxito
+      sessionStorage.removeItem('recovery_phone');
+      sessionStorage.removeItem('recovery_code');
+      
+      setTimeout(() => router.push("/"), 1500);
+    } catch (e) {
+      toast.error("Error al restablecer la contraseña. Código inválido o expirado.");
+      console.log(e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Formatear número de teléfono para mostrar
+  const formatPhoneDisplay = (phoneNumber: string) => {
+    if (!phoneNumber || phoneNumber.length <= 4) return phoneNumber;
+    const lastFour = phoneNumber.slice(-4);
+    const masked = "*".repeat(Math.max(0, phoneNumber.length - 4));
+    return `${masked.slice(0, 3)}-${masked.slice(3, 6)}-${lastFour}`;
+  };
+
+  // 🔑 Mostrar loading hasta que los datos estén cargados
+  if (!isDataLoaded) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+        <div className="flex flex-col items-center gap-4 text-white">
+          <Loader2 className="w-8 h-8 animate-spin text-red-500" />
+          <span className="text-slate-300">Verificando datos...</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-slate-800/90 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-slate-700/50">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="mx-auto w-16 h-16 bg-gradient-to-r from-red-700 to-red-600 rounded-full flex items-center justify-center shadow-lg mb-4">
+            <span className="text-white text-2xl">🔒</span>
+          </div>
+          <h1 className="text-white text-2xl font-bold mb-2">
+            Nueva Contraseña
+          </h1>
+          <p className="text-slate-300 text-sm">
+            Establecer nueva contraseña para: {formatPhoneDisplay(phone)}
+          </p>
+        </div>
+
+        {/* Verificación confirmada */}
+        <div className="mb-6 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+          <div className="flex items-center gap-2 text-green-400 text-sm">
+            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+            <span className="font-medium">Código SMS verificado correctamente</span>
+          </div>
+        </div>
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {/* Nueva Contraseña */}
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-slate-200">
+                    Nueva Contraseña
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="Ingresa tu nueva contraseña"
+                      className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-red-500 focus:ring-red-500/20"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-red-400" />
+                </FormItem>
+              )}
+            />
+
+            {/* Confirmar Contraseña */}
+            <FormField
+              control={form.control}
+              name="password_confirmation"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-slate-200">
+                    Confirmar Contraseña
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="Confirma tu nueva contraseña"
+                      className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-red-500 focus:ring-red-500/20"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-red-400" />
+                </FormItem>
+              )}
+            />
+
+            {/* Requisitos de contraseña */}
+            <div className="text-xs text-slate-400 bg-slate-700/30 p-3 rounded-lg">
+              <p className="font-medium text-slate-300 mb-1">Requisitos:</p>
+              <ul className="space-y-1">
+                <li>• Mínimo 8 caracteres</li>
+                <li>• Debe incluir letras y números</li>
+                <li>• Se recomienda usar símbolos especiales</li>
+              </ul>
+            </div>
+
+            {/* Botón de Submit */}
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-gradient-to-r from-red-700 to-red-600 hover:from-red-600 hover:to-red-500 text-white font-medium py-4 transition-all duration-200 disabled:opacity-50 shadow-lg hover:shadow-red-500/25 disabled:shadow-none"
+            >
+              {isLoading ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Estableciendo contraseña...
+                </div>
+              ) : (
+                "ESTABLECER CONTRASEÑA"
+              )}
+            </Button>
+          </form>
+        </Form>
+
+        {/* Footer */}
+        <div className="text-center mt-6">
+          <button
+            onClick={() => router.push("/login")}
+            className="text-red-400 hover:text-red-300 text-sm font-medium transition-colors"
+          >
+            ← Volver al login
+          </button>
+        </div>
+
+        {/* Info adicional */}
+        <div className="mt-4 text-center">
+          <p className="text-xs text-slate-500">
+            Una vez establecida, podrás iniciar sesión con tu nueva contraseña
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}

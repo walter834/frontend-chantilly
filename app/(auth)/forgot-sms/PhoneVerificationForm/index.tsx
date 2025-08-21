@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { set, z } from "zod"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import type React from "react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -15,11 +15,11 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Phone, Send, Loader2 } from "lucide-react"
-import passwordRecoveryService from "@/service/passsword/passwordRecoveryService"
-import { useRouter } from "next/navigation"
+} from "@/components/ui/form";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Phone, Send, Loader2 } from "lucide-react";
+import passwordRecoveryService from "@/service/passsword/passwordRecoveryService";
+import { useRouter } from "next/navigation";
 
 // Esquema de validación
 const phoneVerificationSchema = z.object({
@@ -27,23 +27,23 @@ const phoneVerificationSchema = z.object({
     .string()
     .min(9, "El número debe tener al menos 9 dígitos")
     .max(15, "El número no puede tener más de 15 dígitos")
-    .regex(/^\d+$/, "Solo se permiten números")
-})
+    .regex(/^\d+$/, "Solo se permiten números"),
+});
 
-type PhoneVerificationFormData = z.infer<typeof phoneVerificationSchema>
+type PhoneVerificationFormData = z.infer<typeof phoneVerificationSchema>;
 
 interface PhoneVerificationProps {
-  onSuccess?: (phoneNumber: string) => void
-  onError?: (error: string) => void
+  onSuccess?: (phoneNumber: string) => void;
+  onError?: (error: string) => void;
 }
 
 export default function PhoneVerificationForm({
   onSuccess,
-  onError
+  onError,
 }: PhoneVerificationProps) {
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string>("")
-  const [successMessage, setSuccessMessage] = useState<string>("")
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string>("");
+  const [successMessage, setSuccessMessage] = useState<string>("");
 
   const router = useRouter();
 
@@ -52,65 +52,69 @@ export default function PhoneVerificationForm({
     defaultValues: {
       phone: "",
     },
-  })
+  });
 
-  const phoneNumber = form.watch("phone")
+  const phoneNumber = form.watch("phone");
 
   const formatPhoneNumber = (value: string) => {
     // Remove all non-digit characters
-    const cleanValue = value.replace(/\D/g, "")
-    
+    const cleanValue = value.replace(/\D/g, "");
+
     // Limit to 15 digits (international standard)
     if (cleanValue.length > 15) {
-      return cleanValue.slice(0, 15)
+      return cleanValue.slice(0, 15);
     }
-    
-    return cleanValue
-  }
+
+    return cleanValue;
+  };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    const formatted = formatPhoneNumber(value)
-    form.setValue("phone", formatted)
-    
+    const value = e.target.value;
+    const formatted = formatPhoneNumber(value);
+    form.setValue("phone", formatted);
+
     if (error) {
-      setError("")
+      setError("");
     }
     if (successMessage) {
-      setSuccessMessage("")
+      setSuccessMessage("");
     }
-  }
+  };
 
   const onSubmit = async (data: PhoneVerificationFormData) => {
     try {
-      setIsLoading(true)
-      setError("")
-      setSuccessMessage("")
+      setIsLoading(true);
+      setError("");
+      setSuccessMessage("");
 
       // Llamar al servicio con el número de teléfono
-      const response = await passwordRecoveryService.sendRecoveryCode({ 
-        phone: data.phone 
-      })
-      
+      const response = await passwordRecoveryService.sendRecoveryCode({
+        phone: data.phone,
+      });
+
       // Si llega aquí, el código se envió exitosamente
-      setSuccessMessage(response.message || "Código enviado correctamente")
-      onSuccess?.(data.phone)
+      setSuccessMessage(response.message || "Código enviado correctamente");
+
+      // Guardar el teléfono en sessionStorage (se limpia al cerrar pestaña)
+      sessionStorage.setItem("recovery_phone", data.phone);
+
+      // Callbacks opcionales
+      onSuccess?.(data.phone);
+
       setTimeout(() => {
-        // Redirigir a la página de verificación de código
-        router.push(`/forgot-sms/verify-code/${data.phone}`)
-      }
-      , 1000) // Esperar 2 segundos antes de redirigir
-     
-      
+        // Redirigir a la página de verificación de código SIN parámetros
+        router.push("/forgot-sms/verify-code");
+      }, 1000);
     } catch (err: any) {
       // Manejar el error del servicio
-      const errorMessage = err.message || "Error al enviar el código de verificación"
-      setError(errorMessage)
-      onError?.(errorMessage)
+      const errorMessage =
+        err.message || "Error al enviar el código de verificación";
+      setError(errorMessage);
+      onError?.(errorMessage);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center p-4">
@@ -120,9 +124,12 @@ export default function PhoneVerificationForm({
             <Phone className="w-8 h-8 text-white" />
           </div>
           <div className="space-y-2">
-            <h1 className="text-2xl font-bold text-gray-900">Verifica tu Número</h1>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Verifica tu Número
+            </h1>
             <p className="text-gray-600 text-sm leading-relaxed">
-              Ingresa tu número de teléfono para recibir un código de verificación
+              Ingresa tu número de teléfono para recibir un código de
+              verificación
             </p>
           </div>
         </CardHeader>
@@ -130,13 +137,17 @@ export default function PhoneVerificationForm({
         <CardContent className="space-y-6">
           {error && (
             <Alert variant="destructive" className="bg-red-50 border-red-200">
-              <AlertDescription className="text-red-800">{error}</AlertDescription>
+              <AlertDescription className="text-red-800">
+                {error}
+              </AlertDescription>
             </Alert>
           )}
 
           {successMessage && (
             <Alert className="bg-green-50 border-green-200">
-              <AlertDescription className="text-green-800">{successMessage}</AlertDescription>
+              <AlertDescription className="text-green-800">
+                {successMessage}
+              </AlertDescription>
             </Alert>
           )}
 
@@ -158,8 +169,8 @@ export default function PhoneVerificationForm({
                           placeholder="987654321"
                           {...field}
                           onChange={(e) => {
-                            handlePhoneChange(e)
-                            field.onChange(e)
+                            handlePhoneChange(e);
+                            field.onChange(e);
                           }}
                           disabled={isLoading}
                           className="pl-10 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-red-500 focus:ring-red-100 hover:border-gray-400 transition-colors"
@@ -194,13 +205,18 @@ export default function PhoneVerificationForm({
           <div className="text-center">
             <p className="text-gray-500 text-sm">
               ¿Ya tienes un código?{" "}
-              <button 
+              <button
                 type="button"
                 className="text-red-700 hover:text-red-800 font-medium transition-colors underline decoration-transparent hover:decoration-current"
                 onClick={() => {
-                  // Aquí puedes manejar la navegación al componente de verificación
-                  console.log("Navegar a verificación de código")
-                }}
+  // Guardar un placeholder o pedir que ingrese el número primero
+  if (phoneNumber && phoneNumber.length >= 9) {
+    sessionStorage.setItem("recovery_phone", phoneNumber);
+    router.push("/forgot-sms/verify-code");
+  } else {
+    setError("Primero ingresa tu número de teléfono");
+  }
+}}
               >
                 Ingrésalo aquí
               </button>
@@ -209,5 +225,5 @@ export default function PhoneVerificationForm({
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
