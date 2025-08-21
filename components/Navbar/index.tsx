@@ -40,7 +40,6 @@ export default function Navbar() {
 
       <div className="flex justify-between  w-full items-center lg:hidden">
         <NavToggle />
-
         <div className="flex gap-1 items-center">
           {isAuthenticated ? <UserDrop /> : <LoginForm />}
           <Shopping showCount={true} isPrimary={false} />

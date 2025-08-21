@@ -25,8 +25,8 @@ export default function LoginForm() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="size-10">
-          <User size={30} />
+        <Button variant="ghost" size="icon" className="size-10 border border-[2px] border-yellow-300 rounded-full hover:bg-[#c41c1a] hover:text-[#c41c1a] cursor-pointer">
+          <User size={30} className="text-yellow-300" />
         </Button>
       </DialogTrigger>
 

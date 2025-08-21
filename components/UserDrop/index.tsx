@@ -37,7 +37,7 @@ export default function UserDrop() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="border-2 border-yellow-300 text-yellow-300 rounded-full w-[40px] h-[40px] hover:bg-yellow-300 hover:text-red-800"
+          className="border-2 border-yellow-300 text-yellow-300 rounded-full w-[40px] h-[40px] hover:bg-[#c41c1a] hover:text-yellow-300 cursor-pointer"
         >
           {initials}
         </Button>

@@ -6,7 +6,7 @@ import { Minus, Plus, Trash2 } from 'lucide-react';
 import { useAuth } from "@/hooks/useAuth";
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
+import { CustomAlert } from '@/components/ui/custom-alert';
 
 interface CartItem {
     id: string;
@@ -118,11 +118,10 @@ const ShoppingList = () => {
     }
 
     const handleCheckout = () => {
-
         if (isAuthenticated) {
             router.push('/checkout');
         } else {
-            toast.warning('Debes iniciar sesión para continuar', { position: 'top-center' });
+            CustomAlert('Debes iniciar sesión para continuar', 'warning', 'top-center');
         }
     };
 

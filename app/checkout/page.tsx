@@ -166,7 +166,8 @@ export default function Contact() {
         setLocalSelected(local);
     };
 
-    const handleConfirmData = async () => {
+    const handleConfirmData = async (e: React.FormEvent) => {
+        e.preventDefault();
         setLoadingText('Actualizando datos...');
         setLoading(true);
         try {
@@ -214,11 +215,9 @@ export default function Contact() {
     const total = (listShopping as any[]).reduce((sum, item) => sum + ((item?.price || 0) * (item?.quantity || 0)), 0);
     return (
         <>
-            {console.log(loadingText)}
             {loading && <Loading text={loadingText} />}
             <Header />
             <main>
-                <form action="">
                     <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 px-4 sm:px-6 lg:px-24 pb-24'>
                         <div className='pl-5 pr-5 pt-5 bg-white'>
                             <h1 className='text-[25px] font-bold text-black mb-5'>Confirma y paga tu compra</h1>
@@ -270,7 +269,7 @@ export default function Contact() {
                             </div>
                             <div className='flex justify-center mt-4 pb-4'>
                                 {isClickEdit ? (
-                                    <button className='bg-[#c41c1a] text-white py-2 px-4 rounded cursor-pointer' onClick={handleConfirmData}>Confirmar tus Datos</button>
+                                    <button className='bg-[#c41c1a] text-white py-2 px-4 rounded cursor-pointer' type="submit" onClick={handleConfirmData}>Confirmar tus Datos</button>
                                 ) : (
                                     <a className='flex items-center gap-2 text-[#c41c1a] hover:text-[#c41c1a] cursor-pointer' onClick={handleEditClick}> <FaPencil /> Editar Datos </a>
                                 )}
@@ -304,7 +303,7 @@ export default function Contact() {
                                             <label htmlFor="ruc">RUC</label>
                                             <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2">
                                                 <input className="w-full py-2 pl-2 pr-2 rounded border-2 border-[#c41c1a]" type="text" name="ruc" id="ruc" placeholder="RUC" value={ruc} onChange={(e) => setRuc(e.target.value)} />
-                                                <button className="bg-[#c41c1a] text-white py-2 px-4 rounded cursor-pointer" onClick={() => searchCompany()}>
+                                                <button className="bg-gray-500 text-white py-2 px-4 rounded cursor-pointer" onClick={() => searchCompany()}>
                                                     <FaMagnifyingGlass />
                                                 </button>
                                             </div>
@@ -472,7 +471,6 @@ export default function Contact() {
                             </div>
                         </div>
                     </div>
-                </form>
             </main>
         </>
     );
