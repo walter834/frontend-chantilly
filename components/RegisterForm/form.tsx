@@ -21,10 +21,14 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Eye, EyeOff, Home, AlertCircle, CheckCircle } from "lucide-react";
+import { Eye, EyeOff, AlertCircle, CheckCircle } from "lucide-react";
 import { registerSchema } from "@/lib/validators/auth";
 import { getDocumentTypes, register } from "@/service/auth/authService";
-import { useUbigeo } from "@/hooks/useUbigeo";
+import {
+  useDepartamentos,
+  useDistritos,
+  useProvincias,
+} from "@/hooks/useUbigeo";
 
 type FormData = z.infer<typeof registerSchema>;
 
@@ -44,21 +48,16 @@ export default function Register({
   const [submitError, setSubmitError] = useState<string>("");
   const [submitSuccess, setSubmitSuccess] = useState<string>("");
 
+  // Estados para los códigos seleccionados (separados del formulario)
+  const [selectedDepCode, setSelectedDepCode] = useState("15"); // Lima código
+  const [selectedProCode, setSelectedProCode] = useState("01"); // Lima Metropolitana
+
   const [documentTypes, setDocumentTypes] = useState<DocumentType[]>([]);
   const [loadingDocs, setLoadingDocs] = useState(true);
 
-  // Hook para manejar ubigeo
-  const {
-    departments,
-    provinces,
-    districts,
-    handleDepartmentChange,
-    handleProvinceChange,
-    handleDistrictChange,
-    getDepartmentName,
-    getProvinceName,
-    getDistrictName,
-  } = useUbigeo();
+  const { departamentos } = useDepartamentos();
+  const { provincias } = useProvincias(selectedDepCode);
+  const { distritos } = useDistritos(selectedDepCode, selectedProCode);
 
   useEffect(() => {
     const fetchDocumentTypes = async () => {
@@ -74,21 +73,6 @@ export default function Register({
     fetchDocumentTypes();
   }, []);
 
-  useEffect(() => {
-  // Solo inicializar cuando departments tenga datos
-  if (departments.length > 0) {
-    console.log("Inicializando Lima...");
-    
-    // Primero seleccionar departamento Lima (código 15)
-    handleDepartmentChange("15");
-    
-    // Esperar un poco para que se carguen las provincias y luego seleccionar Lima provincia
-    setTimeout(() => {
-      handleProvinceChange("1501");
-    }, 100);
-  }
-}, [departments]); // ✅ Dependencia: departments
-
   const form = useForm<FormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -99,14 +83,14 @@ export default function Register({
       celular: "",
       email: "",
       direccion: "",
-      departamento: "15",
-      provincia: "1501",
+      departamento: "Lima", // Nombre, no código
+      provincia: "Lima", // Nombre, no código
       distrito: "",
       password: "",
-      deparment_code: "15",
-      province_code: "1501",
+      department_code: "15", // Corregido: department_code
+      province_code: "01",
       district_code: "",
-      confirmPassword: "",
+      password_confirmation: "",
     },
   });
 
@@ -116,25 +100,11 @@ export default function Register({
     setSubmitSuccess("");
 
     try {
-      console.log("Datos del formulario (códigos):", data);
+      console.log("Datos del formulario:", data);
 
-      // ✅ CONVERSIÓN: Convertir códigos a nombres antes de enviar
-      const dataWithCodesAndNames = {
-        ...data,
-        departamento: getDepartmentName(data.departamento), // nombre
-        provincia: getProvinceName(data.provincia), // nombre
-        distrito: getDistrictName(data.distrito), // nombre
-        deparment_code: data.departamento,
-        province_code: data.provincia,
-        district_code: data.distrito,
-      };
-
-      console.log("Datos convertidos a nombres:", dataWithCodesAndNames);
-
-      const response = await register(dataWithCodesAndNames);
+      const response = await register(data);
 
       console.log("Respuesta del servidor:", response);
-      console.log("Registro exitoso:", response.message);
       setSubmitSuccess(response.message || "Usuario registrado exitosamente");
 
       // Esperar un poco antes de cerrar para mostrar el mensaje de éxito
@@ -166,9 +136,21 @@ export default function Register({
     }
   };
 
+  // Función auxiliar para encontrar nombre por código
+  const getDepartamentoName = (codigo: string) => {
+    return departamentos.find((d: any) => d.coddep === codigo)?.nomdep || "";
+  };
+
+  const getProvinciaName = (codigo: string) => {
+    return provincias.find((p: any) => p.codpro === codigo)?.nompro || "";
+  };
+
+  const getDistritoName = (codigo: string) => {
+    return distritos.find((d: any) => d.coddis === codigo)?.nomdis || "";
+  };
+
   return (
     <div className="w-full rounded-lg overflow-hidden">
-      {/* Form */}
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
@@ -357,38 +339,45 @@ export default function Register({
           />
 
           {/* Ubigeo: Departamento, Provincia, Distrito */}
-          <div className="flex flex-col gap-3  md:grid md:grid-cols-3 md:gap-2">
+          <div className="flex flex-col gap-3 md:grid md:grid-cols-3 md:gap-2">
             {/* Departamento */}
             <FormField
               control={form.control}
               name="departamento"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm font-medium text-gray-700 ">
+                  <FormLabel className="text-sm font-medium text-gray-700">
                     Departamento <span className="text-red-500">*</span>
                   </FormLabel>
                   <Select
-                    onValueChange={(value) => {
-                      field.onChange(value);
+                    onValueChange={(codigo) => {
+                      // Actualizar estado local
+                      setSelectedDepCode(codigo);
+                      setSelectedProCode(""); // Reset provincia
 
-                      // Resetea provincia y distrito en el formulario y en el hook
+                      // Actualizar formulario con nombre y códigos
+                      const nombreDep = getDepartamentoName(codigo);
+                      form.setValue("departamento", nombreDep);
+                      form.setValue("department_code", codigo);
+
+                      // Resetear provincia y distrito
                       form.setValue("provincia", "");
+                      form.setValue("province_code", "");
                       form.setValue("distrito", "");
-
-                      handleDepartmentChange(value);
+                      form.setValue("district_code", "");
                     }}
-                    value={field.value}
-                    disabled={true}
+                    value={selectedDepCode}
+                    disabled={isLoading}
                   >
                     <FormControl className="w-full">
                       <SelectTrigger>
-                        <SelectValue placeholder={"Seleccionar"} />
+                        <SelectValue placeholder="Seleccionar" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {departments.map((dept) => (
-                        <SelectItem key={dept.code} value={dept.code}>
-                          {dept.name}
+                      {departamentos.map((dep: any) => (
+                        <SelectItem key={dep.coddep} value={dep.coddep}>
+                          {dep.nomdep}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -408,26 +397,32 @@ export default function Register({
                     Provincia <span className="text-red-500">*</span>
                   </FormLabel>
                   <Select
-                    onValueChange={(value) => {
-                      field.onChange(value);
+                    onValueChange={(codigo) => {
+                      // Actualizar estado local
+                      setSelectedProCode(codigo);
 
+                      // Actualizar formulario con nombre y código
+                      const nombreProv = getProvinciaName(codigo);
+                      form.setValue("provincia", nombreProv);
+                      form.setValue("province_code", codigo);
+
+                      // Resetear distrito
                       form.setValue("distrito", "");
-
-                      handleProvinceChange(value);
-                      
+                      form.setValue("district_code", "");
                     }}
-                    value={field.value}
-                    disabled={true}   
+                    value={selectedProCode}
+                    disabled={isLoading || !selectedDepCode}
                   >
                     <FormControl className="w-full">
                       <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar" />
+                        <SelectValue placeholder="Seleccionar provincia" />
                       </SelectTrigger>
                     </FormControl>
+
                     <SelectContent>
-                      {provinces.map((prov) => (
-                        <SelectItem key={prov.code} value={prov.code}>
-                          {prov.name}
+                      {provincias.map((prov: any) => (
+                        <SelectItem key={prov.codpro} value={prov.codpro}>
+                          {prov.nompro}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -447,21 +442,25 @@ export default function Register({
                     Distrito <span className="text-red-500">*</span>
                   </FormLabel>
                   <Select
-                    onValueChange={(value) => {
-                      field.onChange(value);
-                      handleDistrictChange(value);
+                    onValueChange={(codigo) => {
+                      // Actualizar formulario con nombre y código
+                      const nombreDist = getDistritoName(codigo);
+                      form.setValue("distrito", nombreDist);
+                      form.setValue("district_code", codigo);
                     }}
-                    value={field.value}
+                    value={form.watch("district_code") || ""}
+                    disabled={isLoading || !selectedProCode}
                   >
                     <FormControl className="w-full">
                       <SelectTrigger>
-                        <SelectValue placeholder={"Seleccionar"} />
+                        <SelectValue placeholder="Seleccionar distrito" />
                       </SelectTrigger>
                     </FormControl>
+
                     <SelectContent>
-                      {districts.map((dist) => (
-                        <SelectItem key={dist.code} value={dist.code}>
-                          {dist.name}
+                      {distritos.map((dist: any) => (
+                        <SelectItem key={dist.coddis} value={dist.coddis}>
+                          {dist.nomdis}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -514,7 +513,7 @@ export default function Register({
 
             <FormField
               control={form.control}
-              name="confirmPassword"
+              name="password_confirmation"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-sm font-medium text-gray-700">

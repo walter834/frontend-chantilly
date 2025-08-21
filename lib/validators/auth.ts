@@ -23,16 +23,16 @@ export const registerSchema = z
     departamento: z.string().min(1, "Seleccione un departamento"),
     provincia: z.string().min(1, "Seleccione una provincia"),
     distrito: z.string().min(1, "Seleccione un distrito de la lista"),
-    deparment_code: z.string(),
+    department_code: z.string(),
     province_code: z.string(),
     district_code: z.string(),
 
     password: z.string().min(8, "Mínimo 8 caracteres"),
-    confirmPassword: z.string().min(8, "Confirme su contraseña"),
+    password_confirmation: z.string().min(8, "Confirme su contraseña"),
   })
-  .refine((data) => data.password === data.confirmPassword, {
+  .refine((data) => data.password === data.password_confirmation, {
     message: "Las contraseñas no coinciden",
-    path: ["confirmPassword"],
+    path: ["password_confirmation"],
   });
 
 export const loginSchema = z.object({
@@ -75,6 +75,8 @@ export const ResetPasswordSchema = z
     path: ["password_confirmation"],
   });
 
+// Reemplaza tu profileUpdateSchema con esta versión mejorada:
+
 export const profileUpdateSchema = z
   .object({
     nombres: z
@@ -106,24 +108,35 @@ export const profileUpdateSchema = z
     provincia: z.string(),
     distrito: z.string(),
     password: z.string().optional(),
-    confirmPassword: z.string().optional(),
+    password_confirmation: z.string().optional(),
   })
   .refine(
-    (data) => {
-      // Solo validar contraseñas si se proporciona una
-      if (data.password || data.confirmPassword) {
-        if (!data.password || data.password.length < 8) {
-          return false;
-        }
-        if (!data.confirmPassword || data.confirmPassword.length < 8) {
-          return false;
-        }
-        return data.password === data.confirmPassword;
+    (data: any) => {
+      const hasPassword = data.password && data.password.trim().length > 0;
+      const hasConfirmPassword =
+        data.password_confirmation && data.password_confirmation.trim().length > 0;
+
+      // Si ninguno tiene valor, está bien
+      if (!hasPassword && !hasConfirmPassword) {
+        return true;
       }
-      return true;
+
+      // Si ambos tienen valor, validar
+      if (hasPassword && hasConfirmPassword) {
+        // Validar longitud mínima
+        if (data.password.trim().length < 8) {
+          return false;
+        }
+        // Validar que coincidan
+        return data.password.trim() === data.password_confirmation.trim();
+      }
+
+      // Si solo uno tiene valor, es inválido
+      return false;
     },
     {
-      message: "Las contraseñas deben coincidir y tener al menos 8 caracteres",
-      path: ["confirmPassword"],
+      message:
+        "Si desea cambiar la contraseña, complete ambos campos. Las contraseñas deben coincidir y tener al menos 8 caracteres",
+      path: ["password_confirmation"],
     }
   );

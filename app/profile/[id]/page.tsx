@@ -6,7 +6,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { AlertCircle } from "lucide-react";
 
 export default function Profile() {
-
   const { isAuthenticated, customerId, displayName } = useAuth();
   const [isProfileLoading, setIsProfileLoading] = useState(true);
 
@@ -36,7 +35,6 @@ export default function Profile() {
           <p className="text-gray-600 mb-4">
             Debe iniciar sesión para acceder a su perfil.
           </p>
-          
         </div>
       </div>
     );
@@ -53,14 +51,16 @@ export default function Profile() {
             Hola, <span className="font-semibold">{displayName}</span>
           </p>
         )}
-        
+
         <div className="w-full max-w-3xl bg-white rounded-lg p-6">
           {isProfileLoading ? (
             // Estado de carga
             <div className="flex justify-center items-center py-12">
               <div className="flex flex-col items-center space-y-4">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#c41d1ada]"></div>
-                <span className="text-gray-600 text-sm">Cargando datos del perfil...</span>
+                <span className="text-gray-600 text-sm">
+                  Cargando datos del perfil...
+                </span>
               </div>
             </div>
           ) : (

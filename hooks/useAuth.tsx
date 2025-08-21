@@ -52,9 +52,12 @@ export const useAuth = () => {
     address: customer?.address,
     documentNumber: customer?.document_number,
     documentType: customer?.id_document_type,
-    department: customer?.deparment,
+    department: customer?.department,
     province: customer?.province,
     district: customer?.district,
+    departmentCode: customer?.department_code,
+    provinceCode: customer?.province_code,
+    districtCode: customer?.district_code,
     status: customer?.status,
     customerId: customer?.id,
     
