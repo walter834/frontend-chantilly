@@ -53,7 +53,7 @@ export default function UserDrop() {
               </DropdownMenuShortcut>
             </DropdownMenuItem>
           </Link>
-          <Link href="/profile">
+          <Link href="/my-orders">
             <DropdownMenuItem>
               Mis compras
               <DropdownMenuShortcut>

@@ -130,8 +130,8 @@ export default function PhoneVerificationForm({
               <ArrowLeft className="h-5 w-5" />
             </Link>
           </div>
-          <div className="mx-auto w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg">
-            <Phone className="w-8 h-8 text-red" />
+          <div className="mx-auto w-16 h-16  rounded-full flex items-center justify-center shadow-lg">
+            <Phone className="w-8 h-8" />
           </div>
           <div className="space-y-2">
             <h1 className="text-2xl font-bold text-gray-900">

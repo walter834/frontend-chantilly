@@ -4,6 +4,7 @@ import { z } from "zod";
 import { registerSchema } from "@/lib/validators/auth";
 import { store } from "@/store/store";
 import { loginSuccess, logout, Customer } from "@/store/slices/authSlice";
+import { log } from "console";
 
 // Interfaces de respuesta
 interface LoginResponse {
@@ -85,60 +86,10 @@ export const logoutUser = async (): Promise<void> => {
   }
 };
 
-export const getUser = async (): Promise<{
-  success: boolean;
-  customer?: Customer;
-  message?: string;
-}> => {
-  try {
-    // Verificar si hay token disponible
-    const currentState = store.getState();
-    const token = currentState.auth.token;
-
-    if (!token) {
-      return {
-        success: false,
-        message: "No hay token de autenticación disponible",
-      };
-    }
-
-    // El interceptor se encarga de añadir automáticamente el token Bearer
-    const response = await api.get<Customer>("/me");
-    const customer = response.data;
-
-    // Actualizar Redux con los datos más recientes del servidor
-    // Reutilizamos la variable currentState ya declarada
-    if (currentState.auth.token) {
-      store.dispatch(
-        loginSuccess({
-          customer,
-          token: currentState.auth.token,
-        })
-      );
-    }
-
-    return {
-      success: true,
-      customer,
-      message: "Datos del usuario obtenidos correctamente",
-    };
-  } catch (error: any) {
-    console.error("Error al obtener datos del usuario:", error);
-
-    // Si el error es de autenticación, hacer logout
-    if (error.response?.status === 401 || error.response?.status === 403) {
-      store.dispatch(logout());
-    }
-
-    const errorMessage =
-      error.response?.data?.message || "Error al obtener datos del usuario";
-
-    return {
-      success: false,
-      message: errorMessage,
-    };
-  }
-};
+export const getUser = async () => {
+  const response = await api.get("/me");
+  return response.data;
+}
 
 /**
  * Función principal para login con Google
