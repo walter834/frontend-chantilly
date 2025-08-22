@@ -278,10 +278,12 @@ export default function ProfileUpdateForm({ id }: ProfileUpdateFormProps) {
 
   if (isLoadingForm) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <div className="flex items-center gap-2">
-          <Loader2 className="h-6 w-6 animate-spin" />
-          <span>Cargando formulario...</span>
+      <div className="flex justify-center items-center py-12">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#c41d1ada]"></div>
+          <span className="text-gray-600 text-sm">
+            Cargando datos del perfil...
+          </span>
         </div>
       </div>
     );

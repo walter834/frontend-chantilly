@@ -16,9 +16,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-import { CheckCircle, Mail, Loader2 } from "lucide-react";
+import { CheckCircle, Mail, Loader2, AlertCircle } from "lucide-react";
 import { forgotPasswordSchema } from "@/lib/validators/auth";
 import { forgotPassword } from "@/service/auth/authService";
+import { BsEmojiTearFill } from "react-icons/bs";
 
 type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 
@@ -107,32 +108,41 @@ export default function ForgotPasswordForm({
       </div>
     );
   }
-
+  const emailValue = form.watch("email");
   return (
     <div className="space-y-6">
       {error && (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
+        <div className="flex items-center gap-2 p-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded-md">
+          <AlertCircle className="h-4 w-4" />
+          {error}
+        </div>
       )}
 
+
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
             control={form.control}
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Correo electrónico</FormLabel>
+                <FormLabel className="text-sm font-medium">
+                  Correo electrónico
+                </FormLabel>
+
                 <FormControl>
-                  <Input
-                    type="email"
-                    placeholder="correo@ejemplo.com"
-                    {...field}
-                    disabled={isLoading}
-                  />
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="email"
+                      placeholder="correo@ejemplo.com"
+                      {...field}
+                      disabled={isLoading}
+                      className="pl-10" // Padding left para dejar espacio al ícono
+                    />
+                  </div>
                 </FormControl>
-                <FormDescription>
+                <FormDescription className="text-xs text-muted-foreground">
                   Ingresa el correo asociado a tu cuenta
                 </FormDescription>
                 <FormMessage />
@@ -140,7 +150,11 @@ export default function ForgotPasswordForm({
             )}
           />
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button
+            type="submit"
+            className="w-full bg-red-700"
+            disabled={isLoading || !emailValue || emailValue.trim() === ""}
+          >
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -154,17 +168,7 @@ export default function ForgotPasswordForm({
             )}
           </Button>
 
-          {onBackToLogin && (
-            <Button
-              type="button"
-              variant="ghost"
-              className="w-full"
-              onClick={onBackToLogin}
-              disabled={isLoading}
-            >
-              Volver al login
-            </Button>
-          )}
+          
         </form>
       </Form>
     </div>

@@ -45,7 +45,6 @@ interface RegisterPayload {
   password_confirmation: string;
 }
 
-
 /**
  * Función para hacer login de usuario
  */
@@ -69,11 +68,7 @@ export const loginUser = async (
 
     const errorMessage =
       error.response?.data?.message || "Error al iniciar sesión";
-
-    return {
-      success: false,
-      message: errorMessage,
-    };
+    throw new Error(errorMessage);
   }
 };
 
@@ -182,8 +177,6 @@ export const loginWithGoogle = () => {
 /**
  * ✅ MEJORADA: Función para manejar el callback con token usando getUser existente
  */
-
-
 
 /**
  * Función alternativa para callback con endpoint
@@ -310,11 +303,13 @@ export const validateToken = async (): Promise<boolean> => {
   }
 };
 
-export const updateProfile = async (data: Partial<Customer> & { id: number }) => {
+export const updateProfile = async (
+  data: Partial<Customer> & { id: number }
+) => {
   try {
     const currentCustomer = getCurrentCustomer();
     const customerId = data.id || currentCustomer?.id;
-    
+
     if (!customerId) {
       throw new Error("No se encontró el ID del customer");
     }
@@ -346,7 +341,7 @@ export const updateProfile = async (data: Partial<Customer> & { id: number }) =>
     };
   } catch (error: any) {
     console.error(`❌ Error actualizando customer:`, error);
-    
+
     throw {
       success: false,
       message: error.response?.data?.message || "Error al actualizar perfil",

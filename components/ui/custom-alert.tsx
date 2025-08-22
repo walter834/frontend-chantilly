@@ -34,7 +34,7 @@ export const CustomAlert = (text: string, status: Status, position: Position) =>
   const { icon: Icon, color, borderColor } = alertConfig[status] || alertConfig.info;
 
   toast.custom((t) => (
-    <div className={`flex items-center gap-2 bg-white text-black shadow-lg font-semibold p-4 h-20 border rounded-lg border-[2px] ${borderColor}`}>
+    <div className={`flex items-center gap-2 bg-white text-black shadow-lg font-semibold p-4 h-20  rounded-lg border-[2px] ${borderColor}`}>
       <Icon className={`text-xl ${color}`} />
       <p>{text}</p>
     </div>

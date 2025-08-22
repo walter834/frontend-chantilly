@@ -51,10 +51,18 @@ export default function Login({ onCloseDialog, onOpenRegister }: LoginProps) {
         password: data.password,
       });
       router.push("/");
-      CustomAlert("login exitoso:  Bienvenido " + result.customer?.name, "success", "top-center");
+      CustomAlert(
+        "login exitoso:  Bienvenido " + result.customer?.name,
+        "success",
+        "top-center"
+      );
     } catch (error) {
       console.error("Error en login:", error);
-      CustomAlert("Credenciales inválidas. Verifique su email y contraseña.", "error", "top-center");
+      CustomAlert(
+        "Credenciales inválidas. Verifique su email y contraseña.",
+        "error",
+        "top-center"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -80,8 +88,6 @@ export default function Login({ onCloseDialog, onOpenRegister }: LoginProps) {
 
   return (
     <div className="w-full overflow-hidden">
-      
-
       {/* Form */}
       <Form {...form}>
         <form className="p-6 space-y-5 " onSubmit={form.handleSubmit(onSubmit)}>
