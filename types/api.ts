@@ -26,6 +26,73 @@ export interface ApiCustomer {
   google_id: string;
 }
 
+export interface ApiInitSessionNiubiz {
+  amount: number;
+  order_id: number;
+  purchaseNumber: string;
+  description: string;
+}
+
+export interface ApiOrder {
+  customer_id: number;
+  voucher_type: string;
+  local_id: number;
+  subtotal: number;
+  total_amount: number;
+  billing_data: {
+    ruc?: string,
+    razon_social?: string,
+    tax_address?: string
+  },
+  items: Array<{
+    product_variant_id: number | null,
+    cake_flavor_id: number | null,
+    quantity: number,
+    unit_price: number,
+    subtotal: number,
+    dedication_text: string | null,
+    delivery_date: string | null
+  }>
+}
+
+export interface ApiInitSessionNiubizTransformed {
+  amount: number;
+  order_id: number;
+  description: string;
+}
+
+export interface TransformedOrder {
+  order: {
+    billing_data: null,
+    customer_id: number,
+    id: number,
+    items: Array<{ product_variant_id: number, cake_flavor_id: number | null, quantity: number, unit_price: number, subtotal: number, dedication_text: string | null, delivery_date: string | null }>,
+    local_id: number,
+    order_date: string,
+    order_number: string,
+    subtotal: number,
+    total: number,
+    voucher_type: string
+  }
+}
+
+export interface TransformedInitSessionNiubiz {
+  amount: number;
+  order_id: number;
+  description: string;
+}
+
+// Niubiz init session API response
+export interface NiubizInitSessionResponse {
+  success: boolean;
+  data: {
+    amount: number;
+    merchant_id: string;
+    purchase_number: string;
+    sessionToken: string;
+  };
+}
+
 export interface TransformedCustomer {
   id: number;
   name: string;
@@ -201,7 +268,7 @@ export interface ApiCakeFlavor {
   id: number;
   name: string;
   status: boolean;
-  fillings:{
+  fillings: {
     id: number;
     name: string;
     status: boolean;
@@ -363,7 +430,7 @@ export function transformCustomer(apiCustomer: ApiCustomer): TransformedCustomer
 
 export function transformCakeFlavor(apiCakeFlavor: ApiCakeFlavor): TransformedCakeFlavor {
   apiCakeFlavor.fillings.map((filling: ApiCakeFilling) => {
-    console.log('filling',filling);
+    console.log('filling', filling);
   });
   return {
     id: apiCakeFlavor.id,

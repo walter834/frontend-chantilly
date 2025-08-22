@@ -55,9 +55,8 @@ const FormCart: React.FC<FormCartProps> = ({
   }
 
   function arrayDataToCart(event: FormEvent<HTMLFormElement>) {
-    
+
     event.preventDefault();
-    console.log('selectedCake', selectedCake);
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 2);
@@ -99,6 +98,7 @@ const FormCart: React.FC<FormCartProps> = ({
         productId: productId,
         product: {
           id: productId,
+          productVariant: productVariant?.id || 0,
           name: productVariant?.description || name,
           description: `Tema: ${theme || 'No especificado'}`
             + (selectedDiameter ? `, Diámetro: ${selectedDiameter}` : '')
@@ -130,8 +130,6 @@ const FormCart: React.FC<FormCartProps> = ({
       total,
       itemCount
     };
-
-    console.log('newItems', updatedItems);
 
     localStorage.setItem('chantilly-cart', JSON.stringify(updatedCart));
     window.dispatchEvent(new Event('chantilly-cart-updated'));

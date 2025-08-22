@@ -12,6 +12,9 @@ export const API_ROUTES = {
   PRODUCTS_VARIANT: '/products-variant',
   CAKE_FLAVORS: '/cake-flavors',
   CUSTOMERS: '/customers',
+  ORDERS: '/orders',
+  INIT_SESSION_NIUBIZ: '/session',
+  PAYMENT: '/pay',
 } as const;
 
 const api = axios.create({
