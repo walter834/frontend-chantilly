@@ -33,7 +33,7 @@ export default function LoginForm() {
       {/* Deshabilitamos el botón X por defecto con showCloseButton={false} */}
       <DialogContent 
         showCloseButton={false}
-        className={`max-h-[90vh] overflow-y-auto p-0 ${
+        className={`max-h-[95vh] overflow-y-auto p-0 ${
           isRegister 
             ? 'w-[95vw] max-w-2xl sm:max-w-3xl' 
             : 'w-[90vw] max-w-md sm:max-w-lg'
