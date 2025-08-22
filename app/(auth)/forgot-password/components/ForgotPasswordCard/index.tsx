@@ -14,7 +14,7 @@ import { ArrowLeft, Smartphone } from "lucide-react";
 export default function ForgotPasswordCard() {
   return (
     <div className="w-full max-w-md mx-auto">
-      <Card className="shadow-lg border-0 bg-white/95 backdrop-blur-sm">
+      <Card className="shadow-lg border-0  backdrop-blur-sm">
         <CardHeader className="space-y-3 pb-6">
           <div className="flex items-center justify-between">
             <CardTitle className="text-2xl font-semibold text-gray-900">Recuperar contraseña</CardTitle>

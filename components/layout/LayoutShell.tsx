@@ -17,7 +17,17 @@ export default function LayoutShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const isClean = pathname === "/checkout" || pathname.startsWith("/checkout/") || pathname === "/politicas-privacidad" || pathname.startsWith("/politicas-privacidad/") || pathname === "/terminos-condiciones" || pathname.startsWith("/terminos-condiciones/");
+  const isClean =
+    pathname === "/checkout" ||
+    pathname.startsWith("/checkout/") ||
+    pathname === "/politicas-privacidad" ||
+    pathname.startsWith("/politicas-privacidad/") ||
+    pathname === "/terminos-condiciones" ||
+    pathname.startsWith("/terminos-condiciones/") ||
+    pathname.startsWith("/forgot-password") ||
+    pathname.startsWith("/forgot-sms") ||
+    pathname.startsWith("/reset-password") ||
+    pathname.startsWith("/reset");
 
   if (isClean) {
     return (

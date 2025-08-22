@@ -17,9 +17,10 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Phone, Send, Loader2 } from "lucide-react";
+import { Phone, Send, Loader2, ArrowLeft } from "lucide-react";
 import passwordRecoveryService from "@/service/passsword/passwordRecoveryService";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 // Esquema de validación
 const phoneVerificationSchema = z.object({
@@ -117,11 +118,20 @@ export default function PhoneVerificationForm({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-md bg-white shadow-2xl border-0 backdrop-blur-sm">
         <CardHeader className="text-center space-y-4 pb-6">
-          <div className="mx-auto w-16 h-16 bg-red-700 rounded-full flex items-center justify-center shadow-lg">
-            <Phone className="w-8 h-8 text-white" />
+          <div className="flex  justify-end w-full items-end">
+            <Link
+              href="/forgot-password"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Volver al inicio"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Link>
+          </div>
+          <div className="mx-auto w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg">
+            <Phone className="w-8 h-8 text-red" />
           </div>
           <div className="space-y-2">
             <h1 className="text-2xl font-bold text-gray-900">
@@ -209,14 +219,14 @@ export default function PhoneVerificationForm({
                 type="button"
                 className="text-red-700 hover:text-red-800 font-medium transition-colors underline decoration-transparent hover:decoration-current"
                 onClick={() => {
-  // Guardar un placeholder o pedir que ingrese el número primero
-  if (phoneNumber && phoneNumber.length >= 9) {
-    sessionStorage.setItem("recovery_phone", phoneNumber);
-    router.push("/forgot-sms/verify-code");
-  } else {
-    setError("Primero ingresa tu número de teléfono");
-  }
-}}
+                  // Guardar un placeholder o pedir que ingrese el número primero
+                  if (phoneNumber && phoneNumber.length >= 9) {
+                    sessionStorage.setItem("recovery_phone", phoneNumber);
+                    router.push("/forgot-sms/verify-code");
+                  } else {
+                    setError("Primero ingresa tu número de teléfono");
+                  }
+                }}
               >
                 Ingrésalo aquí
               </button>

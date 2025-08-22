@@ -1,174 +1,182 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState, useRef, useEffect } from "react"
-import { Lock, Loader2, CheckCircle, AlertCircle, ArrowLeft } from "lucide-react"
-import { useRouter } from "next/navigation"
-import passwordRecoveryService from "@/service/passsword/passwordRecoveryService"
+import type React from "react";
+import { useState, useRef, useEffect } from "react";
+import {
+  Lock,
+  Loader2,
+  CheckCircle,
+  AlertCircle,
+  ArrowLeft,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import passwordRecoveryService from "@/service/passsword/passwordRecoveryService";
 
 export default function VerifyRecoveryCode() {
-  const router = useRouter()
-  
-  const [phone, setPhone] = useState<string>("")
-  const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""])
-  const [countdown, setCountdown] = useState<number>(60)
-  const [isVerifying, setIsVerifying] = useState<boolean>(false)
-  const [isResending, setIsResending] = useState<boolean>(false)
-  const [error, setError] = useState<string>("")
-  const [success, setSuccess] = useState<string>("")
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([])
+  const router = useRouter();
+
+  const [phone, setPhone] = useState<string>("");
+  const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
+  const [countdown, setCountdown] = useState<number>(60);
+  const [isVerifying, setIsVerifying] = useState<boolean>(false);
+  const [isResending, setIsResending] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
+  const [success, setSuccess] = useState<string>("");
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   // Obtener el teléfono de sessionStorage al cargar
   useEffect(() => {
-    const savedPhone = sessionStorage.getItem('recovery_phone')
+    const savedPhone = sessionStorage.getItem("recovery_phone");
     if (!savedPhone) {
       // Si no hay teléfono guardado, redirigir al inicio
-      router.push('/forgot-sms')
-      return
+      router.push("/forgot-sms");
+      return;
     }
-    setPhone(savedPhone)
-  }, [router])
+    setPhone(savedPhone);
+  }, [router]);
 
   // Countdown timer
   useEffect(() => {
     if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(prev => prev - 1), 1000)
-      return () => clearTimeout(timer)
+      const timer = setTimeout(() => setCountdown((prev) => prev - 1), 1000);
+      return () => clearTimeout(timer);
     }
-  }, [countdown])
+  }, [countdown]);
 
   // Auto-verificar cuando se completen los 6 dígitos
   useEffect(() => {
-    const otpCode = otp.join("")
+    const otpCode = otp.join("");
     if (otpCode.length === 6 && !isVerifying && phone) {
-      handleVerifyCode()
+      handleVerifyCode();
     }
-  }, [otp, isVerifying, phone])
+  }, [otp, isVerifying, phone]);
 
   const handleInputChange = (index: number, value: string): void => {
     // Solo permitir números
-    if (!/^\d*$/.test(value)) return
-    if (value.length > 1) return
+    if (!/^\d*$/.test(value)) return;
+    if (value.length > 1) return;
 
-    const newOtp = [...otp]
-    newOtp[index] = value
-    setOtp(newOtp)
+    const newOtp = [...otp];
+    newOtp[index] = value;
+    setOtp(newOtp);
 
     // Limpiar errores cuando el usuario empiece a escribir
-    if (error) setError("")
+    if (error) setError("");
 
     // Auto-focus next input
     if (value && index < 5) {
-      inputRefs.current[index + 1]?.focus()
+      inputRefs.current[index + 1]?.focus();
     }
-  }
+  };
 
-  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>): void => {
+  const handleKeyDown = (
+    index: number,
+    e: React.KeyboardEvent<HTMLInputElement>
+  ): void => {
     if (e.key === "Backspace" && !otp[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus()
+      inputRefs.current[index - 1]?.focus();
     }
-  }
+  };
 
   const handleVerifyCode = async (): Promise<void> => {
-    const otpCode = otp.join("")
-    if (otpCode.length !== 6 || !phone) return
+    const otpCode = otp.join("");
+    if (otpCode.length !== 6 || !phone) return;
 
     try {
-      setIsVerifying(true)
-      setError("")
-      setSuccess("")
+      setIsVerifying(true);
+      setError("");
+      setSuccess("");
 
       const response = await passwordRecoveryService.verifyRecoveryCode({
         phone: phone,
-        code: otpCode
-      })
+        code: otpCode,
+      });
 
-      setSuccess(response.message || "Código verificado correctamente")
-      
+      setSuccess(response.message || "Código verificado correctamente");
+
       // Guardar el código también en sessionStorage para el siguiente paso
-      sessionStorage.setItem('recovery_code', otpCode)
-      
+      sessionStorage.setItem("recovery_code", otpCode);
+
       // Redirigir a la página de reset sin parámetros en la URL
       setTimeout(() => {
-        router.push('/forgot-sms/reset')
-      }, 1500)
-
+        router.push("/forgot-sms/reset");
+      }, 1500);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Código inválido o expirado"
-      setError(errorMessage)
+      const errorMessage =
+        err instanceof Error ? err.message : "Código inválido o expirado";
+      setError(errorMessage);
       // Limpiar el OTP si hay error
-      setOtp(["", "", "", "", "", ""])
-      inputRefs.current[0]?.focus()
+      setOtp(["", "", "", "", "", ""]);
+      inputRefs.current[0]?.focus();
     } finally {
-      setIsVerifying(false)
+      setIsVerifying(false);
     }
-  }
+  };
 
   const handleResendCode = async (): Promise<void> => {
-    if (countdown > 0 || !phone) return
+    if (countdown > 0 || !phone) return;
 
     try {
-      setIsResending(true)
-      setError("")
-      setSuccess("")
+      setIsResending(true);
+      setError("");
+      setSuccess("");
 
-      await passwordRecoveryService.sendRecoveryCode({ 
-        phone: phone 
-      })
+      await passwordRecoveryService.sendRecoveryCode({
+        phone: phone,
+      });
 
-      setCountdown(60) // Reiniciar contador
-      setSuccess("Código reenviado correctamente")
-      
+      setCountdown(60); // Reiniciar contador
+      setSuccess("Código reenviado correctamente");
+
       // Limpiar el mensaje de éxito después de 3 segundos
-      setTimeout(() => setSuccess(""), 3000)
-
+      setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Error al reenviar el código"
-      setError(errorMessage)
+      const errorMessage =
+        err instanceof Error ? err.message : "Error al reenviar el código";
+      setError(errorMessage);
     } finally {
-      setIsResending(false)
+      setIsResending(false);
     }
-  }
+  };
 
   const handleGoBack = () => {
     // Limpiar sessionStorage y volver al inicio
-    sessionStorage.removeItem('recovery_phone')
-    sessionStorage.removeItem('recovery_code')
-    router.push('/forgot-sms')
-  }
+    sessionStorage.removeItem("recovery_phone");
+    sessionStorage.removeItem("recovery_code");
+    router.push("/forgot-sms");
+  };
 
   const getInputClassName = (): string => {
-    const baseClasses = "w-12 h-12 bg-slate-700/50 border rounded-xl text-white text-xl font-semibold text-center transition-all duration-200 focus:outline-none hover:border-slate-500 disabled:opacity-50 disabled:cursor-not-allowed"
-    
+    const baseClasses =
+      "w-12 h-12  border rounded-xl  text-xl font-semibold text-center transition-all duration-200 focus:outline-none hover:border-slate-500 disabled:opacity-50 disabled:cursor-not-allowed";
+
     if (error) {
-      return `${baseClasses} border-red-500 focus:border-red-400 focus:ring-2 focus:ring-red-500/20`
+      return `${baseClasses} border-red-500 focus:border-red-400 focus:ring-2 focus:ring-red-500/20`;
     }
     if (success) {
-      return `${baseClasses} border-green-500 focus:border-green-400 focus:ring-2 focus:ring-green-500/20`
+      return `${baseClasses} border-green-500 focus:border-green-400 focus:ring-2 focus:ring-green-500/20`;
     }
-    return `${baseClasses} border-slate-600 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 focus:bg-slate-700`
-  }
+    return `${baseClasses} border-slate-600/10 focus:border-red-500 focus:ring-2 focus:ring-red-700/5 `;
+  };
 
   // Formatear el número de teléfono para mostrar (ej: ***-***-1234)
   const formatPhoneDisplay = (phoneNumber: string): string => {
-    if (!phoneNumber) return ""
-    if (phoneNumber.length <= 4) return phoneNumber
-    
-    const lastFour = phoneNumber.slice(-4)
-    const masked = "*".repeat(Math.max(0, phoneNumber.length - 4))
-    return `${masked.slice(0, 3)}-${masked.slice(3, 6)}-${lastFour}`
-  }
+    if (!phoneNumber) return "";
+    if (phoneNumber.length <= 4) return phoneNumber;
 
- 
+    const lastFour = phoneNumber.slice(-3);
+    const masked = "*".repeat(Math.max(0, phoneNumber.length - 3));
+    return `${masked.slice(0, 3)}-${masked.slice(3, 6)}-${lastFour}`;
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-slate-800/90 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-slate-700/50">
+    <div className="min-h-screen bg-gradient-to-br flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-white backdrop-blur-sm rounded-2xl p-8 shadow-2xl border">
         {/* Back Button */}
         <div className="flex justify-start mb-6">
           <button
             onClick={handleGoBack}
-            className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors duration-200"
+            className="flex items-center gap-2 text-slate-400  transition-colors duration-200 cursor-pointer hover:text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
             type="button"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -178,17 +186,19 @@ export default function VerifyRecoveryCode() {
 
         {/* Logo */}
         <div className="flex justify-start mb-8">
-          <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
-            <span className="text-slate-800 font-bold text-xl">S</span>
+          <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center">
+            <span className="text-yellow-300 font-bold text-xl">C</span>
           </div>
         </div>
 
         {/* Title and Description */}
         <div className="mb-8">
-          <h1 className="text-white text-2xl font-semibold mb-3">Verificar Código</h1>
-          <p className="text-slate-300 text-sm leading-relaxed">
+          <h1 className="text-2xl font-semibold mb-3">Verificar Código</h1>
+          <p className="text-sm leading-relaxed">
             Ingresa el código de 6 dígitos enviado a{" "}
-            <span className="text-white font-medium">{formatPhoneDisplay(phone)}</span>
+            <span className="text-black font-bold">
+              {formatPhoneDisplay(phone)}
+            </span>
           </p>
         </div>
 
@@ -214,7 +224,7 @@ export default function VerifyRecoveryCode() {
             <input
               key={index}
               ref={(el) => {
-                inputRefs.current[index] = el
+                inputRefs.current[index] = el;
               }}
               type="text"
               inputMode="numeric"
@@ -234,7 +244,7 @@ export default function VerifyRecoveryCode() {
         <button
           onClick={handleVerifyCode}
           disabled={otp.join("").length !== 6 || isVerifying}
-          className="w-full bg-gradient-to-r from-red-700 to-red-600 hover:from-red-600 hover:to-red-500 disabled:from-slate-600 disabled:to-slate-700 disabled:cursor-not-allowed text-white font-medium py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-red-500/25 disabled:shadow-none mb-6"
+          className="w-full  bg-red-600 hover:from-red-600 hover:to-red-500 disabled:to-red-300 disabled:cursor-not-allowed text-white font-medium py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-red-500/25 disabled:shadow-none mb-6"
           type="button"
         >
           {isVerifying ? (
@@ -275,5 +285,5 @@ export default function VerifyRecoveryCode() {
         </div>
       </div>
     </div>
-  )
+  );
 }

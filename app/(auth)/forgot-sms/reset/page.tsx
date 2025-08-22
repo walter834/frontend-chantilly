@@ -38,22 +38,21 @@ export default function SmsResetForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [phone, setPhone] = useState<string>("");
   const [code, setCode] = useState<string>("");
-  const [isDataLoaded, setIsDataLoaded] = useState(false); // 🔑 Estado para controlar la carga
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
 
   // Cargar datos desde sessionStorage
   useEffect(() => {
-    const recoveryPhone = sessionStorage.getItem('recovery_phone');
-    const recoveryCode = sessionStorage.getItem('recovery_code');
-    
+    const recoveryPhone = sessionStorage.getItem("recovery_phone");
+    const recoveryCode = sessionStorage.getItem("recovery_code");
+
     if (!recoveryPhone || !recoveryCode) {
-      // Si no hay datos, redirigir al inicio del flujo
-      router.push('/forgot-sms');
+      router.push("/forgot-sms");
       return;
     }
 
     setPhone(recoveryPhone);
     setCode(recoveryCode);
-    setIsDataLoaded(true); // 🔑 Marcar como cargado
+    setIsDataLoaded(true);
   }, [router]);
 
   const form = useForm<SmsResetValues>({
@@ -73,16 +72,18 @@ export default function SmsResetForm() {
         password: values.password,
         password_confirmation: values.password_confirmation,
       });
-      
+
       toast.success("Contraseña restablecida exitosamente.");
-      
+
       // Limpiar sessionStorage después del éxito
-      sessionStorage.removeItem('recovery_phone');
-      sessionStorage.removeItem('recovery_code');
-      
+      sessionStorage.removeItem("recovery_phone");
+      sessionStorage.removeItem("recovery_code");
+
       setTimeout(() => router.push("/"), 1500);
     } catch (e) {
-      toast.error("Error al restablecer la contraseña. Código inválido o expirado.");
+      toast.error(
+        "Error al restablecer la contraseña. Código inválido o expirado."
+      );
       console.log(e);
     } finally {
       setIsLoading(false);
@@ -100,27 +101,27 @@ export default function SmsResetForm() {
   // 🔑 Mostrar loading hasta que los datos estén cargados
   if (!isDataLoaded) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
-        <div className="flex flex-col items-center gap-4 text-white">
-          <Loader2 className="w-8 h-8 animate-spin text-red-500" />
-          <span className="text-slate-300">Verificando datos...</span>
+      <div className="flex justify-center items-center py-12">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#c41d1ada]"></div>
+          <span className="text-gray-600 text-sm">
+            Cargando...
+          </span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-slate-800/90 backdrop-blur-sm rounded-2xl p-8 shadow-2xl border border-slate-700/50">
+    <div className="min-h-screen bg-gradient-to-br  flex items-center justify-center p-4">
+      <div className="w-full max-w-md  backdrop-blur-sm rounded-2xl p-8 shadow-2xl border ">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="mx-auto w-16 h-16 bg-gradient-to-r from-red-700 to-red-600 rounded-full flex items-center justify-center shadow-lg mb-4">
             <span className="text-white text-2xl">🔒</span>
           </div>
-          <h1 className="text-white text-2xl font-bold mb-2">
-            Nueva Contraseña
-          </h1>
-          <p className="text-slate-300 text-sm">
+          <h1 className=" text-2xl font-bold mb-2">Nueva Contraseña</h1>
+          <p className="text-muted-foreground text-sm">
             Establecer nueva contraseña para: {formatPhoneDisplay(phone)}
           </p>
         </div>
@@ -129,7 +130,9 @@ export default function SmsResetForm() {
         <div className="mb-6 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
           <div className="flex items-center gap-2 text-green-400 text-sm">
             <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-            <span className="font-medium">Código SMS verificado correctamente</span>
+            <span className="font-medium">
+              Código SMS verificado correctamente
+            </span>
           </div>
         </div>
 
@@ -141,14 +144,14 @@ export default function SmsResetForm() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm font-medium text-slate-200">
+                  <FormLabel className="text-sm font-medium text-gray-700">
                     Nueva Contraseña
                   </FormLabel>
                   <FormControl>
                     <Input
                       type="password"
-                      placeholder="Ingresa tu nueva contraseña"
-                      className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-red-500 focus:ring-red-500/20"
+                      placeholder="Ingresa tu nueva contraseña "
+                      className="   focus:border-red-500 focus:ring-red-500/20"
                       {...field}
                     />
                   </FormControl>
@@ -163,14 +166,14 @@ export default function SmsResetForm() {
               name="password_confirmation"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm font-medium text-slate-200">
+                  <FormLabel className="text-sm font-medium text-gray-700">
                     Confirmar Contraseña
                   </FormLabel>
                   <FormControl>
                     <Input
                       type="password"
                       placeholder="Confirma tu nueva contraseña"
-                      className="bg-slate-700/50 border-slate-600 text-white placeholder:text-slate-400 focus:border-red-500 focus:ring-red-500/20"
+                      className="  focus:border-red-500 focus:ring-red-500/20"
                       {...field}
                     />
                   </FormControl>
@@ -180,8 +183,8 @@ export default function SmsResetForm() {
             />
 
             {/* Requisitos de contraseña */}
-            <div className="text-xs text-slate-400 bg-slate-700/30 p-3 rounded-lg">
-              <p className="font-medium text-slate-300 mb-1">Requisitos:</p>
+            <div className="text-xs  text-muted-foreground bg-muted p-3 rounded-lg">
+              <p className="font-medium  mb-1">Requisitos:</p>
               <ul className="space-y-1">
                 <li>• Mínimo 8 caracteres</li>
                 <li>• Debe incluir letras y números</li>
@@ -210,16 +213,16 @@ export default function SmsResetForm() {
         {/* Footer */}
         <div className="text-center mt-6">
           <button
-            onClick={() => router.push("/login")}
+            onClick={() => router.push("/")}
             className="text-red-400 hover:text-red-300 text-sm font-medium transition-colors"
           >
-            ← Volver al login
+            ← Volver al inicio
           </button>
         </div>
 
         {/* Info adicional */}
         <div className="mt-4 text-center">
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-muted-foreground">
             Una vez establecida, podrás iniciar sesión con tu nueva contraseña
           </p>
         </div>

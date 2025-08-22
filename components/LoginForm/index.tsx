@@ -25,7 +25,7 @@ export default function LoginForm() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="size-10 border border-[2px] border-yellow-300 rounded-full hover:bg-[#c41c1a] hover:text-[#c41c1a] cursor-pointer">
+        <Button variant="ghost" size="icon" className="size-10 border  border-yellow-300 rounded-full hover:bg-[#c41c1a] hover:text-[#c41c1a] cursor-pointer">
           <User size={30} className="text-yellow-300" />
         </Button>
       </DialogTrigger>
@@ -76,7 +76,7 @@ export default function LoginForm() {
         <DialogTitle className="hidden" />
 
         {/* Contenido del formulario con padding responsivo */}
-        <div className="p-4 sm:p-6 lg:p-8">
+        <div className="px-4 py-2 sm:py-2 lg:py-2">
           <div className={isRegister ? 'w-full' : 'w-full max-w-sm mx-auto'}>
             {isRegister ? (
               <Register
