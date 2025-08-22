@@ -15,10 +15,11 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import passwordRecoveryService from "@/service/passsword/passwordRecoveryService";
-import dynamic from 'next/dynamic';
+import { useSessionGuard } from "@/hooks/useSessionGuard"; // Ajusta la ruta según tu estructura
+import LoadingSkeleton from "@/components/LoadingSkeleton"; // Ajusta la ruta según tu estructura
 
 const SmsResetPasswordSchema = z
   .object({
@@ -34,11 +35,15 @@ const SmsResetPasswordSchema = z
 
 type SmsResetValues = z.infer<typeof SmsResetPasswordSchema>;
 
-function SmsResetFormContent() {
+function SmsResetFormContent({ 
+  phone, 
+  code 
+}: { 
+  phone: string; 
+  code: string; 
+}) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [phone, setPhone] = useState<string>("");
-  const [code, setCode] = useState<string>("");
 
   const form = useForm<SmsResetValues>({
     resolver: zodResolver(SmsResetPasswordSchema),
@@ -47,20 +52,6 @@ function SmsResetFormContent() {
       password_confirmation: "",
     },
   });
-
-  // Cargar datos desde sessionStorage
-  useEffect(() => {
-    const recoveryPhone = sessionStorage.getItem("recovery_phone");
-    const recoveryCode = sessionStorage.getItem("recovery_code");
-
-    if (!recoveryPhone || !recoveryCode) {
-      router.push("/forgot-sms");
-      return;
-    }
-
-    setPhone(recoveryPhone);
-    setCode(recoveryCode);
-  }, [router]);
 
   const onSubmit: SubmitHandler<SmsResetValues> = async (values) => {
     setIsLoading(true);
@@ -96,18 +87,16 @@ function SmsResetFormContent() {
   return (
     <div className="min-h-screen bg-gradient-to-br flex items-center justify-center p-4">
       <div className="w-full max-w-md backdrop-blur-sm rounded-2xl p-8 shadow-2xl border bg-white">
-        {/* Header */}
         <div className="text-center mb-8">
           <div className="mx-auto w-16 h-16 bg-gradient-to-r from-red-700 to-red-600 rounded-full flex items-center justify-center shadow-lg mb-4">
             <span className="text-white text-2xl">🔒</span>
           </div>
           <h1 className="text-2xl font-bold mb-2">Nueva Contraseña</h1>
           <p className="text-muted-foreground text-sm">
-            Establecer nueva contraseña para: {phone ? formatPhoneDisplay(phone) : "***-***-****"}
+            Establecer nueva contraseña para: {formatPhoneDisplay(phone)}
           </p>
         </div>
 
-        {/* Verificación confirmada */}
         <div className="mb-6 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
           <div className="flex items-center gap-2 text-green-400 text-sm">
             <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
@@ -206,39 +195,20 @@ function SmsResetFormContent() {
   );
 }
 
-// Dynamic import con ssr: false
-const SmsResetForm = dynamic(() => Promise.resolve(SmsResetFormContent), {
-  ssr: false,
-  loading: () => (
-    <div className="min-h-screen bg-gradient-to-br flex items-center justify-center p-4">
-      <div className="w-full max-w-md backdrop-blur-sm rounded-2xl p-8 shadow-2xl border bg-white">
-        <div className="text-center mb-8">
-          <div className="mx-auto w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center shadow-lg mb-4 animate-pulse">
-            <span className="text-gray-400 text-2xl">🔒</span>
-          </div>
-          <div className="h-6 bg-gray-200 rounded mb-2 animate-pulse"></div>
-          <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-        </div>
-        
-        <div className="mb-6 p-3 bg-gray-100 rounded-lg animate-pulse">
-          <div className="h-4 bg-gray-200 rounded"></div>
-        </div>
+export default function SmsResetForm() {
+  const { isLoading, isReady, sessionData } = useSessionGuard({
+    requiredKeys: ['recovery_phone', 'recovery_code'],
+    redirectTo: '/forgot-sms'
+  });
 
-        <div className="space-y-6">
-          <div>
-            <div className="h-4 bg-gray-200 rounded mb-2 animate-pulse"></div>
-            <div className="h-12 bg-gray-200 rounded animate-pulse"></div>
-          </div>
-          <div>
-            <div className="h-4 bg-gray-200 rounded mb-2 animate-pulse"></div>
-            <div className="h-12 bg-gray-200 rounded animate-pulse"></div>
-          </div>
-          <div className="h-20 bg-gray-100 rounded animate-pulse"></div>
-          <div className="h-12 bg-gray-200 rounded animate-pulse"></div>
-        </div>
-      </div>
-    </div>
-  )
-});
+  if (isLoading || !isReady) {
+    return <LoadingSkeleton message="Verificando código de recuperación..." type="reset" />;
+  }
 
-export default SmsResetForm;
+  return (
+    <SmsResetFormContent 
+      phone={sessionData.recovery_phone} 
+      code={sessionData.recovery_code} 
+    />
+  );
+}

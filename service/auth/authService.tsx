@@ -4,7 +4,7 @@ import { z } from "zod";
 import { registerSchema } from "@/lib/validators/auth";
 import { store } from "@/store/store";
 import { loginSuccess, logout, Customer } from "@/store/slices/authSlice";
-import { log } from "console";
+
 
 // Interfaces de respuesta
 interface LoginResponse {
@@ -86,10 +86,15 @@ export const logoutUser = async (): Promise<void> => {
   }
 };
 
-export const getUser = async () => {
-  const response = await api.get("/me");
-  return response.data;
-}
+export const getUser = async (): Promise<Customer> => {
+  try {
+    const response = await api.get("/me");
+    return response.data; 
+  } catch (error: any) {
+    console.error('Error fetching current user:', error);
+    throw new Error(error.response?.data?.message || 'Error al obtener datos del usuario');
+  }
+};
 
 /**
  * Función principal para login con Google
@@ -122,20 +127,7 @@ export const loginWithGoogle = () => {
   }
 };
 
-/**
- * Función para manejar el callback después del login con Google
- */
-/**
- * ✅ MEJORADA: Función para manejar el callback con token usando getUser existente
- */
 
-/**
- * Función alternativa para callback con endpoint
- */
-
-/**
- * Función para registrar un nuevo usuario
- */
 export const register = async (formData: RegisterFormData) => {
   try {
     if (formData.password !== formData.password_confirmation) {
