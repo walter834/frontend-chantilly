@@ -18,8 +18,6 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import passwordRecoveryService from "@/service/passsword/passwordRecoveryService";
-import { useSessionGuard } from "@/hooks/useSessionGuard"; // Ajusta la ruta según tu estructura
-import LoadingSkeleton from "@/components/LoadingSkeleton"; // Ajusta la ruta según tu estructura
 
 const SmsResetPasswordSchema = z
   .object({
@@ -35,13 +33,7 @@ const SmsResetPasswordSchema = z
 
 type SmsResetValues = z.infer<typeof SmsResetPasswordSchema>;
 
-function SmsResetFormContent({ 
-  phone, 
-  code 
-}: { 
-  phone: string; 
-  code: string; 
-}) {
+export default function SmsResetFormContent({ phone, code }: { phone: string; code: string }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -64,13 +56,15 @@ function SmsResetFormContent({
       });
 
       toast.success("Contraseña restablecida exitosamente.");
-      
+
       sessionStorage.removeItem("recovery_phone");
       sessionStorage.removeItem("recovery_code");
 
       setTimeout(() => router.push("/"), 1500);
     } catch (e) {
-      toast.error("Error al restablecer la contraseña. Código inválido o expirado.");
+      toast.error(
+        "Error al restablecer la contraseña. Código inválido o expirado."
+      );
       console.log(e);
     } finally {
       setIsLoading(false);
@@ -195,20 +189,4 @@ function SmsResetFormContent({
   );
 }
 
-export default function SmsResetForm() {
-  const { isLoading, isReady, sessionData } = useSessionGuard({
-    requiredKeys: ['recovery_phone', 'recovery_code'],
-    redirectTo: '/forgot-sms'
-  });
 
-  if (isLoading || !isReady) {
-    return <LoadingSkeleton message="Verificando código de recuperación..." type="reset" />;
-  }
-
-  return (
-    <SmsResetFormContent 
-      phone={sessionData.recovery_phone} 
-      code={sessionData.recovery_code} 
-    />
-  );
-}
