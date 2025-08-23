@@ -8,7 +8,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Image from "next/image";
-import { Local } from "@/service/local/localService";
 import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
 

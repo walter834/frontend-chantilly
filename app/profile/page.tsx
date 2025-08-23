@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import ProfileUpdateForm from "../components/ProfileUpdateForm";
+import ProfileUpdateForm from "./components/ProfileUpdateForm";
 import { useAuth } from "@/hooks/useAuth";
 
 import { AlertCircle } from "lucide-react";

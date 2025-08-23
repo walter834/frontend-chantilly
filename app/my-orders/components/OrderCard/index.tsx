@@ -1,143 +1,264 @@
 // components/OrderCard.tsx
 "use client";
 import { Card } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { Order, OrderItem } from "@/types/order";
 import { MapPin, Package } from "lucide-react";
 
-export interface OrderItem {
-  id: number;
-  order_id: number;
-  product_variant_id?: number;
-  product_id?: number;
-  cake_flavor_id?: number;
-  quantity: number;
-  unit_price: string;
-  subtotal: string;
-  dedication_text: string | null;
-  delivery_date: string; 
-}
-
-export interface Order {
-  id: number;
-  customer_id: number;
-  order_number: string | null;
-  voucher_type: string | null;
-  billing_data: any | null;
-  local_id: number | null;
-  subtotal: string;
-  total: string;
-  order_date: string; // "YYYY-MM-DD HH:mm"
-  status: boolean;
-  payment_method: string | null;
-  payment_status: string | null; // puede venir null
-  paid_at: string | null;
-  items: OrderItem[];
-}
-
-
 const formatMoney = (v: string | number) =>
-  new Intl.NumberFormat("es-PE", { style: "currency", currency: "PEN" }).format(Number(v));
+  new Intl.NumberFormat("es-PE", { style: "currency", currency: "PEN" }).format(
+    Number(v)
+  );
 
 const formatDate = (s: string) => {
   const iso = s.includes("T") ? s : s.replace(" ", "T");
-  return new Intl.DateTimeFormat("es-PE", { day: "2-digit", month: "long", year: "numeric" })
-    .format(new Date(iso));
+  return new Intl.DateTimeFormat("es-PE", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(iso));
 };
 
 export function OrderCard({ order }: { order: Order }) {
   const firstItem = order.items?.[0];
   const orderNo = order.order_number ?? String(order.id).padStart(4, "0");
 
+  // Obtener el nombre del producto de la manera más específica posible
+  const getProductName = (item: OrderItem | undefined) => {
+    if (!item) return "Sin items";
+
+    if (item.product_variant?.description) {
+      return `${item.quantity} x ${item.product_variant.description}`;
+    }
+
+    if (item.product?.short_description) {
+      return `${item.quantity} x ${item.product.short_description}`;
+    }
+
+    return `${item.quantity} x Producto`;
+  };
+
   return (
     <div className="w-full px-4">
-      <Card className="bg-white rounded-lg shadow-lg w-full mx-auto p-6 sm:p-6 max-w-xl md:max-w-4xl lg:max-w-6xl">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <span className="text-gray-600 text-sm sm:text-base font-medium">
-            {formatDate(order.order_date)}
-          </span>
-          <span className="text-lg sm:text-xl font-bold">{formatMoney(order.total)}</span>
+      <Card className="bg-white rounded-2xl shadow-xl border-0 w-full mx-auto p-0 max-w-xl md:max-w-4xl lg:max-w-6xl overflow-hidden">
+        <div className="bg-[#c41d1ada] px-6 py-4">
+          <div className="flex justify-between items-center">
+            <span className="text-white/90 text-sm sm:text-base font-medium">
+              {formatDate(order.order_date)}
+            </span>
+            <span className="text-white text-xl sm:text-2xl font-bold bg-white/10 px-4 py-2 rounded-full">
+              {formatMoney(order.total)}
+            </span>
+          </div>
         </div>
 
-        <Separator className="my-0" />
-
-        <div className="flex flex-col md:flex-row w-full justify-between">
-          <div>
-            {/* Order Number */}
-            <div className="mb-4 sm:mb-6">
-              <h2 className="text-red-500 font-bold text-sm sm:text-lg">Compra N° {orderNo}</h2>
-            </div>
-
-            {/* Product Section */}
-            <div className="flex gap-4 mb-6">
-              {/* Product Image (placeholder) */}
-              <div className="flex-shrink-0">
-                <img
-                  src="/alianza-lima-jersey-cake.png"
-                  alt="Producto"
-                  className="w-24 h-24 rounded-lg object-cover"
-                />
-              </div>
-
-              {/* Product Details */}
-              <div className="flex-1">
-                <h3 className="font-bold text-gray-800 mb-2">
-                  {firstItem ? `${firstItem.quantity} x Producto` : "Sin items"}
-                </h3>
-
-                <div className="space-y-1 text-sm text-gray-600">
-                  {firstItem?.delivery_date && (
-                    <p>
-                      <span className="font-medium">Fecha Recojo:</span>{" "}
-                      {formatDate(firstItem.delivery_date + " 00:00")}
-                    </p>
-                  )}
-                  {firstItem?.dedication_text && (
-                    <p>
-                      <span className="font-medium">Dedicatoria:</span>{" "}
-                      {firstItem.dedication_text}
-                    </p>
-                  )}
-                  <p>
-                    <span className="font-medium">Medio de pago:</span>{" "}
-                    {order.payment_method ?? "—"}
-                  </p>
-                  <p>
-                    <span className="font-medium">Estado de pago:</span>{" "}
-                    {order.payment_status === "pending" ? "Pendiente" : order.payment_status}
-                  </p>
-                </div>
-
-                <div className="mt-2">
-                  <span className="font-bold text-lg">
-                    {firstItem ? formatMoney(firstItem.subtotal) : formatMoney(order.total)}
-                  </span>
+        <div className="px-1 sm:p-8">
+          <div className="flex flex-col lg:flex-row w-full justify-between gap-8 ">
+            <div className="flex-1">
+              <div className="mb-6">
+                <div className="inline-flex items-center gap-2 bg-red-50 px-4 py-2 rounded-full border border-red-100">
+                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                  <h2 className="text-red-600 font-bold text-lg">
+                    Compra N° {orderNo}
+                  </h2>
                 </div>
               </div>
-            </div>
-          </div>
-                  
-                  
-          {/* Delivery Information (estático si tu API no lo trae aún) */}
-          <div className="pt-4">
-            <div className="mb-4">
-              <div className="flex items-center gap-2 text-red-500 mb-2">
-                <Package className="w-4 h-4" />
-                <span className="font-bold">Tipo de Entrega</span>
+
+              <div className="flex gap-6 mb-8">
+                <div className="flex-shrink-0">
+                  <div className="relative">
+                    <img
+                      src={firstItem?.image_url || "./avatar.jpeg"}
+                      alt="Producto"
+                      className="w-28 h-28 rounded-xl object-cover border-2 border-red-100"
+                      onError={(e) => {
+                        e.currentTarget.src = "/";
+                      }}
+                    />
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white"></div>
+                  </div>
+                </div>
+
+                <div className="flex-1">
+                  <h3 className="font-bold text-gray-900 mb-3 text-lg leading-tight">
+                    {getProductName(firstItem)}
+                  </h3>
+
+                  {firstItem?.product_variant && (
+                    <div className="mb-4">
+                      <div className="flex gap-4 text-sm text-gray-600">
+                        {firstItem.product_variant.portions && (
+                          <span className="flex items-center gap-1 bg-gray-50 px-2 py-1 rounded-md">
+                            <span className="text-red-500">📏</span>{" "}
+                            {firstItem.product_variant.portions}
+                          </span>
+                        )}
+                        {firstItem.product_variant.size_portion && (
+                          <span className="flex items-center gap-1 bg-gray-50 px-2 py-1 rounded-md">
+                            <span className="text-red-500">🍰</span>{" "}
+                            {firstItem.product_variant.size_portion}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="space-y-3 text-sm">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-red-600 text-xs uppercase tracking-wide">
+                          Comprobante
+                        </span>
+                        <span className="text-gray-800 font-medium">
+                          {order.voucher_type || "FACTURA"}
+                        </span>
+                      </div>
+                      {firstItem?.delivery_date && (
+                        <div className="flex flex-col">
+                          <span className="font-semibold text-red-600 text-xs uppercase tracking-wide">
+                            Fecha Recojo
+                          </span>
+                          <span className="text-gray-800 font-medium">
+                            {formatDate(firstItem.delivery_date + " 00:00")}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {firstItem?.dedication_text && (
+                      <div className="bg-red-50 p-3 rounded-lg border border-red-100">
+                        <span className="font-semibold text-red-600 text-xs uppercase tracking-wide block mb-1">
+                          Dedicatoria
+                        </span>
+                        <span className="text-gray-800 italic">
+                          "{firstItem.dedication_text}"
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-red-600 text-xs uppercase tracking-wide">
+                          Medio de pago
+                        </span>
+                        <span className="text-gray-800 font-medium">
+                          {order.payment_method ?? "—"}
+                        </span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-red-600 text-xs uppercase tracking-wide">
+                          Estado de pago
+                        </span>
+                        <span
+                          className={`font-medium ${
+                            order.payment_status === "pending"
+                              ? "text-amber-600"
+                              : "text-gray-800"
+                          }`}
+                        >
+                          {order.payment_status === "pending"
+                            ? "Pendiente"
+                            : order.payment_status ?? "—"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {order.billing_data && (
+                    <div className="mt-6 p-4 bg-gradient-to-r from-red-50 to-white rounded-xl border border-red-100">
+                      <h4 className="font-bold text-red-600 mb-3 text-sm uppercase tracking-wide flex items-center gap-2">
+                        <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                        Datos de Facturación
+                      </h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="font-medium text-gray-600">
+                            RUC:
+                          </span>
+                          <span className="text-gray-900 font-semibold">
+                            {order.billing_data.ruc}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="font-medium text-gray-600">
+                            Razón Social:
+                          </span>
+                          <span className="text-gray-900 font-semibold">
+                            {order.billing_data.razon_social}
+                          </span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="font-medium text-gray-600">
+                            Dirección:
+                          </span>
+                          <span className="text-gray-900 font-semibold">
+                            {order.billing_data.tax_address}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="mt-6 pt-4 border-t border-gray-100">
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600 font-medium">
+                        Subtotal:
+                      </span>
+                      <span className="font-bold text-2xl text-red-600">
+                        {firstItem
+                          ? formatMoney(firstItem.subtotal)
+                          : formatMoney(order.total)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <p className="text-gray-700 ml-6">RECOJO EN TIENDA</p>
             </div>
 
-            <div>
-              <div className="flex items-center gap-2 text-red-500 mb-2">
-                <MapPin className="w-4 h-4" />
-                <span className="font-bold">Tienda</span>
-              </div>
-              <div className="ml-6 text-gray-700">
-                <p className="font-medium">LA CASA DEL CHANTILLY - HABICH</p>
-                <p className="text-sm">
-                  {order.local_id}
-                </p>
+            <div className="pt-4 min-w-[300px]">
+              <div className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm">
+                <div className="mb-6">
+                  <div className="flex items-center gap-3 text-red-600 mb-3">
+                    <div className="p-2 bg-red-50 rounded-lg">
+                      <Package className="w-5 h-5" />
+                    </div>
+                    <span className="font-bold text-lg">Tipo de Entrega</span>
+                  </div>
+                  <div className="ml-11">
+                    <span className="inline-flex items-center gap-2 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                      <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+                      RECOJO EN TIENDA
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center gap-3 text-red-600 mb-3">
+                    <div className="p-2 bg-red-50 rounded-lg">
+                      <MapPin className="w-5 h-5" />
+                    </div>
+                    <span className="font-bold text-lg">Tienda</span>
+                  </div>
+                  <div className="ml-11 text-gray-700 space-y-2">
+                    <p className="font-bold text-gray-900 text-lg">
+                      {order.local.name}
+                    </p>
+                    <div className="space-y-1 text-sm">
+                      <p className="text-gray-600">{order.local.address}</p>
+                      <p className="text-gray-600">
+                        {order.local.district}, {order.local.province}
+                      </p>
+                      {order.local.start_time && order.local.end_time && (
+                        <div className="mt-3 p-2 bg-gray-50 rounded-lg">
+                          <p className="text-xs text-gray-500 font-medium">
+                            <span className="text-red-500">🕒</span> Horario:{" "}
+                            {order.local.start_time.slice(0, 5)} -{" "}
+                            {order.local.end_time.slice(0, 5)}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

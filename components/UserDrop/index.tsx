@@ -45,7 +45,7 @@ export default function UserDrop() {
       <DropdownMenuContent className="w-56" align="start">
         <DropdownMenuLabel>Mi cuenta</DropdownMenuLabel>
         <DropdownMenuGroup>
-          <Link href={`/profile/${id}`}>
+          <Link href={`/profile`}>
             <DropdownMenuItem>
               Perfil
               <DropdownMenuShortcut>
