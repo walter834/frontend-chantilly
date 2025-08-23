@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { OrderCard } from "./components/OrderCard";
+import OrdersList from "./components/OrdersList";
 export default function myOrders() {
   return (
     <div className="py-10 min-h-screen">
@@ -39,7 +40,7 @@ export default function myOrders() {
         </Select>
       </div>
       <div className="flex justify-center items-center mt-10">
-        <OrderCard/>
+        <OrdersList/>
       </div>
     </div>
   );
