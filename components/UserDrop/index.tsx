@@ -26,14 +26,14 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import { useAuth } from "@/hooks/useAuth";
-import { CircleUser, LogOut, ShoppingBasket, Watch } from "lucide-react";
+import { CircleUser, LogOut, ShoppingBasket } from "lucide-react";
 import Link from "next/link";
 
 export default function UserDrop() {
-  const { initials, logoutUser,id } = useAuth();
+  const { initials, logoutUser } = useAuth();
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false} >
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
@@ -45,7 +45,7 @@ export default function UserDrop() {
       <DropdownMenuContent className="w-56" align="start">
         <DropdownMenuLabel>Mi cuenta</DropdownMenuLabel>
         <DropdownMenuGroup>
-          <Link href={`/profile`}>
+          <Link href="profile">
             <DropdownMenuItem>
               Perfil
               <DropdownMenuShortcut>
