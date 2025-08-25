@@ -1,5 +1,13 @@
 import api, { API_ROUTES } from "./api";
-import { ApiOrder, TransformedOrder, ApiInitSessionNiubizTransformed, NiubizInitSessionResponse } from "@/types/api";
+import {
+    ApiOrder,
+    TransformedOrder,
+    ApiInitSessionNiubizTransformed,
+    NiubizInitSessionResponse,
+    NiubizConfigResponse,
+    NiubizSessionResponse,
+    NiubizProcessResponse,
+} from "@/types/api";
 
 export async function createOrder(order: ApiOrder): Promise<TransformedOrder | null> {
     console.log('Creating order:', order);
@@ -26,21 +34,22 @@ export async function createInitSessionNiubiz(order: ApiInitSessionNiubizTransfo
     }
 }
 
-// Procesar pago en backend propio
-export interface ProcessPaymentPayload {
-    tokenId: string;
-    amount: number;
-    purchaseNumber: string;
+// New Niubiz flow
+export async function getNiubizConfig(): Promise<NiubizConfigResponse> {
+    const { data } = await api.get<NiubizConfigResponse>(API_ROUTES.NIUBIZ_CONFIG);
+    return data;
 }
 
-export async function processPayment(payload: ProcessPaymentPayload) {
-    try {
-        // usar URL absoluta provista por el usuario
-        const url = "http://192.168.18.28:8000/api/pay";
-        const { data } = await api.post(url, payload);
-        return data;
-    } catch (error) {
-        console.error('Error processing payment:', error);
-        throw error;
-    }
+export async function createNiubizSession(body: { amount: number; order_id: number }): Promise<NiubizSessionResponse> {
+    console.log('body niubiz session:', body);
+    const { data } = await api.post<NiubizSessionResponse>(API_ROUTES.NIUBIZ_SESSION, body);
+    console.log('Niubiz session created:', data);
+    return data;
+}
+
+export async function processNiubizPayment(body: { tokenId: string, amount: number, purchaseNumber: string }): Promise<NiubizProcessResponse> {
+    console.log('body niubiz process:', body);
+    const { data } = await api.post<NiubizProcessResponse>(API_ROUTES.NIUBIZ_PAY, body);
+    console.log('Niubiz process response:', data);
+    return data;
 }

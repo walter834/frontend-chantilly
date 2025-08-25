@@ -59,14 +59,16 @@ const FormCart: React.FC<FormCartProps> = ({
     event.preventDefault();
     const today = new Date();
     const tomorrow = new Date(today);
+    const tomorrowDefault = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 2);
+    tomorrowDefault.setDate(tomorrowDefault.getDate() + 1);
 
     if(productType === '2') {
       if(pickupDate <=  today.toISOString().split('T')[0]) {
         CustomAlert(`Ingrese una fecha mayor a ${today.toISOString().split('T')[0]}`, 'error', 'top-right');
         return;
       }else if(pickupDate < tomorrow.toISOString().split('T')[0]) {
-        CustomAlert(`Ingrese una fecha mayor a ${tomorrow.toISOString().split('T')[0]}`, 'error', 'top-right');
+        CustomAlert(`Ingrese una fecha mayor a ${tomorrowDefault.toISOString().split('T')[0]}`, 'error', 'top-right');
         return;
       }
     }

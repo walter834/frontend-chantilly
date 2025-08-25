@@ -93,6 +93,30 @@ export interface NiubizInitSessionResponse {
   };
 }
 
+// New Niubiz flow types
+export interface NiubizConfigResponse {
+  merchant_id: string;
+  checkout_js_url: string; // e.g. https://static-content-qas.vnforapps.com/v2/js/checkout.js?qa=true
+  environment: 'sandbox' | 'prod';
+}
+
+export interface NiubizSessionResponse {
+  data: {
+    sessionToken: string;
+    merchant_id: string;
+    purchase_number: string;
+    amount: number;
+  };
+  success: boolean;
+}
+
+export interface NiubizProcessResponse {
+  success: boolean;
+  transaction_id?: string;
+  action_code?: string;
+  [key: string]: any;
+}
+
 export interface TransformedCustomer {
   id: number;
   name: string;
