@@ -29,7 +29,7 @@ export interface ProductVariant {
 export interface OrderItem {
   id: number;
   product: Product | null;
-  product_variant: ProductVariant | null;
+  product_variant: ProductVariant | null
   quantity: number;
   unit_price: string;
   subtotal: string;
@@ -47,7 +47,7 @@ export interface BillingData {
 export interface Order {
   id: number;
   customer_id: number;
-  order_number?: string | null;
+  order_number: string;
   voucher_type: string | null;
   billing_data: BillingData | null; // Ahora puede ser un objeto o null
   local: Local;

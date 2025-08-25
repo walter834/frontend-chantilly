@@ -1,3 +1,4 @@
+"use client"
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -9,38 +10,73 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { OrderCard } from "./components/OrderCard";
+
 import OrdersList from "./components/OrdersList";
+import { Search, X } from "lucide-react";
+import { useState } from "react";
 export default function myOrders() {
+  // Estados para manejar la busqueda por numero de compra
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchQuery, setSearhQuery] = useState("");
+
+  // Estado para manejas la busque por fecha
+  const [dateFilter,setDateFilter] = useState("");
+
+  const handleSearch = () => {
+    setSearhQuery(searchTerm.trim());
+  };
+
+  const clearSearch = () =>{
+    setSearchTerm("");
+    setSearhQuery("");
+    setDateFilter("");
+  }
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
   return (
     <div className="py-10 min-h-screen">
-
       <h1 className="text-center">MIS COMPRAS</h1>
-      <div className="flex justify-between mx-auto  px-20">
-        <div className="flex w-full max-w-sm items-center gap-2">
-          <Input type="email" placeholder="Email" />
-          <Button type="submit" variant="outline">
-            Subscribe
+      <div className="flex flex-col md:flex-row justify-between mx-auto px-4  gap-2 ">
+        <div className="flex  items-center gap-2">
+          <Input
+            type="text"
+            placeholder="Buscar por número de compras"
+            value={searchTerm}
+            onChange={(e)=>setSearchTerm(e.target.value)}
+            onKeyDown={handleKeyPress}
+            
+          />
+          <Button type="button" variant="outline" onClick={handleSearch}>
+            <Search />
           </Button>
+          {searchQuery && (
+            <Button type="button" variant="outline" onClick={clearSearch}>
+                <X/>
+            </Button>
+          )
+
+          }
         </div>
-        <Select>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Select a fruit" />
+        <Select value={dateFilter} onValueChange={setDateFilter} >
+          <SelectTrigger className="w-full md:w-[180px]">
+            <SelectValue placeholder="Filtrar por fecha" />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
-              <SelectLabel>Fruits</SelectLabel>
-              <SelectItem value="apple">Apple</SelectItem>
-              <SelectItem value="banana">Banana</SelectItem>
-              <SelectItem value="blueberry">Blueberry</SelectItem>
-              <SelectItem value="grapes">Grapes</SelectItem>
-              <SelectItem value="pineapple">Pineapple</SelectItem>
+              <SelectLabel>Periodos</SelectLabel>
+              <SelectItem value="ultimos_30_dias">Últimos 30 días</SelectItem>
+              <SelectItem value="ultimos_3_meses">Últimos 3 meses</SelectItem>
+              <SelectItem value="ultimos_6_meses">Últimos 6 meses</SelectItem>
+              <SelectItem value="2025">Año 2025</SelectItem>
             </SelectGroup>
           </SelectContent>
         </Select>
       </div>
-      <div className="flex justify-center items-center mt-10">
-        <OrdersList/>
+      <div className="mt-10">
+        <OrdersList searchQuery={searchQuery} dateFilter={dateFilter}/>
       </div>
     </div>
   );

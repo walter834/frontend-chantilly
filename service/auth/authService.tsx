@@ -5,8 +5,6 @@ import { registerSchema } from "@/lib/validators/auth";
 import { store } from "@/store/store";
 import { loginSuccess, logout, Customer } from "@/store/slices/authSlice";
 
-
-// Interfaces de respuesta
 interface LoginResponse {
   message: string;
   customer: Customer;
@@ -65,10 +63,7 @@ export const loginUser = async (
       customer,
     };
   } catch (error: any) {
-    console.error("Error en login:", error);
-
-    const errorMessage =
-      error.response?.data?.message || "Error al iniciar sesión";
+    const errorMessage = error.response?.data?.message;
     throw new Error(errorMessage);
   }
 };
@@ -89,10 +84,11 @@ export const logoutUser = async (): Promise<void> => {
 export const getUser = async (): Promise<Customer> => {
   try {
     const response = await api.get("/me");
-    return response.data; 
+    return response.data;
   } catch (error: any) {
-    console.error('Error fetching current user:', error);
-    throw new Error(error.response?.data?.message || 'Error al obtener datos del usuario');
+    throw new Error(
+      error.response?.data?.message || "Error al obtener datos del usuario"
+    );
   }
 };
 
@@ -126,7 +122,6 @@ export const loginWithGoogle = () => {
     );
   }
 };
-
 
 export const register = async (formData: RegisterFormData) => {
   try {
@@ -198,9 +193,8 @@ export const register = async (formData: RegisterFormData) => {
   }
 };
 
-/**
- * ✅ CORREGIDA: Función para obtener los datos del customer desde Redux
- * Ya no necesita hacer petición a API porque no existe endpoint /me
+/** 
+ Función para obtener los datos del customer desde Redux
  */
 export const getCurrentCustomer = (): Customer | null => {
   const state = store.getState();
