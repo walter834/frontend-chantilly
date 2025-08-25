@@ -60,7 +60,7 @@ export default function Paginations({
           <PaginationItem>
             <PaginationPrevious
               onClick={() => hasPrevPage && handlePageChange(currentPage - 1)}
-              className={`text-red-600 hover:rounded-full ${
+              className={`text-[#c41c1a] hover:rounded-full ${
                 !hasPrevPage ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
               }`}
             />
@@ -70,9 +70,9 @@ export default function Paginations({
             <PaginationItem key={page}>
               <PaginationLink
                 onClick={() => handlePageChange(page)}
-                className={`rounded-full text-white hover:bg-red-700 hover:text-white cursor-pointer ${
+                className={`rounded-full text-white hover:bg-[#c41c1a] hover:text-white cursor-pointer ${
                   page === currentPage
-                    ? 'bg-red-600'
+                    ? 'bg-[#c41c1a]'
                     : 'bg-gray-400 hover:bg-gray-500'
                 }`}
               >
@@ -84,7 +84,7 @@ export default function Paginations({
           <PaginationItem>
             <PaginationNext
               onClick={() => hasNextPage && handlePageChange(currentPage + 1)}
-              className={`text-red-600 hover:rounded-full ${
+              className={`text-[#c41c1a] hover:rounded-full ${
                 !hasNextPage ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
               }`}
             />

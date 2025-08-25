@@ -13,8 +13,12 @@ export const API_ROUTES = {
   CAKE_FLAVORS: '/cake-flavors',
   CUSTOMERS: '/customers',
   ORDERS: '/orders',
+  // Legacy
   INIT_SESSION_NIUBIZ: '/session',
-  PAYMENT: '/pay',
+  // New Niubiz flow
+  NIUBIZ_CONFIG: '/config',
+  NIUBIZ_SESSION: '/session',
+  NIUBIZ_PAY: '/pay',
 } as const;
 
 const api = axios.create({

@@ -2,27 +2,33 @@
 import { toast } from 'sonner';
 import { FaCircleCheck, FaCircleExclamation, FaCircleInfo, FaTriangleExclamation } from 'react-icons/fa6';
 
-// Define the valid alert statuses and their corresponding configurations
+// Definimos la paleta de colores de la marca "La Casa del Chantilly"
+const brandColors = {
+  red: '#d62828', // Rojo oscuro de la marca
+  yellow: '#f4a261', // Amarillo/naranja mostaza de la marca
+  white: '#fefefe', // Blanco
+};
+
 const alertConfig = {
   success: {
     icon: FaCircleCheck,
-    color: 'text-[#4ade80]', // A green color
-    borderColor: 'border-[#4ade80]',
+    textColor: 'text-green-800',
+    bgColor: 'bg-green-50',
   },
   warning: {
     icon: FaTriangleExclamation,
-    color: 'text-[#facc15]', // A yellow color
-    borderColor: 'border-[#facc15]',
+    textColor: `text-[${brandColors.yellow}]`,
+    bgColor: `bg-yellow-50`, // Usamos un tono más claro del amarillo para el fondo
   },
   error: {
     icon: FaCircleExclamation,
-    color: 'text-[#ef4444]', // A red color
-    borderColor: 'border-[#ef4444]',
+    textColor: `text-[${brandColors.red}]`,
+    bgColor: `bg-red-50`, // Usamos un tono más claro del rojo para el fondo
   },
   info: {
     icon: FaCircleInfo,
-    color: 'text-[#3b82f6]', // A blue color
-    borderColor: 'border-[#3b82f6]',
+    textColor: 'text-blue-800',
+    bgColor: 'bg-blue-50',
   },
 };
 
@@ -30,13 +36,19 @@ type Status = keyof typeof alertConfig;
 type Position = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'top-center' | 'bottom-center';
 
 export const CustomAlert = (text: string, status: Status, position: Position) => {
-  // Get the icon and color based on the status, defaulting to 'info' if the status is not found
-  const { icon: Icon, color, borderColor } = alertConfig[status] || alertConfig.info;
+  const { icon: Icon, textColor, bgColor } = alertConfig[status] || alertConfig.info;
 
   toast.custom((t) => (
-    <div className={`flex items-center gap-2 bg-white text-black shadow-lg font-semibold p-4 h-20  rounded-lg border-[2px] ${borderColor}`}>
-      <Icon className={`text-xl ${color}`} />
-      <p>{text}</p>
+    <div
+      className={`
+        flex items-center gap-3
+        p-4 rounded-lg
+        ${bgColor} ${textColor}
+        font-semibold
+      `}
+    >
+      <Icon className="text-xl shrink-0" />
+      <p className="text-sm md:text-base">{text}</p>
     </div>
   ), { position });
 };

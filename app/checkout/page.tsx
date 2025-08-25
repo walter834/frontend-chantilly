@@ -13,7 +13,6 @@ import { LocalService } from '@/service/local/localService';
 import type { Local } from '@/service/local/localService';
 import { CustomAlert } from '@/components/ui/custom-alert';
 import PayButtom from './components/payButtom';
-import { array } from 'zod';
 
 type FormData = {
     name: string;
@@ -51,6 +50,8 @@ export default function Contact() {
     const [loadingLocals, setLoadingLocals] = useState(false);
     const [localsError, setLocalsError] = useState<string | null>(null);
     const [localSelected, setLocalSelected] = useState<Local | null>(null);
+    const [termsChecked, setTermsChecked] = useState(false);
+    const [conditionsChecked, setConditionsChecked] = useState(false);
 
     const arrayOrder = {
         "customer_id": customer?.id,
@@ -423,7 +424,7 @@ export default function Contact() {
                                 <thead className='bg-[#c41c1a] text-white h-12'>
                                     <tr>
                                         <th>Imagen</th>
-                                        <th>Producto</th>
+                                        <th className='text-left'>Producto</th>
                                         <th>Cantidad</th>
                                         <th>Precio S/</th>
                                         <th>Total S/</th>
@@ -431,10 +432,10 @@ export default function Contact() {
                                 </thead>
                                 <tbody className='bg-[#f5f5f5] text-center border-b-2 border-[#c41c1a]'>
                                     {(listShopping as any[]).map((item: any) => (
-                                        <tr key={item?.id} className='border-b-2 border-gray-500'>
+                                        <tr key={item?.id} className='border-b-2 border-gray-300'>
                                             <td>
                                                 {item?.product?.image ? (
-                                                    <Image src={item.product.image} alt={item?.product?.name || 'Producto'} width={150} height={150} />
+                                                    <Image className='border rounded-md' src={item.product.image} alt={item?.product?.name || 'Producto'} width={150} height={150} />
                                                 ) : (
                                                     <span>-</span>
                                                 )}
@@ -471,17 +472,23 @@ export default function Contact() {
                             </table>
                             <div className='grid grid-cols-1 gap-2 pt-3'>
                                 <div className='flex items-center gap-2'>
-                                    <input type="checkbox" name="terms" id="terms" />
+                                    <input type="checkbox" name="terms" id="terms" onChange={(e) => setTermsChecked(e.target.checked)} />
                                     <label htmlFor="terms" className='text-[18px]'>He leído y acepto las condiciones de <Link target="_blank" href="/politicas-privacidad" className='text-[#0C37ED]'>tratamiento de datos personales</Link></label>
                                 </div>
                                 <div className='flex items-center gap-2'>
-                                    <input type="checkbox" name="conditions" id="conditions" />
+                                    <input type="checkbox" name="conditions" id="conditions" onChange={(e) => setConditionsChecked(e.target.checked)} />
                                     <label htmlFor="conditions" className='text-[18px]'>He leído y acepta nuestros <Link target="_blank" href="/terminos-condiciones" className='text-[#0C37ED]'>términos y condiciones</Link></label>
                                 </div>
                             </div>
                         </div>
                         <div className='flex justify-center mt-4'>
-                            <PayButtom arrayOrder={arrayOrder} />
+                            {termsChecked && conditionsChecked ? (
+                                <PayButtom arrayOrder={arrayOrder} />
+                            ) : (
+                                <button type="button" className='bg-[#c41c1a]/50 text-white py-2 w-full rounded cursor-pointer cursor-not-allowed' disabled>
+                                    PAGAR
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
