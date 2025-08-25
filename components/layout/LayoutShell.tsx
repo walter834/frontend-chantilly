@@ -40,10 +40,25 @@ export default function LayoutShell({
 
   return (
     <>
-      <Navbar />
-      <Header />
-      <main className="flex-1">{children}</main>
-      <Toaster />
+      {/* Navbar con z-index alto para que esté siempre visible */}
+      <div className="relative z-50">
+        <Navbar />
+      </div>
+      
+      {/* Header */}
+      <div className="relative z-40">
+        <Header />
+      </div>
+      
+      {/* Main content */}
+      <main className="flex-1 relative z-10">{children}</main>
+      
+      {/* Toaster con z-index muy alto para notificaciones */}
+      <div className="relative z-[9999]">
+        <Toaster />
+      </div>
+      
+      {/* Otros componentes */}
       <CustomOrders />
       <OnlyHome>
         <ThemedProductsSection />
@@ -56,7 +71,11 @@ export default function LayoutShell({
         <LocalCardGrid limit={3} />
       </OnlyHome>
       <Footer />
-      <ChatWidget />
+      
+      {/* ChatWidget con z-index más bajo */}
+      <div className="relative z-30">
+        <ChatWidget />
+      </div>
     </>
   );
 }

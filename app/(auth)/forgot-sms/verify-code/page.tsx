@@ -1,3 +1,4 @@
+// verify-code/page.tsx
 "use client";
 
 import type React from "react";
@@ -12,10 +13,12 @@ import {
 import { useRouter } from "next/navigation";
 import passwordRecoveryService from "@/service/passsword/passwordRecoveryService";
 
-export default function VerifyRecoveryCode() {
-  const router = useRouter();
+interface VerifyRecoveryCodeContentProps {
+  phone: string;
+}
 
-  const [phone, setPhone] = useState<string>("");
+function VerifyRecoveryCodeContent({ phone }: VerifyRecoveryCodeContentProps) {
+  const router = useRouter();
   const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
   const [countdown, setCountdown] = useState<number>(60);
   const [isVerifying, setIsVerifying] = useState<boolean>(false);
@@ -23,17 +26,6 @@ export default function VerifyRecoveryCode() {
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<string>("");
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-
-  // Obtener el teléfono de sessionStorage al cargar
-  useEffect(() => {
-    const savedPhone = sessionStorage.getItem("recovery_phone");
-    if (!savedPhone) {
-      // Si no hay teléfono guardado, redirigir al inicio
-      router.push("/forgot-sms");
-      return;
-    }
-    setPhone(savedPhone);
-  }, [router]);
 
   // Countdown timer
   useEffect(() => {
@@ -52,7 +44,6 @@ export default function VerifyRecoveryCode() {
   }, [otp, isVerifying, phone]);
 
   const handleInputChange = (index: number, value: string): void => {
-    // Solo permitir números
     if (!/^\d*$/.test(value)) return;
     if (value.length > 1) return;
 
@@ -60,10 +51,8 @@ export default function VerifyRecoveryCode() {
     newOtp[index] = value;
     setOtp(newOtp);
 
-    // Limpiar errores cuando el usuario empiece a escribir
     if (error) setError("");
 
-    // Auto-focus next input
     if (value && index < 5) {
       inputRefs.current[index + 1]?.focus();
     }
@@ -93,19 +82,17 @@ export default function VerifyRecoveryCode() {
       });
 
       setSuccess(response.message || "Código verificado correctamente");
-
-      // Guardar el código también en sessionStorage para el siguiente paso
+      
+      // Guardar el código ANTES de la navegación
       sessionStorage.setItem("recovery_code", otpCode);
 
-      // Redirigir a la página de reset sin parámetros en la URL
-      setTimeout(() => {
-        router.push("/forgot-sms/reset");
-      }, 1500);
+      // Navegación inmediata sin setTimeout para evitar parpadeos
+      router.push("/forgot-sms/reset");
+      
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Código inválido o expirado";
       setError(errorMessage);
-      // Limpiar el OTP si hay error
       setOtp(["", "", "", "", "", ""]);
       inputRefs.current[0]?.focus();
     } finally {
@@ -121,14 +108,9 @@ export default function VerifyRecoveryCode() {
       setError("");
       setSuccess("");
 
-      await passwordRecoveryService.sendRecoveryCode({
-        phone: phone,
-      });
-
-      setCountdown(60); // Reiniciar contador
+      await passwordRecoveryService.sendRecoveryCode({ phone: phone });
+      setCountdown(60);
       setSuccess("Código reenviado correctamente");
-
-      // Limpiar el mensaje de éxito después de 3 segundos
       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
       const errorMessage =
@@ -140,7 +122,6 @@ export default function VerifyRecoveryCode() {
   };
 
   const handleGoBack = () => {
-    // Limpiar sessionStorage y volver al inicio
     sessionStorage.removeItem("recovery_phone");
     sessionStorage.removeItem("recovery_code");
     router.push("/forgot-sms");
@@ -148,7 +129,7 @@ export default function VerifyRecoveryCode() {
 
   const getInputClassName = (): string => {
     const baseClasses =
-      "w-12 h-12  border rounded-xl  text-xl font-semibold text-center transition-all duration-200 focus:outline-none hover:border-slate-500 disabled:opacity-50 disabled:cursor-not-allowed";
+      "w-12 h-12 border rounded-xl text-xl font-semibold text-center transition-all duration-200 focus:outline-none hover:border-slate-500 disabled:opacity-50 disabled:cursor-not-allowed";
 
     if (error) {
       return `${baseClasses} border-red-500 focus:border-red-400 focus:ring-2 focus:ring-red-500/20`;
@@ -156,10 +137,9 @@ export default function VerifyRecoveryCode() {
     if (success) {
       return `${baseClasses} border-green-500 focus:border-green-400 focus:ring-2 focus:ring-green-500/20`;
     }
-    return `${baseClasses} border-slate-600/10 focus:border-red-500 focus:ring-2 focus:ring-red-700/5 `;
+    return `${baseClasses} border-slate-600/10 focus:border-red-500 focus:ring-2 focus:ring-red-700/5`;
   };
 
-  // Formatear el número de teléfono para mostrar (ej: ***-***-1234)
   const formatPhoneDisplay = (phoneNumber: string): string => {
     if (!phoneNumber) return "";
     if (phoneNumber.length <= 4) return phoneNumber;
@@ -172,11 +152,10 @@ export default function VerifyRecoveryCode() {
   return (
     <div className="min-h-screen bg-gradient-to-br flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white backdrop-blur-sm rounded-2xl p-8 shadow-2xl border">
-        {/* Back Button */}
         <div className="flex justify-start mb-6">
           <button
             onClick={handleGoBack}
-            className="flex items-center gap-2 text-slate-400  transition-colors duration-200 cursor-pointer hover:text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 text-slate-400 transition-colors duration-200 cursor-pointer hover:text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
             type="button"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -184,14 +163,12 @@ export default function VerifyRecoveryCode() {
           </button>
         </div>
 
-        {/* Logo */}
         <div className="flex justify-start mb-8">
           <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center">
             <span className="text-yellow-300 font-bold text-xl">C</span>
           </div>
         </div>
 
-        {/* Title and Description */}
         <div className="mb-8">
           <h1 className="text-2xl font-semibold mb-3">Verificar Código</h1>
           <p className="text-sm leading-relaxed">
@@ -202,7 +179,6 @@ export default function VerifyRecoveryCode() {
           </p>
         </div>
 
-        {/* Error Message */}
         {error && (
           <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3">
             <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
@@ -210,7 +186,6 @@ export default function VerifyRecoveryCode() {
           </div>
         )}
 
-        {/* Success Message */}
         {success && (
           <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center gap-3">
             <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
@@ -218,7 +193,6 @@ export default function VerifyRecoveryCode() {
           </div>
         )}
 
-        {/* OTP Input Fields */}
         <div className="flex gap-3 mb-8 justify-center">
           {otp.map((digit, index) => (
             <input
@@ -240,11 +214,10 @@ export default function VerifyRecoveryCode() {
           ))}
         </div>
 
-        {/* Verify Button */}
         <button
           onClick={handleVerifyCode}
           disabled={otp.join("").length !== 6 || isVerifying}
-          className="w-full  bg-red-600 hover:from-red-600 hover:to-red-500 disabled:to-red-300 disabled:cursor-not-allowed text-white font-medium py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-red-500/25 disabled:shadow-none mb-6"
+          className="w-full bg-red-600 hover:bg-red-700 disabled:bg-red-300 disabled:cursor-not-allowed text-white font-medium py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-red-500/25 disabled:shadow-none mb-6"
           type="button"
         >
           {isVerifying ? (
@@ -265,7 +238,6 @@ export default function VerifyRecoveryCode() {
           )}
         </button>
 
-        {/* Resend Code */}
         <div className="text-center">
           <p className="text-slate-400 text-sm">
             ¿No recibiste el código?{" "}
@@ -286,4 +258,92 @@ export default function VerifyRecoveryCode() {
       </div>
     </div>
   );
+}
+
+// Hook personalizado para manejar el teléfono
+function useRecoveryPhone() {
+  const phoneRef = useRef<string>("");
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    if (!isHydrated && typeof window !== "undefined") {
+      const recoveryPhone = sessionStorage.getItem("recovery_phone");
+      phoneRef.current = recoveryPhone || "";
+      setIsHydrated(true);
+    }
+  }, [isHydrated]);
+
+  return {
+    phone: phoneRef.current,
+    isValid: isHydrated && phoneRef.current !== "",
+    isLoading: !isHydrated
+  };
+}
+
+// Skeleton que replica exactamente la estructura del verify code
+const VerifyCodeSkeleton = () => (
+  <div className="min-h-screen bg-gradient-to-br flex items-center justify-center p-4">
+    <div className="w-full max-w-md bg-white backdrop-blur-sm rounded-2xl p-8 shadow-2xl border">
+      {/* Back button skeleton */}
+      <div className="flex justify-start mb-6">
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 bg-gray-300 rounded animate-pulse"></div>
+          <div className="w-24 h-4 bg-gray-300 rounded animate-pulse"></div>
+        </div>
+      </div>
+
+      {/* Logo skeleton */}
+      <div className="flex justify-start mb-8">
+        <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center">
+          <span className="text-yellow-300 font-bold text-xl">C</span>
+        </div>
+      </div>
+
+      {/* Title and description skeleton */}
+      <div className="mb-8">
+        <div className="h-8 bg-gray-200 rounded mb-3 w-48 animate-pulse"></div>
+        <div className="space-y-2">
+          <div className="h-4 bg-gray-200 rounded w-full animate-pulse"></div>
+          <div className="h-4 bg-gray-200 rounded w-32 animate-pulse"></div>
+        </div>
+      </div>
+
+      {/* OTP inputs skeleton */}
+      <div className="flex gap-3 mb-8 justify-center">
+        {[...Array(6)].map((_, index) => (
+          <div
+            key={index}
+            className="w-12 h-12 border border-slate-600/10 rounded-xl bg-gray-100 animate-pulse"
+          ></div>
+        ))}
+      </div>
+
+      {/* Verify button skeleton */}
+      <div className="w-full h-14 bg-red-300 rounded-xl mb-6 animate-pulse"></div>
+
+      {/* Resend text skeleton */}
+      <div className="text-center">
+        <div className="h-4 bg-gray-200 rounded w-40 mx-auto animate-pulse"></div>
+      </div>
+    </div>
+  </div>
+);
+
+export default function VerifyRecoveryCode() {
+  const router = useRouter();
+  const { phone, isValid, isLoading } = useRecoveryPhone();
+
+  // Redirigir solo después de la hidratación si no hay datos válidos
+  useEffect(() => {
+    if (!isLoading && !isValid) {
+      router.replace("/forgot-sms");
+    }
+  }, [isLoading, isValid, router]);
+
+  // Mostrar skeleton durante la hidratación o mientras redirige
+  if (isLoading || !isValid) {
+    return <VerifyCodeSkeleton />;
+  }
+
+  return <VerifyRecoveryCodeContent phone={phone} />;
 }

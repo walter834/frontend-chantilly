@@ -26,12 +26,12 @@ interface Customer {
 
 }
 
-// ✅ AMPLIADO: Estado de autenticación incluye campos derivados persistentes
+
 interface AuthState {
   isAuthenticated: boolean;
   token: string | null;
   customer: Customer | null;
-  // ✅ NUEVOS: Campos derivados que se calculan y persisten
+
   fullName: string | null;
   displayName: string | null;
   initials: string;

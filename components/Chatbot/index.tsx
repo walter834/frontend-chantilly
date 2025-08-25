@@ -7,16 +7,16 @@ export default function N8nChat() {
   useEffect(() => {
     let observer: MutationObserver | null = null;
     let titleProcessed = false;
-
+    
     createChat({
       webhookUrl:
-        "https://pruebas-automatizacion.app.n8n.cloud/webhook/b45adfae-0350-4ef9-bc2f-13faf9456306/chat",
+          process.env.NEXT_PUBLIC_CHATBOT_API_URL,
       target: "#n8n-chat",
       mode: "window",
       showWelcomeScreen: false,
       initialMessages: ['¡Hola! 😊 Soy María, tu asistente de "La Casa del Chantilly". ¿En qué puedo ayudarte hoy? Estoy aquí para brindarte información sobre nuestros deliciosos productos, precios y promociones. 🍰🧁🍪'],
       i18n: {
-        es: {
+        en: {
           title: "María",
           subtitle: "Comienza una conversación. Estoy aquí para ayudarte.",
           footer: "",
