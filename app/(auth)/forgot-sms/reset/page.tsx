@@ -1,12 +1,12 @@
 // reset/page.tsx
 "use client";
 import SmsResetFormContent from "./components/SmsResetFormContent";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   usePasswordRecoveryData,
   useClearRecoveryData,
 } from "@/hooks/useSessionData";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import FormSkeleton from "./components/FormSkeleton";
 
 export default function SmsResetForm() {
