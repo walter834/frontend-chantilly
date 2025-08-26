@@ -40,14 +40,14 @@ export async function getNiubizConfig(): Promise<NiubizConfigResponse> {
     return data;
 }
 
-export async function createNiubizSession(body: { amount: number; order_id: number }): Promise<NiubizSessionResponse> {
+export async function createNiubizSession(body: {order: ApiOrder}): Promise<NiubizSessionResponse> {
     console.log('body niubiz session:', body);
     const { data } = await api.post<NiubizSessionResponse>(API_ROUTES.NIUBIZ_SESSION, body);
     console.log('Niubiz session created:', data);
     return data;
 }
 
-export async function processNiubizPayment(body: { tokenId: string, amount: number, purchaseNumber: string }): Promise<NiubizProcessResponse> {
+export async function processNiubizPayment(body: { tokenId: string, amount: number, purchaseNumber: string , order_data: any}): Promise<NiubizProcessResponse> {
     console.log('body niubiz process:', body);
     const { data } = await api.post<NiubizProcessResponse>(API_ROUTES.NIUBIZ_PAY, body);
     console.log('Niubiz process response:', data);
