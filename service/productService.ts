@@ -15,7 +15,7 @@ import {
   transformProductAccessory 
 } from '@/types/api';
 
-export async function getProductById(id: string): Promise<TransformedProduct | null> {
+export async function getProductById(id: number): Promise<TransformedProduct | null> {
   try {
     const endpoint = `${API_ROUTES.PRODUCTS}/${id}`;
     const { data } = await api.get<ApiProduct>(endpoint);

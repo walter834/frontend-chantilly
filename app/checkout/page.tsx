@@ -496,7 +496,7 @@ export default function Contact() {
                             {termsChecked && conditionsChecked ? (
                                 <PayButtom arrayOrder={arrayOrder} />
                             ) : (
-                                <button type="button" className='bg-[#c41c1a]/50 text-white py-2 w-full rounded cursor-pointer cursor-not-allowed' disabled>
+                                <button type="button" className='bg-[#c41c1a]/50 text-white py-2 w-full rounded cursor-pointer' disabled>
                                     PAGAR
                                 </button>
                             )}
