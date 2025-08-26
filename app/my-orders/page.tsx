@@ -38,8 +38,8 @@ export default function myOrders() {
   };
   return (
     <div className="py-10 min-h-screen">
-      <h1 className="text-center">MIS COMPRAS</h1>
-      <div className="flex flex-col md:flex-row justify-between mx-auto px-4  gap-2 ">
+      <h1 className="text-center text-2xl sm:text-3xl lg:text-4xl font-bold">MIS COMPRAS</h1>
+      <div className="flex flex-col md:flex-row justify-between mx-auto px-6 lg:px-40  gap-2 ">
         <div className="flex  items-center gap-2">
           <Input
             type="text"

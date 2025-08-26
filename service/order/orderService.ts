@@ -23,24 +23,6 @@ export const getCostumerOrders = async (
   }
 };
 
-/**
- *
- * @param orderNumber
- * @returns
- */
-export const getOrdersByNumber = async (
-  orderNumber: string
-): Promise<Order[]> => {
-  try {
-    const { data } = await api.get<OrdersResponse>("orders", {
-      params: { orderNumber: orderNumber },
-    });
-    return data.orders ?? [];
-  } catch (err: any) {
-    if (err?.response?.status === 404) return [];
-    throw err;
-  }
-};
 
 export const getOrders = async (params: {
   customerId: number;

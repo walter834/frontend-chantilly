@@ -12,7 +12,10 @@ interface OrdersListProps {
   dateFilter?: string;
 }
 
-export default function OrdersList({ searchQuery, dateFilter }: OrdersListProps) {
+export default function OrdersList({
+  searchQuery,
+  dateFilter,
+}: OrdersListProps) {
   const { isAuthenticated, customerId } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,7 +48,7 @@ export default function OrdersList({ searchQuery, dateFilter }: OrdersListProps)
           // ✅ Si no hay filtros, mostrar todas las órdenes del cliente
           data = await getCostumerOrders(customerId);
         }
-        
+
         if (active) setOrders(data);
       } catch (e: any) {
         if (active) setErr(e?.message ?? "Error al cargar pedidos");
@@ -57,18 +60,18 @@ export default function OrdersList({ searchQuery, dateFilter }: OrdersListProps)
     return () => {
       active = false;
     };
-  }, [isAuthenticated, customerId, searchQuery, dateFilter]); 
+  }, [isAuthenticated, customerId, searchQuery, dateFilter]);
 
   if (!isAuthenticated)
     return <p className="px-4">Inicia sesión para ver tus pedidos.</p>;
   if (loading) return <p className="px-4">Cargando…</p>;
   if (err) return <p className="px-4 text-red-600">{err}</p>;
-  
+
   // ✅ Verificar filtros activos de manera más limpia
   const hasSearchQuery = searchQuery && searchQuery.trim().length > 0;
   const hasDateFilter = dateFilter && dateFilter.trim().length > 0;
   const hasAnyFilter = hasSearchQuery || hasDateFilter;
-  
+
   if (orders.length === 0) {
     if (hasAnyFilter) {
       let message = "No se encontraron pedidos";
@@ -90,21 +93,21 @@ export default function OrdersList({ searchQuery, dateFilter }: OrdersListProps)
       {hasAnyFilter && (
         <div className="px-4 text-sm text-gray-600">
           <p>
-            Mostrando {orders.length} resultado{orders.length !== 1 ? 's' : ''}
+            Mostrando {orders.length} resultado{orders.length !== 1 ? "s" : ""}
             {hasSearchQuery && ` para: "${searchQuery}"`}
             {hasSearchQuery && hasDateFilter && ` • `}
             {hasDateFilter && (
               <>
-                {dateFilter === 'ultimos_30_dias' && 'últimos 30 días'}
-                {dateFilter === 'ultimos_3_meses' && 'últimos 3 meses'}
-                {dateFilter === 'ultimos_6_meses' && 'últimos 6 meses'}
-                {dateFilter === '2025' && 'año 2025'}
+                {dateFilter === "ultimos_30_dias" && "últimos 30 días"}
+                {dateFilter === "ultimos_3_meses" && "últimos 3 meses"}
+                {dateFilter === "ultimos_6_meses" && "últimos 6 meses"}
+                {dateFilter === "2025" && "año 2025"}
               </>
             )}
           </p>
         </div>
       )}
-      
+
       {orders.map((order) => (
         <OrderCard key={order.id} order={order} />
       ))}

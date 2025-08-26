@@ -10,7 +10,6 @@ import { getCustomerById, updateCustomer } from '@/service/customerService';
 import { TransformedCustomer } from '@/types/api';
 import Loading from './components/loading';
 import { LocalService } from '@/service/local/localService';
-import type { Local } from '@/service/local/localService';
 import { CustomAlert } from '@/components/ui/custom-alert';
 import PayButtom from './components/payButtom';
 
@@ -485,7 +484,7 @@ export default function Contact() {
                             {termsChecked && conditionsChecked ? (
                                 <PayButtom arrayOrder={arrayOrder} />
                             ) : (
-                                <button type="button" className='bg-[#c41c1a]/50 text-white py-2 w-full rounded cursor-pointer cursor-not-allowed' disabled>
+                                <button type="button" className='bg-[#c41c1a]/50 text-white py-2 w-full rounded cursor-pointer' disabled>
                                     PAGAR
                                 </button>
                             )}

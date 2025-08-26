@@ -2,7 +2,17 @@
 "use client";
 import { Card } from "@/components/ui/card";
 import { Order, OrderItem } from "@/types/order";
-import { Cake, MapPin, Package, Ruler } from "lucide-react";
+import {
+  BanknoteArrowUp,
+  Cake,
+  Calendar,
+  CardSimIcon,
+  CreditCard,
+  FileText,
+  MapPin,
+  Package,
+  Ruler,
+} from "lucide-react";
 
 const formatMoney = (v: string | number) =>
   new Intl.NumberFormat("es-PE", { style: "currency", currency: "PEN" }).format(
@@ -55,7 +65,7 @@ export function OrderCard({ order }: { order: Order }) {
             <div className="flex-1">
               <div className="mb-6">
                 <div className="inline-flex items-center gap-2 bg-red-50 px-4 py-2 rounded-full border border-red-100">
-                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-[#c41d1ada] rounded-full"></div>
                   <h2 className="text-red-600 font-bold text-lg">
                     Compra N° {orderNo}
                   </h2>
@@ -138,7 +148,7 @@ export function OrderCard({ order }: { order: Order }) {
               {order.billing_data && (
                 <div className="mt-6 p-4 bg-gradient-to-r from-red-50 to-white rounded-xl border border-red-100">
                   <h4 className="font-bold text-red-600 mb-3 text-sm uppercase tracking-wide flex items-center gap-2">
-                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    <div className="w-2 h-2 bg-[#c41d1ada]rounded-full"></div>
                     Datos de Facturación
                   </h4>
                   <div className="space-y-2 text-sm">
@@ -169,59 +179,17 @@ export function OrderCard({ order }: { order: Order }) {
               )}
             </div>
 
-            <div className="pt-4 min-w-[300px] ">
-              <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm  ">
-                <div className="flex justify-between">
-                  <span className="font-bold text-red-600 text-xs uppercase tracking-wider block mb-2">
-                    Comprobante
-                  </span>
-                  <span className="text-gray-900 font-semibold text-lg">
-                    {order.voucher_type || "FACTURA"}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-bold text-red-600 text-xs uppercase tracking-wider block mb-2">
-                    Medio de pago
-                  </span>
-                  <span className="text-gray-900 font-semibold text-lg">
-                    {order.payment_method ?? "—"}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-bold text-red-600 text-xs uppercase tracking-wider block mb-2">
-                    Estado de pago
-                  </span>
-                  <span
-                    className={`font-semibold text-lg ${
-                      order.payment_status === "pending"
-                        ? "text-amber-600"
-                        : "text-gray-900"
-                    }`}
-                  >
-                    {order.payment_status === "pending"
-                      ? "Pendiente"
-                      : order.payment_status ?? "—"}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-bold text-red-600 text-xs uppercase tracking-wider block mb-2">
-                    Fecha Recojo
-                  </span>
-                  <span className="text-gray-900 font-semibold text-lg">
-                    {formatDate(order.order_date)}
-                  </span>
-                </div>
-              </div>
+            <div className="pt-0 min-w-[300px] ">
               <div className="bg-white border border-gray-100 rounded-xl p-6 shadow-sm mt-4">
-                <div className="mb-6">
-                  <div className="flex items-center gap-3 text-red-600 mb-3">
+                <div className="mb-6 flex justify-between items-center">
+                  <div className="flex items-center gap-3 text-red-600 ">
                     <div className="p-2 bg-red-50 rounded-lg">
                       <Package className="w-5 h-5" />
                     </div>
                     <span className="font-bold text-lg">Tipo de Entrega</span>
                   </div>
                   <div className="ml-11">
-                    <span className="inline-flex items-center gap-2 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                    <span className="inline-flex items-center gap-2 bg-[#c41d1ada] text-white px-3 py-1 rounded-full text-xs sm:text-sm font-medium">
                       <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
                       RECOJO EN TIENDA
                     </span>
@@ -229,30 +197,97 @@ export function OrderCard({ order }: { order: Order }) {
                 </div>
 
                 <div>
-                  <div className="flex items-center gap-3 text-red-600 mb-3">
-                    <div className="p-2 bg-red-50 rounded-lg">
-                      <MapPin className="w-5 h-5" />
+                  <div className="flex flex-col gap-3 text-red-600 mb-3">
+                    <div className="flex gap-3 items-center">
+                      <div className="p-2 bg-red-50 rounded-lg">
+                        <MapPin className="w-5 h-5" />
+                      </div>
+                      <span className="font-bold text-lg">Tienda</span>
                     </div>
-                    <span className="font-bold text-lg">Tienda</span>
-                  </div>
-                  <div className="ml-11 text-gray-700 space-y-2">
-                    <p className="font-bold text-gray-900 text-lg">
-                      {order.local.name}
-                    </p>
-                    <div className="space-y-1 text-sm">
-                      <p className="text-gray-600">{order.local.address}</p>
-                      <p className="text-gray-600">
-                        {order.local.district}, {order.local.province}
+                    <div className="bg-gray-50 p-4 rounded-xl text-gray-700 space-y-2">
+                      <p className="font-bold text-gray-900 text-lg">
+                        {order.local.name}
                       </p>
-                      {order.local.start_time && order.local.end_time && (
-                        <div className="mt-3 p-2 bg-gray-50 rounded-lg">
-                          <p className="text-xs text-gray-500 font-medium">
-                            <span className="text-red-500">🕒</span> Horario:{" "}
-                            {order.local.start_time.slice(0, 5)} -{" "}
-                            {order.local.end_time.slice(0, 5)}
-                          </p>
+                      <div className="space-y-1 text-sm">
+                        <p className="text-gray-600">{order.local.address}</p>
+                        <p className="text-gray-600">
+                          {order.local.district}, {order.local.province}
+                        </p>
+                        {order.local.start_time && order.local.end_time && (
+                          <div className="mt-3 p-2 bg-gray-50 rounded-lg">
+                            <p className="text-xs text-gray-500 font-medium">
+                              <span className="text-red-500">🕒</span> Horario:{" "}
+                              {order.local.start_time.slice(0, 5)} -{" "}
+                              {order.local.end_time.slice(0, 5)}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm  ">
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center">
+                        <div className="p-2  rounded-lg">
+                          <FileText className="w-5 h-5" />
                         </div>
-                      )}
+                        <span className="font-bold  text-xs uppercase tracking-wider block">
+                          Comprobante
+                        </span>
+                      </div>
+                      <span className="text-gray-900  text-xs sm:text-base">
+                        {order.voucher_type || "FACTURA"}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center">
+                        <div className="p-2 rounded-lg">
+                          <CreditCard className="w-5 h-5" />
+                        </div>
+                        <span className="font-bold  text-xs uppercase tracking-wider block">
+                          Medio de pago
+                        </span>
+                      </div>
+
+                      <span className="text-gray-900 text-xs sm:text-base">
+                        {order.payment_method ?? "—"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center">
+                        <div className="p-2 rounded-lg">
+                          <BanknoteArrowUp className="w-5 h-5" />
+                        </div>
+                        <span className="font-bold  text-xs uppercase tracking-wider block">
+                          Estado de pago
+                        </span>
+                      </div>
+                      <span
+                        className={` text-xs sm:text-base ${
+                          order.payment_status === "pendiente"
+                            ? "text-amber-600"
+                            : "text-gray-900"
+                        }`}
+                      >
+                        {order.payment_status === "pendiente"
+                          ? "Pendiente"
+                          : order.payment_status ?? "—"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center">
+                        <div className="p-2 rounded-lg">
+                          <Calendar className="w-5 h-5" />
+                        </div>
+                        <span className="font-bold  text-xs uppercase tracking-wider block">
+                          Fecha de pago
+                        </span>
+                      </div>
+                      <span className="text-gray-900  text-xs sm:text-base">
+                        {formatDate(order.order_date)}
+                      </span>
                     </div>
                   </div>
                 </div>

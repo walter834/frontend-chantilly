@@ -1,5 +1,5 @@
 // store/slices/localSlice.ts
-import { LocalService, Local, LocationCoordinates } from '@/service/local/localService';
+import { LocalService } from '@/service/local/localService';
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 
 
