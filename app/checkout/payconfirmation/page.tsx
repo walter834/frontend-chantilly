@@ -41,7 +41,6 @@ export default function payconfirmation() {
   const router = useRouter();
   const processedRef = useRef(false);
 
-  // Validar acceso: solo permitir si viene de Checkout (flag) o trae params esperados
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const hasParams = Boolean(
@@ -55,18 +54,13 @@ export default function payconfirmation() {
       router.replace('/');
       return;
     }
-    // Consumir el flag si existe para que no se pueda entrar de nuevo con back
     if (fromCheckout) sessionStorage.removeItem('fromCheckout');
   }, [searchParams, router]);
 
-  // Si el usuario recarga esta página, redirigir al inicio
   useEffect(() => {
     try {
-      // Standard Navigation Timing Level 2
       const entries = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[];
       const navType = entries && entries.length ? entries[0].type : undefined;
-      // Legacy fallback
-      // @ts-ignore
       const legacyType = (performance as any)?.navigation?.type;
       if (navType === 'reload' || legacyType === 1) {
         router.replace('/');
@@ -80,7 +74,6 @@ export default function payconfirmation() {
       processedRef.current = true;
       setLoading(true);
       console.log("searchParams", searchParams)
-      // 1) Intentar leer desde query params
       const dataParam = searchParams.get("data");
       const txParam = searchParams.get("transactionToken") || searchParams.get("transactiontoken") || searchParams.get("token");
       let payload: any | null = null;
@@ -90,7 +83,6 @@ export default function payconfirmation() {
           const decoded = (() => { try { return decodeURIComponent(dataParam); } catch { return dataParam; } })();
           const base = JSON.parse(decoded);
 
-          // Construir products legibles
           let products: Array<{ name: string; detail?: string }> | undefined;
           if (Array.isArray(base.items)) {
             products = base.items.map((it: any) => {
