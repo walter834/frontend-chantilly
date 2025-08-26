@@ -26,7 +26,7 @@ export default function DetallePage() {
 
         const isNumeric = /^\d+$/.test(candidate);
         const productData = isNumeric
-          ? await getProductById(candidate)
+          ? await getProductById(Number(candidate))
           : await getProductBySlug(candidate);
         if (!productData) {
           throw new Error('Producto no encontrado');
