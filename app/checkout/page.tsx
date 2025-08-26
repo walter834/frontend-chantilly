@@ -51,7 +51,17 @@ export default function Contact() {
     const [localSelected, setLocalSelected] = useState<Local | null>(null);
     const [termsChecked, setTermsChecked] = useState(false);
     const [conditionsChecked, setConditionsChecked] = useState(false);
+    const [cartChecked, setCartChecked] = useState(false);
 
+    // Redirigir solo cuando ya intentamos cargar el carrito
+    useEffect(() => {
+        console.log('listShopping', listShopping)
+        if (!cartChecked) return;
+        if (Array.isArray(listShopping) && listShopping.length === 0) {
+            router.replace('/');
+        }
+    }, [cartChecked, listShopping, router]);
+    
     const arrayOrder = {
         "customer_id": customer?.id,
         "voucher_type": voucherType,
@@ -150,6 +160,8 @@ export default function Contact() {
                 const parsed = JSON.parse(savedCart);
                 setListShopping(parsed?.items || []);
             }
+            // Marcar que ya intentamos cargar el carrito al menos una vez
+            setCartChecked(true);
         };
 
         loadCart();

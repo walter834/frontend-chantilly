@@ -14,23 +14,24 @@ interface ProductDetailProps {
   price: number;
   originalPrice?: number;
   theme?: string | null;
-  image: string; 
+  image: string;
   productType: string;
   description: string;
   product_link: string;
 }
 
-const ProductDetail = ({ id, name, price, originalPrice, theme, image, productType, description, product_link}: ProductDetailProps) => {
+const ProductDetail = ({ id, name, price, originalPrice, theme, image, productType, description, product_link }: ProductDetailProps) => {
   const router = useRouter();
   const [cakeFlavors, setCakeFlavors] = useState<TransformedCakeFlavor[]>([]);
-  const [selectedCake, setSelectedCake] = useState(''); 
-  const [accessories, setAccessories] = useState<TransformedProductAccessory[]>([]);  const [bocaditos, setBocaditos] = useState<TransformedProduct[]>([]);
+  const [selectedCake, setSelectedCake] = useState('');
+  const [accessories, setAccessories] = useState<TransformedProductAccessory[]>([]); const [bocaditos, setBocaditos] = useState<TransformedProduct[]>([]);
   const [loadingAccessories, setLoadingAccessories] = useState(true);
   const [loadingBocaditos, setLoadingBocaditos] = useState(true);
   const [productVariant, setProductVariant] = useState<TransformedProductVariant | null>(null);
   const [imageProduct, setImageProduct] = useState<string>('');
+  const [hour, setHour] = useState<string>('');
   const [diameter, setDiameter] = useState<string>('');
-  
+
   interface LocalCartItem {
     productId: string;
     product: { id: string | number; name: string; description: string; price: number; image: string; type: string };
@@ -42,13 +43,13 @@ const ProductDetail = ({ id, name, price, originalPrice, theme, image, productTy
     const currentCart = JSON.parse(localStorage.getItem('chantilly-cart') || '{"items":[],"total":0,"itemCount":0}');
     const productType = isAccessory ? 'accessory' : 'bocadito';
     const productIdentifier = `${productType}-${product.id}`;
-    
-    const existingItemIndex = currentCart.items.findIndex((item: LocalCartItem) => 
+
+    const existingItemIndex = currentCart.items.findIndex((item: LocalCartItem) =>
       item.productId === productIdentifier
     );
 
     let updatedItems;
-    
+
     if (existingItemIndex !== -1) {
       updatedItems = [...currentCart.items];
       updatedItems[existingItemIndex] = {
@@ -75,10 +76,10 @@ const ProductDetail = ({ id, name, price, originalPrice, theme, image, productTy
       };
       updatedItems = [...currentCart.items, newItem];
     }
-    
+
     const total = updatedItems.reduce((sum: number, item: LocalCartItem) => sum + (Number(item.price) * item.quantity), 0);
     const itemCount = updatedItems.reduce((sum, item) => sum + item.quantity, 0);
-    
+
     const updatedCart = {
       items: updatedItems,
       total,
@@ -102,9 +103,11 @@ const ProductDetail = ({ id, name, price, originalPrice, theme, image, productTy
     setDiameter(d);
     try {
       const variant = await getProductVariantById(id, portion);
+      console.log('variant', variant);
       if (variant) {
         setProductVariant(variant);
         setImageProduct(variant.image);
+        setHour(variant.hours);
       }
     } catch (error) {
       console.error('Error fetching product variant:', error);
@@ -116,7 +119,6 @@ const ProductDetail = ({ id, name, price, originalPrice, theme, image, productTy
     const fetchCategoryProducts = async () => {
       try {
         const accessoriesResponse = await fetchAccessories();
-        console.log('accessoriesResponse',accessoriesResponse);
         setAccessories(accessoriesResponse);
         setLoadingAccessories(false);
 
@@ -146,7 +148,7 @@ const ProductDetail = ({ id, name, price, originalPrice, theme, image, productTy
         console.error('Error fetching cake flavors:', error);
       }
     };
-    
+
     fetchCakeFlavors();
   }, []);
 
@@ -159,7 +161,7 @@ const ProductDetail = ({ id, name, price, originalPrice, theme, image, productTy
         console.error('Error fetching product variant:', error);
       }
     };
-    
+
     fetchProductVariant();
   }, [id]);
 
@@ -196,18 +198,18 @@ const ProductDetail = ({ id, name, price, originalPrice, theme, image, productTy
                 </span>
                 {originalPrice && (
                   <span className="text-2xl font-bold text-[#c41c1a]">
-                   - S/ {originalPrice.toFixed(2)}
+                    - S/ {originalPrice.toFixed(2)}
                   </span>
                 )}
               </div>
             </div>
             <p className="text-sm text-black mb-4 text-[15px]">
               {capitalizeFirstLetter(description)}<br />
-              <span className="text-[#c41c1a]"></span> Tiempo elaboración: - horas
+              <span className="text-[#c41c1a]"></span> Tiempo elaboración: {hour} horas
             </p>
             {/* Diámetro visible solo en carrito */}
           </div>
-          <FormCart 
+          <FormCart
             productId={id}
             name={name}
             initialPrice={price}
@@ -219,6 +221,7 @@ const ProductDetail = ({ id, name, price, originalPrice, theme, image, productTy
             imageProduct={imageProduct}
             initialImage={image}
             productType={productType}
+            hour={hour}
           />
         </div>
         <div className="lg:col-span-3">
@@ -249,7 +252,7 @@ const ProductDetail = ({ id, name, price, originalPrice, theme, image, productTy
                         <div className="font-bold text-[14px]">
                           S/ {parseInt(accessory.max_price).toFixed(2)}
                         </div>
-                        <button 
+                        <button
                           onClick={() => handleAddToCart(accessory, true)}
                           className="bg-[#c41c1a] text-white text-xs px-2 py-1 rounded cursor-pointer hover:bg-[#a01818] transition-colors"
                         >

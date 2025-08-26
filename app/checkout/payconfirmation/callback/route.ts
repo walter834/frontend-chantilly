@@ -64,13 +64,21 @@ export async function POST(req: Request) {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Procesando pago…</title>
   </head>
-  <body className="bg-[#c41c1a]">
+  <body style="background-color: #c41c1a;">
     <script>
       try {
         var payload = ${JSON.stringify(data)};
         localStorage.setItem('lastPaymentResult', JSON.stringify(payload));
       } catch (e) {}
-      window.location.replace('/checkout/payconfirmation');
+      try {
+        var dataStr = (payload && typeof payload.data === 'string') ? payload.data : JSON.stringify(payload);
+        var token = payload && (payload.transactionToken || payload.tokenId);
+        var url = '/checkout/payconfirmation?data=' + encodeURIComponent(dataStr);
+        if (token) { url += '&transactionToken=' + encodeURIComponent(String(token)); }
+        window.location.replace(url);
+      } catch (e) {
+        window.location.replace('/checkout/payconfirmation');
+      }
     </script>
     Procesando pago…
   </body>
@@ -99,7 +107,7 @@ export async function GET(req: Request) {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Procesando pago…</title>
   </head>
-  <body className="bg-[#c41c1a]">
+  <body style="background-color: #c41c1a;">
     <script>
       try {
         var payload = ${JSON.stringify(data)};

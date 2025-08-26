@@ -61,7 +61,6 @@ export async function getProductVariantById(id: string, portion: string): Promis
     return transformProductVariant(data);
   } catch (error) {
     if (error instanceof Error && error.message.includes('404')) {
-      console.log('Product variant not found');
       return null;
     }
     console.error('Error fetching product variant by id:', error);
@@ -163,7 +162,6 @@ export async function fetchProducts(
     if (bestStatus) params.append('best_status', bestStatus);
     const endpoint = `${API_ROUTES.PRODUCTS}?${params.toString()}`;
     const { data: response } = await api.get<ApiProductsResponse>(endpoint);
-    console.log('API Response:', response);
     if (!response.data || !Array.isArray(response.data)) {
         return {
             products: [],
@@ -212,7 +210,6 @@ export async function fetchAccessories(): Promise<TransformedProductAccessory[]>
   try {
     const endpoint = `${API_ROUTES.ACCESSORIES}`;
     const response = await api.get<{ accesorios: ApiProductAccessory[] }>(endpoint);
-    console.log('API Response:', response);
     
     if (response.data && Array.isArray(response.data.accesorios)) {
       return response.data.accesorios.map(transformProductAccessory);

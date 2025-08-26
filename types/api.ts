@@ -62,17 +62,19 @@ export interface ApiInitSessionNiubizTransformed {
 }
 
 export interface TransformedOrder {
-  order: {
-    billing_data: null,
-    customer_id: number,
-    id: number,
-    items: Array<{ product_variant_id: number, cake_flavor_id: number | null, quantity: number, unit_price: number, subtotal: number, dedication_text: string | null, delivery_date: string | null }>,
-    local_id: number,
-    order_date: string,
-    order_number: string,
-    subtotal: number,
-    total: number,
-    voucher_type: string
+  orders: {
+    0:{
+      billing_data: null,
+      customer_id: number,
+      id: number,
+      items: Array<{ product_variant_id: number, cake_flavor_id: number | null, quantity: number, unit_price: number, subtotal: number, dedication_text: string | null, delivery_date: string | null }>,
+      local_id: number,
+      order_date: string,
+      order_number: string,
+      subtotal: number,
+      total: number,
+      voucher_type: string
+    }
   }
 }
 
@@ -90,6 +92,7 @@ export interface NiubizInitSessionResponse {
     merchant_id: string;
     purchase_number: string;
     sessionToken: string;
+    merchant_logo: string;
   };
 }
 
@@ -106,6 +109,7 @@ export interface NiubizSessionResponse {
     merchant_id: string;
     purchase_number: string;
     amount: number;
+    merchant_logo: string;
   };
   success: boolean;
 }
@@ -383,7 +387,6 @@ export function transformProductType(apiProductType: ApiProductType): Transforme
 export function transformProduct(apiProduct: ApiProduct): TransformedProduct {
   const minPrice = parseFloat(apiProduct.min_price);
   const maxPrice = parseFloat(apiProduct.max_price);
-  console.log('Product data:', apiProduct.product_type_id.id);
   return {
     id: apiProduct.id,
     name: apiProduct.short_description,
@@ -454,7 +457,6 @@ export function transformCustomer(apiCustomer: ApiCustomer): TransformedCustomer
 
 export function transformCakeFlavor(apiCakeFlavor: ApiCakeFlavor): TransformedCakeFlavor {
   apiCakeFlavor.fillings.map((filling: ApiCakeFilling) => {
-    console.log('filling', filling);
   });
   return {
     id: apiCakeFlavor.id,
