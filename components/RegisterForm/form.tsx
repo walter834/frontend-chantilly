@@ -182,7 +182,7 @@ export default function Register({
                 </FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="Ingrese su(s) Nombre(s)"
+                    placeholder="Ingrese su(s) nombre(s)"
                     {...field}
                     maxLength={50}
                     disabled={isLoading}
@@ -204,7 +204,7 @@ export default function Register({
                 </FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="Ingrese sus Apellidos"
+                    placeholder="Ingrese su(s) apellido(s)"
                     {...field}
                     maxLength={50}
                     disabled={isLoading}

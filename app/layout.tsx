@@ -1,23 +1,14 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Poppins } from "next/font/google";
+import {  Poppins } from "next/font/google";
 import "./globals.css";
 import { StoreProvider } from "@/components/Providers";
 import LayoutShell from "@/components/layout/LayoutShell";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 const poppins = Poppins({
+  variable: "--font-poppins",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
-  variable: "--font-poppins",
+  
 });
 
 export const metadata: Metadata = {
@@ -34,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={`${geistSans.variable} ${geistMono.variable} ${poppins.variable}`}>
+    <html lang="es" className={`${poppins.className}`}>
       <head>
         <script
           src="https://static-content-qas.vnforapps.com/v2/js/checkout.js"
@@ -87,7 +78,7 @@ export default function RootLayout({
           async
         ></script>
       </head>
-      <body className="antialiased overflow-x-hidden min-h-screen flex flex-col min-w-[350px]">
+       <body className={`${poppins.className} antialiased overflow-x-hidden min-h-screen flex flex-col min-w-[350px]`}>
         <StoreProvider>
           <LayoutShell>{children}</LayoutShell>
         </StoreProvider>

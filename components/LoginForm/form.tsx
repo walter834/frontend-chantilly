@@ -52,7 +52,7 @@ export default function Login({ onCloseDialog, onOpenRegister }: LoginProps) {
       });
       router.push("/");
       CustomAlert(
-        "login exitoso:  Bienvenido " + result.customer?.name,
+        "Bienvenido " + result.customer?.name,
         "success",
         "top-center"
       );

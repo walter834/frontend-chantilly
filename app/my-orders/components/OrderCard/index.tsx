@@ -1,7 +1,9 @@
 // components/OrderCard.tsx
 "use client";
 import { Card } from "@/components/ui/card";
+import { getProductById } from "@/service/productService";
 import { Order, OrderItem } from "@/types/order";
+
 import {
   BanknoteArrowUp,
   Cake,
@@ -13,6 +15,8 @@ import {
   Package,
   Ruler,
 } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 const formatMoney = (v: string | number) =>
   new Intl.NumberFormat("es-PE", { style: "currency", currency: "PEN" }).format(
@@ -29,6 +33,7 @@ const formatDate = (s: string) => {
 };
 
 export function OrderCard({ order }: { order: Order }) {
+  const router = useRouter();
   const orderNo = order.order_number.padStart(4, "0");
 
   // Obtener el nombre del producto de la manera más específica posible
@@ -45,7 +50,11 @@ export function OrderCard({ order }: { order: Order }) {
 
     return `${item.quantity} x Producto`;
   };
-
+  async function datailProducts(id: number) {
+    let response = await getProductById(id);
+    console.log(response);
+    router.push(response?.product_link || "");
+  }
   return (
     <div className="w-full px-4 lg:px-40">
       <Card className="bg-white rounded-2xl shadow-xl border-0 gap-0 w-full mx-auto p-0 max-w-4xl md:max-w-6xl lg:max-w-full overflow-hidden">
@@ -60,8 +69,8 @@ export function OrderCard({ order }: { order: Order }) {
             </span>
           </div>
         </div>
-        <div className="px-4 sm:p-4 my-2 sm:mt-0 ">
-          <div className="flex flex-col lg:flex-row w-full justify-between gap-0 sm:gap-12 ">
+        <div className="px-4 sm:p-4 my-4 sm:mt-0 ">
+          <div className="flex flex-col xl:flex-row w-full justify-between gap-0 xl:gap-12 ">
             <div className="flex-1">
               <div className="mb-6">
                 <div className="inline-flex items-center gap-2 bg-red-50 px-4 py-2 rounded-full border border-red-100">
@@ -72,23 +81,25 @@ export function OrderCard({ order }: { order: Order }) {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-6 mb-8">
+              <div className="flex flex-col gap-6 sm:mb-8">
                 {order.items?.map((item) => (
                   <div
                     key={item.id}
                     className="flex flex-col sm:flex-row gap-6 group bg-gradient-to-br from-gray-50 to-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 hover:border-red-200"
                   >
-                    <div className="flex flex-row w-full gap-2">
-                      <div className="relative">
-                        <img
-                          src={item?.image_url || "./avatar.jpeg"}
+                    <div className="flex flex-row w-full gap-4">
+                      <div className="relative w-28 h-28">
+                        <Image
+                          src={item?.image_url || "/avatar.jpeg"}
+                          onClick={() => datailProducts(item.product?.id ?? 0)}
                           alt="Producto"
-                          className="w-28 h-28 rounded-xl object-cover border-2 border-red-100"
+                          fill
+                          className="rounded-xl object-cover border-2 border-red-100 cursor-pointer"
                           onError={(e) => {
-                            e.currentTarget.src = "/";
+                            e.currentTarget.src = "/avatar.jpeg";
                           }}
+                          sizes="(max-width: 768px) 7rem, 7rem"
                         />
-                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white"></div>
                       </div>
                       <div className="w-full">
                         <h3 className="font-bold text-gray-900 mb-3 text-lg leading-tight">
@@ -122,7 +133,7 @@ export function OrderCard({ order }: { order: Order }) {
                               <span className="font-semibold text-red-600 text-xs uppercase tracking-wider block mb-2">
                                 💝 Dedicatoria
                               </span>
-                              <span className="text-gray-800 italic font-medium leading-relaxed">
+                              <span className="text-gray-800 italic font-medium leading-relaxed line-clamp-2">
                                 "{item.dedication_text}"
                               </span>
                             </div>
@@ -226,7 +237,7 @@ export function OrderCard({ order }: { order: Order }) {
                     </div>
                   </div>
 
-                  <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm  ">
+                  <div className="bg-white p-4 rounded-xl border-none ">
                     <div className="flex justify-between items-center">
                       <div className="flex items-center">
                         <div className="p-2  rounded-lg">

@@ -41,7 +41,7 @@ export default function myOrders() {
       <div className="mb-4">
         <h1 className="text-center text-2xl sm:text-3xl lg:text-4xl font-bold">MIS COMPRAS</h1>
       </div>
-      <div className="flex flex-col md:flex-row justify-between mx-auto px-6 lg:px-40  gap-2 ">
+      <div className="flex flex-col md:flex-row justify-between mx-auto px-6 lg:px-40  gap-2  ">
         <div className="flex  items-center gap-2">
           <Input
             type="text"
@@ -49,7 +49,7 @@ export default function myOrders() {
             value={searchTerm}
             onChange={(e)=>setSearchTerm(e.target.value)}
             onKeyDown={handleKeyPress}
-            
+            className="md:w-[250px]"
           />
           <Button type="button" variant="outline" onClick={handleSearch}>
             <Search />
