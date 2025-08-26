@@ -70,24 +70,24 @@ function VerifyRecoveryCodeContent({ phone }: VerifyRecoveryCodeContentProps) {
   const handleVerifyCode = async (): Promise<void> => {
     const otpCode = otp.join("");
     if (otpCode.length !== 6 || !phone) return;
-
+  
     try {
       setIsVerifying(true);
       setError("");
       setSuccess("");
-
+  
       const response = await passwordRecoveryService.verifyRecoveryCode({
         phone: phone,
         code: otpCode,
       });
-
+  
       setSuccess(response.message || "Código verificado correctamente");
       
-      // Guardar el código ANTES de la navegación
+      // Guardar el código en sessionStorage
       sessionStorage.setItem("recovery_code", otpCode);
-
-      // Navegación con parámetros de URL para evitar parpadeos
-      router.push(`/forgot-sms/reset?phone=${encodeURIComponent(phone)}&code=${encodeURIComponent(otpCode)}`);
+  
+      // Navegar sin exponer datos sensibles en la URL
+      router.push("/forgot-sms/reset");
       
     } catch (err) {
       const errorMessage =

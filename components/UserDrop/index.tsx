@@ -5,12 +5,8 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -33,7 +29,7 @@ export default function UserDrop() {
   const { initials, logoutUser } = useAuth();
 
   return (
-    <DropdownMenu modal={false} >
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
@@ -83,8 +79,13 @@ export default function UserDrop() {
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel className="cursor-pointer">Cancelar</AlertDialogCancel>
-                <AlertDialogAction onClick={logoutUser} className="bg-[#c41c1a] hover:bg-[#c41c1a]/80 cursor-pointer">
+                <AlertDialogCancel className="cursor-pointer">
+                  Cancelar
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={logoutUser}
+                  className="bg-[#c41c1a] hover:bg-[#c41c1a]/80 cursor-pointer"
+                >
                   Sí, cerrar sesión
                 </AlertDialogAction>
               </AlertDialogFooter>
