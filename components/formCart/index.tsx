@@ -16,6 +16,7 @@ interface FormCartProps {
   cakeName: string;
   initialImage: string;
   productType: string;
+  hour?: string;
 }
 
 const FormCart: React.FC<FormCartProps> = ({ 
@@ -30,6 +31,7 @@ const FormCart: React.FC<FormCartProps> = ({
   cakeName,
   initialImage,
   productType, 
+  hour
 }) => {
   const [selectedPortion, setSelectedPortion] = useState('');
   const [selectedCake, setSelectedCake] = useState('');
@@ -49,26 +51,40 @@ const FormCart: React.FC<FormCartProps> = ({
       fillingId?: string;
       fillingName?: string;
       pickupDate?: string;
+      hour?: string;
     };
     price: number | string;
     quantity: number;
+  }
+
+  function diffInHours(date1: Date, date2: Date) {
+    return (date1.getTime() - date2.getTime()) / (1000 * 60 * 60);
   }
 
   function arrayDataToCart(event: FormEvent<HTMLFormElement>) {
 
     event.preventDefault();
     const today = new Date();
-    const tomorrow = new Date(today);
-    const tomorrowDefault = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 2);
-    tomorrowDefault.setDate(tomorrowDefault.getDate() + 1);
 
-    if(productType === '2') {
-      if(pickupDate <=  today.toISOString().split('T')[0]) {
-        CustomAlert(`Ingrese una fecha mayor a ${today.toISOString().split('T')[0]}`, 'error', 'top-right');
+    if (productType === '2') {
+      const pickup = new Date(pickupDate);
+      const hoursRequired = Number(hour);
+    
+      const hoursDiff = diffInHours(pickup, today);
+    
+      if (hoursDiff <= 0) {
+        CustomAlert(
+          `Ingrese una fecha mayor a ${today.toISOString().split('T')[0]}`,
+          'error',
+          'top-right'
+        );
         return;
-      }else if(pickupDate < tomorrow.toISOString().split('T')[0]) {
-        CustomAlert(`Ingrese una fecha mayor a ${tomorrowDefault.toISOString().split('T')[0]}`, 'error', 'top-right');
+      } else if (hoursDiff < hoursRequired) {
+        CustomAlert(
+          `Debe seleccionar una fecha con al menos ${hoursRequired} horas de anticipación`,
+          'error',
+          'top-right'
+        );
         return;
       }
     }

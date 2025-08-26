@@ -37,13 +37,13 @@ export default function LocalCard({ local }: LocalCardProps) {
             alt={local.name}
             width={460}
             height={280}
-            className="w-full h-auto object-cover rounded-t-xl max-h-[280px] aspect-video "
+            className="cursor-pointer w-full h-auto object-cover rounded-t-xl max-h-[280px] aspect-video "
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               target.src = "/avatar.jpeg"; // Imagen por defecto
             }}
           />
-          <CardHeader className="pb-2">
+          <CardHeader className="pb-2 cursor-pointer">
             <CardTitle className="text-sm text-start text-[#c41d1ada] pb-1 font-bold">
               {local.name} ( {(local.distance)} KM )
             </CardTitle>
@@ -56,7 +56,7 @@ export default function LocalCard({ local }: LocalCardProps) {
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="space-y-6 pb-4">
+          <CardContent className="space-y-6 pb-4 cursor-pointer">
             <div className="flex gap-3 pt-2">
               <a
                 href={local.link_local}
@@ -64,7 +64,7 @@ export default function LocalCard({ local }: LocalCardProps) {
                 rel="noopener noreferrer"
                 className="flex-1"
               >
-                <Button className="w-full bg-[#c41d1ada] hover:bg-red-800 cursor-pointer">
+                <Button className="w-full bg-[#c41c1a] hover:bg-red-800 cursor-pointer">
                   Más información <ChevronRight className="" />
                 </Button>
               </a>

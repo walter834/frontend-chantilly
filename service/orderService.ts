@@ -53,3 +53,8 @@ export async function processNiubizPayment(body: { tokenId: string, amount: numb
     console.log('Niubiz process response:', data);
     return data;
 }
+
+export async function getOrderById(id: number): Promise<TransformedOrder | null> {
+    const { data } = await api.get<TransformedOrder>(API_ROUTES.ORDERS + '?order_number=' + id);
+    return data;
+}

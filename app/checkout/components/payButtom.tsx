@@ -3,7 +3,7 @@ import { useRef } from "react";
 import { CustomAlert } from "@/components/ui/custom-alert";
 import { createOrder } from "@/service/orderService";
 import { ApiOrder } from "@/types/api";
-import { createNiubizSession } from "@/service/orderService";
+import { createNiubizSession, getOrderById } from "@/service/orderService";
 import { getCustomerById } from "@/service/customerService";
 
 export default function PayButtom({ arrayOrder }: { arrayOrder: any }) {
@@ -30,6 +30,7 @@ export default function PayButtom({ arrayOrder }: { arrayOrder: any }) {
 
     function adaptFormatToProducts() {
         return arrayOrder.items.map((item: any) => {
+            const productId = item.product.id;
             const parsedVariant = Number(item?.product?.productVariant);
             const variantId = Number.isFinite(parsedVariant) && parsedVariant > 0 ? parsedVariant : null;
             const cakeFlavorRaw = item?.product?.cakeFlavor;
@@ -43,6 +44,7 @@ export default function PayButtom({ arrayOrder }: { arrayOrder: any }) {
 
             return {
                 product_variant_id: variantId,
+                product_id: (variantId === null) ? productId : null,
                 cake_flavor_id: cakeFlavorId,
                 quantity,
                 unit_price: unitPrice,
@@ -113,6 +115,7 @@ export default function PayButtom({ arrayOrder }: { arrayOrder: any }) {
 
         // Guarda la sesión actual
         currentSession.current = session;
+        console.log('session', session);
         const paymentData = {
             sessionToken: session.data.sessionToken,
             channel: 'web',
@@ -121,6 +124,7 @@ export default function PayButtom({ arrayOrder }: { arrayOrder: any }) {
             amount: session.data.amount,
             currency: 'PEN',
             customer_id: order.order.customer_id,
+            merchantLogo: session.data.merchant_logo,
         };
 
         showNiubizPaymentForm(paymentData);
@@ -128,8 +132,23 @@ export default function PayButtom({ arrayOrder }: { arrayOrder: any }) {
 
     async function showNiubizPaymentForm(paymentData: any) {
         const customer = await getCustomerById(paymentData.customer_id);
+        const order = await getOrderById(paymentData.orderId);
+        console.log('order', order?.orders[0].items);
         let name = customer?.name + ' ' + customer?.lastname;
-        console.log('customer', name);
+        
+        const data = {
+            sessionToken: paymentData.sessionToken,
+            channel: paymentData.channel,
+            merchantId: paymentData.merchantId,
+            purchaseNumber: paymentData.orderId,
+            amount: paymentData.amount,
+            currency: paymentData.currency,
+            name: name,
+            items: order?.orders[0].items,
+        }
+
+        // Marcar que venimos desde Checkout para proteger la ruta de confirmación
+        try { sessionStorage.setItem('fromCheckout', '1'); } catch {}
 
         // Configurar Niubiz Checkout
         VisanetCheckout.configure({
@@ -139,7 +158,9 @@ export default function PayButtom({ arrayOrder }: { arrayOrder: any }) {
             purchasenumber: paymentData.orderId,
             amount: paymentData.amount,
             currency: paymentData.currency,
-            action: '/checkout/payconfirmation/callback?amount=' + paymentData.amount + '&currency=' + paymentData.currency + '&purchasenumber=' + paymentData.orderId + '&name=' + name,
+            formbuttoncolor: '#c41c1a',
+            merchantlogo: paymentData.merchantLogo,
+            action: '/checkout/payconfirmation/callback?data=' + encodeURIComponent(JSON.stringify(data)),
             timeouturl: "http://localhost/pagos/error.php",
         });
 

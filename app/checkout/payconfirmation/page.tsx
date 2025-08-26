@@ -1,10 +1,12 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Header from "../components/header";
 import { processNiubizPayment } from "@/service/orderService";
 import { parseNiubizDate, formatDate } from "@/lib/utils";
 import Loading from '../components/loading';
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 interface PaymentSummary {
   orderNumber?: string | number;
@@ -35,52 +37,142 @@ export default function payconfirmation() {
     name: string;
   } | null>(null);
   const [loading, setLoading] = useState(true);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const processedRef = useRef(false);
+
+  // Validar acceso: solo permitir si viene de Checkout (flag) o trae params esperados
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const hasParams = Boolean(
+      searchParams.get("data") ||
+      searchParams.get("transactionToken") ||
+      searchParams.get("transactiontoken") ||
+      searchParams.get("token")
+    );
+    const fromCheckout = sessionStorage.getItem('fromCheckout') === '1';
+    if (!hasParams && !fromCheckout) {
+      router.replace('/');
+      return;
+    }
+    // Consumir el flag si existe para que no se pueda entrar de nuevo con back
+    if (fromCheckout) sessionStorage.removeItem('fromCheckout');
+  }, [searchParams, router]);
+
+  // Si el usuario recarga esta página, redirigir al inicio
+  useEffect(() => {
+    try {
+      // Standard Navigation Timing Level 2
+      const entries = performance.getEntriesByType('navigation') as PerformanceNavigationTiming[];
+      const navType = entries && entries.length ? entries[0].type : undefined;
+      // Legacy fallback
+      // @ts-ignore
+      const legacyType = (performance as any)?.navigation?.type;
+      if (navType === 'reload' || legacyType === 1) {
+        router.replace('/');
+      }
+    } catch {}
+  }, [router]);
 
   useEffect(() => {
-
     try {
+      if (processedRef.current) return;
+      processedRef.current = true;
       setLoading(true);
-      const raw = localStorage.getItem("lastPaymentResult");
-      console.log("raw", raw);
+      console.log("searchParams", searchParams)
+      // 1) Intentar leer desde query params
+      const dataParam = searchParams.get("data");
+      const txParam = searchParams.get("transactionToken") || searchParams.get("transactiontoken") || searchParams.get("token");
+      let payload: any | null = null;
 
-      if (raw) {
-        (async () => {
-          try {
-            const parsed = JSON.parse(raw);
-            setSummary(parsed);
+      if (dataParam) {
+        try {
+          const decoded = (() => { try { return decodeURIComponent(dataParam); } catch { return dataParam; } })();
+          const base = JSON.parse(decoded);
 
-            console.log("parsed", parsed)
-            const response = await processNiubizPayment({
-              tokenId: parsed.transactionToken,
-              amount: Number(parsed.amount),
-              purchaseNumber: parsed.purchasenumber,
+          // Construir products legibles
+          let products: Array<{ name: string; detail?: string }> | undefined;
+          if (Array.isArray(base.items)) {
+            products = base.items.map((it: any) => {
+              const variantName = it?.product_variant?.description || it?.product_variant?.name;
+              const productName = it?.product?.short_description || it?.product?.large_description || variantName || "Producto";
+              const detailParts: string[] = [];
+              if (it?.product_variant?.portions) detailParts.push(String(it.product_variant.portions));
+              if (it?.product_variant?.size_portion) detailParts.push(String(it.product_variant.size_portion));
+              if (it?.dedication_text) detailParts.push(`Dedicatoria: ${it.dedication_text}`);
+              if (it?.delivery_date) detailParts.push(`Entrega: ${it.delivery_date}`);
+              const detail = detailParts.join(" · ");
+              return { name: productName, detail };
             });
-            console.log("response", response)
-            const data = {
-              response: response.data,
-              name: parsed.name,
-              success: response.success
-            }
-            
-            convertionFormatData(data)
-          } catch (e) {
-            console.log("error", e)
-          }finally{
-            setLoading(false);
           }
-        })()
 
+          payload = {
+            ...base,
+            transactionToken: txParam || base.transactionToken,
+            products,
+          };
+          localStorage.setItem("lastPaymentResult", JSON.stringify(payload));
+          setSummary(payload);
+        } catch (e) {
+          console.warn("No se pudo parsear 'data' del query param", e);
+        }
       }
+      if (!payload) {
+        const raw = localStorage.getItem("lastPaymentResult");
+
+        if (raw) {
+          try { payload = JSON.parse(raw); } catch {}
+        }
+        if (payload) setSummary(payload);
+      }
+
+      if (!payload) {
+        setLoading(false);
+        return;
+      }
+
+      (async () => {
+        try {
+          const purchaseNumber = String(payload.purchaseNumber || payload.purchasenumber || payload.purchase_number || "");
+          const amount = Number(payload.amount);
+          const tokenId = payload.transactionToken || payload.tokenId;
+
+          if (!tokenId) {
+            setPayment({
+              description: "Token de transacción no recibido",
+              amount,
+              currency: payload.currency || "PEN",
+              success: false,
+              order: purchaseNumber,
+              date: new Date(),
+              card: "-",
+              brand: "-",
+              name: payload.name || "",
+            });
+            return;
+          }
+
+          const response = await processNiubizPayment({ tokenId, amount, purchaseNumber });
+          const data = { response: response.data, name: payload.name, success: response.success };
+          convertionFormatData(data);
+          localStorage.setItem('chantilly-cart', '');
+
+        } catch (e) {
+          console.log("error", e);
+        } finally {
+          setLoading(false);
+        }
+      })();
     } catch {
-      // ignore
+      setLoading(false);
     }
-  }, []);
+  }, [searchParams]);
 
   function convertionFormatData(data: any) {
     console.log("data", data)
     const mapped = {
       description: data?.response?.action_description,
-      amount: data?.response?.amount,
+      amount: Number(data?.response?.amount),
       currency: data?.response?.currency,
       success: Boolean(data?.success),
       order: data?.response?.purchase_number,
@@ -147,11 +239,11 @@ export default function payconfirmation() {
               </tbody>
             </table>
 
-            {/* {Array.isArray(summary?.products) && summary!.products.length > 0 && (
+            {Array.isArray(summary?.products) && summary!.products.length > 0 && (
               <div className="px-4 py-3 border-t">
                 <div className="font-medium mb-2">Productos</div>
                 <ul className="list-disc ml-6 space-y-1">
-                  {summary!.products.map((p, i) => (
+                  {summary!.products.map((p: any, i: number) => (
                     <li key={i}>
                       <span className="font-medium">{p.name}</span>
                       {p.detail ? <span className="text-gray-600"> — {p.detail}</span> : null}
@@ -159,7 +251,7 @@ export default function payconfirmation() {
                   ))}
                 </ul>
               </div>
-            )} */}
+            )}
           </div>
         ) : (
           <div className="text-center text-gray-600">No hay información de pago disponible.</div>
@@ -172,7 +264,7 @@ export default function payconfirmation() {
           <Link href="/" className="bg-[#c41c1a] hover:opacity-90 text-white px-4 py-2 rounded">
             Seguir comprando
           </Link>
-          <Link href="/" className="bg-[#c41c1a] hover:opacity-90 text-white px-4 py-2 rounded">
+          <Link href={`${process.env.NEXT_PUBLIC_BASE_URL}/my-orders`} className="bg-[#c41c1a] hover:opacity-90 text-white px-4 py-2 rounded">
             Ir a mis compras
           </Link>
         </div>

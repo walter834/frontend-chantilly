@@ -8,6 +8,8 @@ interface VisanetCheckoutType {
     currency: string;
     action: string;
     timeouturl: string;
+    formbuttoncolor: string;
+    merchantlogo: string;
   }) => void;
   open: () => void;
 }
