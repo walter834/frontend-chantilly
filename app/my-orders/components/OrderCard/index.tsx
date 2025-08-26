@@ -60,8 +60,8 @@ export function OrderCard({ order }: { order: Order }) {
             </span>
           </div>
         </div>
-        <div className="px-1 sm:p-4 my-2 sm:mt-0 ">
-          <div className="flex flex-col lg:flex-row w-full justify-between gap-0 sm:gap-2 ">
+        <div className="px-4 sm:p-4 my-2 sm:mt-0 ">
+          <div className="flex flex-col lg:flex-row w-full justify-between gap-0 sm:gap-12 ">
             <div className="flex-1">
               <div className="mb-6">
                 <div className="inline-flex items-center gap-2 bg-red-50 px-4 py-2 rounded-full border border-red-100">
@@ -118,7 +118,7 @@ export function OrderCard({ order }: { order: Order }) {
                         </div>
                         <div className="space-y-3 text-sm">
                           {item?.dedication_text && (
-                            <div className="bg-gradient-to-r from-red-50 to-pink-50 p-4 rounded-xl border-l-4 border-red-400 shadow-sm">
+                            <div className="bg-gradient-to-r from-red-50 to-pink-50 p-4 rounded-xl border-l-4 border-red-400 shadow-sm max-w-[500px]">
                               <span className="font-semibold text-red-600 text-xs uppercase tracking-wider block mb-2">
                                 💝 Dedicatoria
                               </span>
@@ -166,7 +166,7 @@ export function OrderCard({ order }: { order: Order }) {
                         {order.billing_data.razon_social}
                       </span>
                     </div>
-                    <div className="flex flex-col">
+                    <div className="flex flex-col sm:justify-between sm:flex-row">
                       <span className="font-medium text-gray-600">
                         Dirección:
                       </span>
@@ -188,9 +188,9 @@ export function OrderCard({ order }: { order: Order }) {
                     </div>
                     <span className="font-bold text-lg">Tipo de Entrega</span>
                   </div>
-                  <div className="ml-11">
-                    <span className="inline-flex items-center gap-2 bg-[#c41d1ada] text-white px-3 py-1 rounded-full text-xs sm:text-sm font-medium">
-                      <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+                  <div className="ml-0 sm:ml-11">
+                    <span className="inline-flex items-center gap-2 bg-[#c41d1ada] text-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-medium shadow-lg w-full sm:w-auto justify-center sm:justify-start">
+                      <div className="w-1.5 sm:w-2 h-1.5 sm:h-2 bg-white rounded-full"></div>
                       RECOJO EN TIENDA
                     </span>
                   </div>
