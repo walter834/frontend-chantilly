@@ -8,7 +8,6 @@ import {
   BanknoteArrowUp,
   Cake,
   Calendar,
-  CardSimIcon,
   CreditCard,
   FileText,
   MapPin,
@@ -36,7 +35,6 @@ export function OrderCard({ order }: { order: Order }) {
   const router = useRouter();
   const orderNo = order.order_number.padStart(4, "0");
 
-  // Obtener el nombre del producto de la manera más específica posible
   const getProductName = (item: OrderItem | undefined) => {
     if (!item) return "Sin items";
 
@@ -50,11 +48,12 @@ export function OrderCard({ order }: { order: Order }) {
 
     return `${item.quantity} x Producto`;
   };
+
   async function datailProducts(id: number) {
     let response = await getProductById(id);
-    console.log(response);
     router.push(response?.product_link || "");
   }
+
   return (
     <div className="w-full px-4 lg:px-40">
       <Card className="bg-white rounded-2xl shadow-xl border-0 gap-0 w-full mx-auto p-0 max-w-4xl md:max-w-6xl lg:max-w-full overflow-hidden">

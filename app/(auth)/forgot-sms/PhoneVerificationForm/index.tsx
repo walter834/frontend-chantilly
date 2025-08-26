@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/form";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Phone, Send, Loader2, ArrowLeft } from "lucide-react";
-import passwordRecoveryService from "@/service/passsword/passwordRecoveryService";
+import passwordRecoveryService from "@/service/password/passwordRecoveryService";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -98,14 +98,12 @@ export default function PhoneVerificationForm({
 
       // Guardar el teléfono en sessionStorage (se limpia al cerrar pestaña)
       sessionStorage.setItem("recovery_phone", data.phone);
+      
+      // Navegar a la página de verificación con parámetros en la URL
+      router.push(`/forgot-sms/verify-code?phone=${encodeURIComponent(data.phone)}`);
 
       // Callbacks opcionales
       onSuccess?.(data.phone);
-
-      setTimeout(() => {
-        // Redirigir a la página de verificación de código SIN parámetros
-        router.push("/forgot-sms/verify-code");
-      }, 1000);
     } catch (err: any) {
       // Manejar el error del servicio
       const errorMessage =

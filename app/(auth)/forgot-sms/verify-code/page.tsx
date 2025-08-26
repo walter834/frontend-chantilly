@@ -10,8 +10,8 @@ import {
   AlertCircle,
   ArrowLeft,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import passwordRecoveryService from "@/service/passsword/passwordRecoveryService";
+import { useRouter, useSearchParams } from "next/navigation";
+import passwordRecoveryService from "@/service/password/passwordRecoveryService";
 
 interface VerifyRecoveryCodeContentProps {
   phone: string;
@@ -86,8 +86,8 @@ function VerifyRecoveryCodeContent({ phone }: VerifyRecoveryCodeContentProps) {
       // Guardar el código ANTES de la navegación
       sessionStorage.setItem("recovery_code", otpCode);
 
-      // Navegación inmediata sin setTimeout para evitar parpadeos
-      router.push("/forgot-sms/reset");
+      // Navegación con parámetros de URL para evitar parpadeos
+      router.push(`/forgot-sms/reset?phone=${encodeURIComponent(phone)}&code=${encodeURIComponent(otpCode)}`);
       
     } catch (err) {
       const errorMessage =
@@ -331,17 +331,36 @@ const VerifyCodeSkeleton = () => (
 
 export default function VerifyRecoveryCode() {
   const router = useRouter();
-  const { phone, isValid, isLoading } = useRecoveryPhone();
+  const searchParams = useSearchParams();
+  const urlPhone = searchParams.get('phone');
+  
+  // Usar el hook personalizado para obtener el teléfono de sessionStorage
+  const { phone: storedPhone, isValid, isLoading } = useRecoveryPhone();
+  
+  // Priorizar el teléfono de la URL sobre el almacenado
+  const phone = urlPhone || storedPhone;
+  
+  // Sincronizar con sessionStorage si viene de URL
+  useEffect(() => {
+    if (urlPhone) {
+      sessionStorage.setItem("recovery_phone", urlPhone);
+    }
+  }, [urlPhone]);
 
   // Redirigir solo después de la hidratación si no hay datos válidos
   useEffect(() => {
-    if (!isLoading && !isValid) {
+    if (!isLoading && !urlPhone && !isValid) {
       router.replace("/forgot-sms");
     }
-  }, [isLoading, isValid, router]);
+  }, [isLoading, isValid, router, urlPhone]);
 
   // Mostrar skeleton durante la hidratación o mientras redirige
-  if (isLoading || !isValid) {
+  if (isLoading && !urlPhone) {
+    return <VerifyCodeSkeleton />;
+  }
+
+  if (!phone) {
+    router.replace("/forgot-sms");
     return <VerifyCodeSkeleton />;
   }
 

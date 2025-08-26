@@ -17,7 +17,7 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
-import passwordRecoveryService from "@/service/passsword/passwordRecoveryService";
+import passwordRecoveryService from "@/service/password/passwordRecoveryService";
 
 const SmsResetPasswordSchema = z
   .object({
@@ -33,7 +33,12 @@ const SmsResetPasswordSchema = z
 
 type SmsResetValues = z.infer<typeof SmsResetPasswordSchema>;
 
-export default function SmsResetFormContent({ phone, code }: { phone: string; code: string }) {
+interface SmsResetFormContentProps {
+  phone: string;
+  code: string;
+}
+
+export default function SmsResetFormContent({ phone, code }: SmsResetFormContentProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 

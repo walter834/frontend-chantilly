@@ -1,9 +1,9 @@
 // reset/page.tsx
 "use client";
 import SmsResetFormContent from "./components/SmsResetFormContent";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { usePasswordRecoveryData, useClearRecoveryData } from "@/hooks/useSessionData";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 // Skeleton que replica exactamente la estructura del formulario
 const FormSkeleton = () => (
@@ -66,16 +66,34 @@ const FormSkeleton = () => (
 
 export default function SmsResetForm() {
   const router = useRouter();
-  const { phone, code, isValid, isLoading } = usePasswordRecoveryData();
+  const searchParams = useSearchParams();
+  const urlPhone = searchParams.get('phone');
+  const urlCode = searchParams.get('code');
+  
+  // Use URL params first, fall back to sessionStorage
+  const [formData, setFormData] = useState({
+    phone: urlPhone || '',
+    code: urlCode || '',
+    isValid: !!(urlPhone && urlCode)
+  });
+  
+  const { phone, code, isValid, isLoading } = formData.isValid 
+    ? { ...formData, isLoading: false } 
+    : usePasswordRecoveryData();
+    
   const clearRecoveryData = useClearRecoveryData();
 
   // Solo redirigir después de que se haya hidratado y no haya datos válidos
   useEffect(() => {
-    if (!isLoading && !isValid) {
+    // Si tenemos datos en la URL, guardarlos en sessionStorage para mantener consistencia
+    if (urlPhone && urlCode) {
+      sessionStorage.setItem("recovery_phone", urlPhone);
+      sessionStorage.setItem("recovery_code", urlCode);
+    } else if (!isLoading && !isValid) {
       clearRecoveryData();
       router.replace("/forgot-sms");
     }
-  }, [isLoading, isValid, router, clearRecoveryData]);
+  }, [isLoading, isValid, router, clearRecoveryData, urlPhone, urlCode]);
 
   // Mostrar skeleton durante la hidratación o mientras redirige
   if (isLoading || !isValid) {
