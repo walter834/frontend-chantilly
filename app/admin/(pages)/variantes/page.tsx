@@ -1,11 +1,11 @@
-import { getProducts } from "@/service/product/customizeProductService";
-import { columns, Product } from "./columns";
+import { columns, Variant } from "./columns";
 import { DataTable } from "./data-table";
+import { getVariants } from "@/service/variant/costumizeVariantService";
 
-async function getData(): Promise<Product[]> {
+async function getData(): Promise<Variant[]> {
  
   try{
-    return await getProducts();
+    return await getVariants();
   }catch(error){
     return[]
   }
