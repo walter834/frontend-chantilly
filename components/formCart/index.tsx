@@ -66,7 +66,7 @@ const FormCart: React.FC<FormCartProps> = ({
     event.preventDefault();
     const today = new Date();
 
-    if (productType === '2') {
+    if (productType === '2' || productType === '1') {
       const pickup = new Date(pickupDate);
       const hoursRequired = Number(hour);
     

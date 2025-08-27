@@ -1,9 +1,8 @@
 "use client";
 import { useRef } from "react";
 import { CustomAlert } from "@/components/ui/custom-alert";
-import { createOrder } from "@/service/orderService";
 import { ApiOrder } from "@/types/api";
-import { createNiubizSession, getOrderById } from "@/service/orderService";
+import { createNiubizSession } from "@/service/orderService";
 import { getCustomerById } from "@/service/customerService";
 
 export default function PayButtom({ arrayOrder }: { arrayOrder: any }) {
@@ -141,7 +140,7 @@ export default function PayButtom({ arrayOrder }: { arrayOrder: any }) {
         }
 
         try { sessionStorage.setItem('fromCheckout', '1'); } catch {}
-
+        console.log('data', paymentData)
         VisanetCheckout.configure({
             sessiontoken: paymentData.sessionToken,
             channel: paymentData.channel,
@@ -154,7 +153,6 @@ export default function PayButtom({ arrayOrder }: { arrayOrder: any }) {
             action: '/checkout/payconfirmation/callback?data=' + encodeURIComponent(JSON.stringify(data)),
             timeouturl: "http://localhost/pagos/error.php",
         });
-
         VisanetCheckout.open();
     }
 
