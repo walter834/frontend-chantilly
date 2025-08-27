@@ -56,7 +56,6 @@ export function NavMain({
         {items.map((item) => (
           <Collapsible 
             key={item.title} 
-            asChild 
             open={openItems[item.title]} 
             onOpenChange={() => toggleItem(item.title)}
           >
@@ -67,14 +66,12 @@ export function NavMain({
                     <SidebarMenuButton tooltip={item.title}>
                       <item.icon />
                       <span>{item.title}</span>
-                      <SidebarMenuAction 
-                        className={`transition-transform duration-200 ${
-                          openItems[item.title] ? 'rotate-90' : ''
-                        }`}
-                      >
+                      <div className={`text-sidebar-foreground ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:hidden flex aspect-square w-5 items-center justify-center rounded-md p-0 text-xs transition-transform duration-200 ${
+                        openItems[item.title] ? 'rotate-90' : ''
+                      }`}>
                         <ChevronRight />
                         <span className="sr-only">Toggle</span>
-                      </SidebarMenuAction>
+                      </div>
                     </SidebarMenuButton>
                   </CollapsibleTrigger>
                   <CollapsibleContent>
