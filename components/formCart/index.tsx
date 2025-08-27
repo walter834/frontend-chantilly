@@ -270,7 +270,7 @@ const FormCart: React.FC<FormCartProps> = ({
         </div>
         <button
           type="submit"
-          className="cursor-pointer w-full sm:flex-1 bg-[#c41c1a] text-white font-bold py-3 px-6 rounded-lg hover:bg-[#a01818] transition-colors duration-300 ease-in-out shadow-md flex items-center justify-center gap-2"
+          className="cursor-pointer w-full sm:flex-1 bg-[#c41c1a] text-white py-3 px-6 rounded-lg hover:bg-[#a01818] transition-colors duration-300 ease-in-out shadow-md flex items-center justify-center gap-2"
         >
           Añadir al carrito
         </button>

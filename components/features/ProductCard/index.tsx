@@ -46,14 +46,14 @@ export default function ProductCard({
         <p className="text-black font-normal text-sm">{description}</p>
 
         <div className="flex items-center justify-center space-x-2">
-          <span className="text-lg font-bold text-gray-900">S/ {price.toFixed(2)}</span>
-          <span className="text-lg font-bold text-gray-900"> - S/ {originalPrice?.toFixed(2)}</span>
+          <span className="sm:text-lg text-sm font-bold text-gray-900">S/ {price.toFixed(2)}</span>
+          <span className="sm:text-lg text-sm font-bold text-gray-900"> - S/ {originalPrice?.toFixed(2)}</span>
         </div>
         <button
           onClick={handleViewDetails}
           className="mt-4 bg-[#c41c1a] text-white py-2 px-6 rounded-md hover:bg-[#a01818] transition-colors flex items-center justify-center space-x-2 mx-auto cursor-pointer"
         >
-          <span>Ver opciones</span>
+          <span className="sm:text-[16px] text-sm">Ver opciones</span>
         </button>
       </div>
     </div>

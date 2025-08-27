@@ -13,7 +13,7 @@ export default function Navbar() {
   
   return (
     //fix
-    <header className="sticky overflow-x-hidden bg-[#c41d1ada] backdrop-blur-3xl text-white top-0 z-50 flex justify-between items-center px-5 lg:px-10 py-4 w-full lg:min-w-[1024px] gap-12">
+    <header className="sticky overflow-x-hidden bg-[#c41c1a] backdrop-blur-3xl text-white top-0 z-50 flex justify-between items-center px-5 lg:px-10 py-4 w-full lg:min-w-[1024px] gap-12">
       <div className="hidden xl:flex">
         <Link href="/">
           <Image
@@ -41,7 +41,7 @@ export default function Navbar() {
 
       <div className="flex justify-between  w-full items-center lg:hidden">
         <NavToggle />
-        <div className="flex gap-1 items-center">
+        <div className="flex gap-4 items-center">
           {isAuthenticated ? <UserDrop /> : <LoginForm />}
           <Shopping showCount={true} isPrimary={false} />
         </div>

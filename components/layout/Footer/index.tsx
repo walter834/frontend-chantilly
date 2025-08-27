@@ -13,12 +13,12 @@ export default function Footer({ empresa = 'CHANTILLY' }) {
     <footer className="bg-[#c41c1a] text-white w-full py-6 pt-10">
       <div className="w-[95%] mx-auto grid grid-cols-1 md:grid-cols-3 gap-y-8 md:gap-x-12 items-start">
         <div className="flex flex-col items-start text-left space-y-2">
-          <h1 className="text-lg font-semibold">Nosotros</h1>
-          <p className="text-sm md:text-base leading-relaxed max-w-[60ch]">
-          Somos una empresa apasionada en elaboracion y venta de tortas, postres y bocaditos.
-                        Así mismo ofrecemos la mejor calidad entre otros.
-                    
-                
+          <h1 className="text-lg mx-auto sm:mx-0 sm:text-left font-semibold">
+            Nosotros
+          </h1>
+          <p className="text-sm md:text-base leading-relaxed max-w-[60ch] text-center sm:text-left mx-auto sm:mx-0">
+            Somos una empresa apasionada en elaboracion y venta de tortas, postres y bocaditos.
+            Así mismo ofrecemos la mejor calidad entre otros.
           </p>
         </div>
         <div className="flex flex-col items-center text-center space-y-4">

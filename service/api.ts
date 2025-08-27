@@ -19,6 +19,7 @@ export const API_ROUTES = {
   NIUBIZ_CONFIG: '/config',
   NIUBIZ_SESSION: '/session',
   NIUBIZ_PAY: '/pay',
+  BANNER: '/banner',
 } as const;
 
 const api = axios.create({

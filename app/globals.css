@@ -121,6 +121,8 @@
   }
 }
 
+/* indicadores de paginacion swiper */
+
 .custom-pagination-swiper .swiper-pagination {
   bottom: 30px !important;
 }
@@ -144,6 +146,14 @@
   background: #fcd34d;
   opacity: 0.8;
 }
+
+@media screen and (max-width: 768px) {
+  .swiper-pagination {
+    display: none !important;
+  }
+}
+
+/* fin indicadores de paginacion swiper */
 
 /* Cambiar el color del encabezado del chat */
 #n8n-chat .n8n-chat-header {
@@ -202,3 +212,22 @@
 #n8n-chat .chat-message-from-bot .chat-message-markdown p{
   padding: 0  !important;
 }
+
+/* Scroll personalizado */
+::-webkit-scrollbar {
+  width: 3px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c9c7c7;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #b3b3b3;
+}
+/* fin scroll personalizado */
