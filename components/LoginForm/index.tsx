@@ -1,17 +1,15 @@
 "use client";
-
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { User } from "lucide-react";
 import Register from "../RegisterForm/form";
 import Login from "./form";
 import Image from "next/image";
+import { FaUser } from "react-icons/fa6";
 
 export default function LoginForm() {
   const [isOpen, setIsOpen] = useState(false);
@@ -25,9 +23,9 @@ export default function LoginForm() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" className="size-10 border  border-yellow-300 rounded-full hover:bg-[#c41c1a] hover:text-[#c41c1a] cursor-pointer">
-          <User size={30} className="text-yellow-300" />
-        </Button>
+        <button className="rounded-full hover:bg-[#c41c1a] hover:text-[#c41c1a] cursor-pointer">
+          <FaUser size={30} className="text-yellow-300" />
+        </button>
       </DialogTrigger>
 
       {/* Deshabilitamos el botón X por defecto con showCloseButton={false} */}

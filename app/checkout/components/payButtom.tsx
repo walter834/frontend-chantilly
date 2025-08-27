@@ -1,9 +1,8 @@
 "use client";
 import { useRef } from "react";
 import { CustomAlert } from "@/components/ui/custom-alert";
-import { createOrder } from "@/service/orderService";
 import { ApiOrder } from "@/types/api";
-import { createNiubizSession, getOrderById } from "@/service/orderService";
+import { createNiubizSession } from "@/service/orderService";
 import { getCustomerById } from "@/service/customerService";
 
 export default function PayButtom({ arrayOrder }: { arrayOrder: any }) {
@@ -89,15 +88,8 @@ export default function PayButtom({ arrayOrder }: { arrayOrder: any }) {
         }
 
         try {
-            const response = await createOrder(order);
-
-            if (response) {
-                console.log('response order', response);
-                await initSessionNiubiz(response);
-
-            } else {
-                CustomAlert('No se pudo crear la orden.', 'error', 'bottom-right');
-            }
+            await initSessionNiubiz(order);
+            
         } catch (err: any) {
             const data = err?.response?.data;
             let message = err?.message || 'Error al crear la orden';
@@ -107,15 +99,14 @@ export default function PayButtom({ arrayOrder }: { arrayOrder: any }) {
     }
 
     async function initSessionNiubiz(order: any) {
-        const session = await createNiubizSession({ amount: order.order.total, order_id: order.order.id });
+        const session = await createNiubizSession(order);
         if (!session) {
             CustomAlert('No se pudo crear la sesión de niubiz.', 'error', 'bottom-right');
             return;
         }
-
         // Guarda la sesión actual
         currentSession.current = session;
-        console.log('session', session);
+        console.log('session', session.data);
         const paymentData = {
             sessionToken: session.data.sessionToken,
             channel: 'web',
@@ -123,17 +114,18 @@ export default function PayButtom({ arrayOrder }: { arrayOrder: any }) {
             orderId: session.data.purchase_number,
             amount: session.data.amount,
             currency: 'PEN',
-            customer_id: order.order.customer_id,
+            customer_id: session.data.order_data.customer_id,
             merchantLogo: session.data.merchant_logo,
+            orderData:  session.data.order_data,
         };
+
+        console.log('paymentData', paymentData);
 
         showNiubizPaymentForm(paymentData);
     }
 
     async function showNiubizPaymentForm(paymentData: any) {
         const customer = await getCustomerById(paymentData.customer_id);
-        const order = await getOrderById(paymentData.orderId);
-        console.log('order', order?.orders[0].items);
         let name = customer?.name + ' ' + customer?.lastname;
         
         const data = {
@@ -144,13 +136,11 @@ export default function PayButtom({ arrayOrder }: { arrayOrder: any }) {
             amount: paymentData.amount,
             currency: paymentData.currency,
             name: name,
-            items: order?.orders[0].items,
+            orderData: paymentData.orderData,
         }
 
-        // Marcar que venimos desde Checkout para proteger la ruta de confirmación
         try { sessionStorage.setItem('fromCheckout', '1'); } catch {}
-
-        // Configurar Niubiz Checkout
+        console.log('data', paymentData)
         VisanetCheckout.configure({
             sessiontoken: paymentData.sessionToken,
             channel: paymentData.channel,
@@ -163,8 +153,6 @@ export default function PayButtom({ arrayOrder }: { arrayOrder: any }) {
             action: '/checkout/payconfirmation/callback?data=' + encodeURIComponent(JSON.stringify(data)),
             timeouturl: "http://localhost/pagos/error.php",
         });
-
-        // Abrir el formulario en modal
         VisanetCheckout.open();
     }
 

@@ -6,6 +6,16 @@ export interface ApiPage {
   status: boolean;
 }
 
+export interface ApiBanner {
+  id: number;
+  title: string;
+  description: string;
+  image_url: string;
+  link_url: string;
+  status: boolean;
+  display_order: number;
+}
+
 export interface ApiCustomer {
   id: number;
   name: string;
@@ -110,6 +120,7 @@ export interface NiubizSessionResponse {
     purchase_number: string;
     amount: number;
     merchant_logo: string;
+    order_data: any;
   };
   success: boolean;
 }
