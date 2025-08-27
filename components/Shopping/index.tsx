@@ -12,7 +12,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { ShoppingCart } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 
 export default function Shopping({ showCount, isPrimary = true }: { showCount: boolean; isPrimary?: boolean }) {
@@ -61,14 +60,13 @@ export default function Shopping({ showCount, isPrimary = true }: { showCount: b
   if (!isPrimary) {
     return (
       <div className="z-50">
-        <Button
-          variant="ghost"
-          className="cursor-pointer relative border border-[2px] border-yellow-300 rounded-full h-10 w-10 hover:bg-yellow-300"
+        <button
+          className="relative rounded-full h-10 w-10 hover:bg-[#c41c1a]"
           onClick={() => window.dispatchEvent(new Event('open-cart'))}
         >
-          <PiShoppingCartSimpleFill size={26} className="text-yellow-300"  />
-          <span className="absolute font-bold rounded-full h-4 w-4 top-0 right-0 bg-yellow-300 text-xs text-[#c41c1a] hover:bg-yellow-300 hover:text-[#c41c1a]">{count || "0"}</span>
-        </Button>
+          <PiShoppingCartSimpleFill size={40} className="text-yellow-300"  />
+          <span className="absolute font-bold rounded-full h-5 w-5 top-1 right-2 left-6 bg-[#c41c1a] text-xs text-yellow-300 border border-[2px] border-yellow-300">{count || "0"}</span>
+        </button>
       </div>
     );
   }
@@ -76,10 +74,10 @@ export default function Shopping({ showCount, isPrimary = true }: { showCount: b
     <div className="z-50">
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
-          <Button variant="ghost" className="cursor-pointer relative border border-[2px] border-yellow-300 rounded-full h-10 w-10 hover:bg-[#c41c1a]">
-            <PiShoppingCartSimpleFill size={26} className="text-yellow-300 hover:text-[#c41c1a]" />
-            <span className="absolute font-bold rounded-full h-4 w-4 top-0 right-0 bg-yellow-300 text-xs text-[#c41c1a]">{count || "0"}</span>
-          </Button>
+          <button onClick={() => setOpen(true)} className="cursor-pointer relative rounded-full h-10 w-10 hover:bg-[#c41c1a]">
+            <PiShoppingCartSimpleFill size={40} className="text-yellow-300" />
+            <span className="absolute font-bold rounded-full h-5 w-5 top-1 right-2 left-6 bg-[#c41c1a] text-xs text-yellow-300 border border-[2px] border-yellow-300">{count || "0"}</span>
+          </button>
         </SheetTrigger>
         <SheetContent side="right">
           <SheetHeader className="bg-[#c41c1a] text-white">

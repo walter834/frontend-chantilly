@@ -143,8 +143,9 @@ export default function payconfirmation() {
             });
             return;
           }
+          console.log("payload", payload)
 
-          const response = await processNiubizPayment({ tokenId, amount, purchaseNumber });
+          const response = await processNiubizPayment({ tokenId, amount, purchaseNumber, order_data: payload.orderData });
           const data = { response: response.data, name: payload.name, success: response.success };
           convertionFormatData(data);
           localStorage.setItem('chantilly-cart', '');

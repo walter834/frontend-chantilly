@@ -7,6 +7,7 @@ import { TransformedProduct, TransformedProductVariant, TransformedCakeFlavor, T
 import FormCart from '@/components/formCart';
 import { useRouter } from 'next/navigation';
 import { portionsOptions } from './data';
+import { FaClock } from "react-icons/fa6";
 
 interface ProductDetailProps {
   id: string;
@@ -185,27 +186,27 @@ const ProductDetail = ({ id, name, price, originalPrice, theme, image, productTy
         </div>
 
         <div className="lg:col-span-5">
-          <div className="mb-4 border-2 border-black rounded-lg p-6 bg-white">
-            <div className="flex flex-col-2 justify-between">
+          <div className="mb-4 border-2 border-black rounded-lg p-4 bg-white">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="ml-2">
-                <h1 className="text-[20px] font-bold text-[#c41c1a] uppercase mb-2">
+                <h1 className="text-[20px] md:text-xl lg:text-[20px] font-bold text-[#c41c1a] uppercase mb-2">
                   {capitalizeFirstLetter(name)}
                 </h1>
               </div>
               <div className="flex items-center gap-2 mb-4">
-                <span className="text-2xl font-bold text-[#c41c1a]">
+                <span className="text-[20px] md:text-xl lg:text-[22px] font-bold text-[#c41c1a]">
                   S/ {price.toFixed(2)}
                 </span>
                 {originalPrice && (
-                  <span className="text-2xl font-bold text-[#c41c1a]">
+                  <span className="text-[20px] md:text-xl lg:text-[22px] font-bold text-[#c41c1a]">
                     - S/ {originalPrice.toFixed(2)}
                   </span>
                 )}
               </div>
             </div>
-            <p className="text-sm text-black mb-4 text-[15px]">
+            <p className="text-sm text-black mb-4 text-[16px]">
               {capitalizeFirstLetter(description)}<br />
-              <span className="text-[#c41c1a]"></span> Tiempo elaboración: {hour} horas
+              <FaClock size={20} className="inline mr-1 text-[#c41c1a]" /> Tiempo elaboración: {hour} horas
             </p>
             {/* Diámetro visible solo en carrito */}
           </div>
@@ -227,7 +228,7 @@ const ProductDetail = ({ id, name, price, originalPrice, theme, image, productTy
         <div className="lg:col-span-3">
           <div className="border-2 border-black rounded-lg p-6 bg-white">
             <h3 className="font-bold text-center text-black mb-4">ACCESORIOS</h3>
-            <div className="grid grid-cols-2 gap-2 overflow-y-scroll h-[500px] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-track]:bg-neutral-700 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500">
+            <div className="grid grid-cols-2 gap-2 overflow-y-scroll h-[500px]">
               {loadingAccessories ? (
                 <div className="text-center text-gray-500">Cargando...</div>
               ) : (
@@ -248,16 +249,18 @@ const ProductDetail = ({ id, name, price, originalPrice, theme, image, productTy
                       <p className="text-sm text-[#c41c1a] font-bold text-center">
                         {accessory.short_description}
                       </p>
-                      <div className="flex items-center gap-2 justify-center">
-                        <div className="font-bold text-[14px]">
+                      <div className="grid grid-cols-1 gap-2 flex items-center justify-center">
+                        <div className="font-bold text-[14px] text-center">
                           S/ {parseInt(accessory.max_price).toFixed(2)}
                         </div>
-                        <button
-                          onClick={() => handleAddToCart(accessory, true)}
-                          className="bg-[#c41c1a] text-white text-xs px-2 py-1 rounded cursor-pointer hover:bg-[#a01818] transition-colors"
-                        >
-                          Agregar
-                        </button>
+                        <div className='text-center'>
+                          <button
+                            onClick={() => handleAddToCart(accessory, true)}
+                            className="bg-[#c41c1a] text-white text-xs px-2 py-1 rounded cursor-pointer hover:bg-[#a01818] transition-colors"
+                          >
+                            Agregar
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
