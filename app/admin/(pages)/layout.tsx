@@ -29,7 +29,7 @@ export default function AdminLayout({
   const pathname = usePathname();
 
   return (
-    <SidebarProvider>
+    <SidebarProvider >
       <AppSidebar />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 bg-white shadow-md">
