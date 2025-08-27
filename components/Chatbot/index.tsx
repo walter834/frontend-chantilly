@@ -7,14 +7,15 @@ export default function N8nChat() {
   useEffect(() => {
     let observer: MutationObserver | null = null;
     let titleProcessed = false;
-    
+
     createChat({
-      webhookUrl:
-          process.env.NEXT_PUBLIC_CHATBOT_API_URL,
+      webhookUrl: process.env.NEXT_PUBLIC_CHATBOT_API_URL,
       target: "#n8n-chat",
       mode: "window",
       showWelcomeScreen: false,
-      initialMessages: ['¡Hola! 😊 Soy María, tu asistente de "La Casa del Chantilly". ¿En qué puedo ayudarte hoy? Estoy aquí para brindarte información sobre nuestros deliciosos productos, precios y promociones. 🍰🧁🍪'],
+      initialMessages: [
+        '¡Hola! 😊 Soy María, tu asistente de "La Casa del Chantilly". ¿En qué puedo ayudarte hoy? Estoy aquí para brindarte información sobre nuestros deliciosos productos, precios y promociones. 🍰🧁🍪',
+      ],
       i18n: {
         en: {
           title: "María",
@@ -33,10 +34,9 @@ export default function N8nChat() {
       loadPreviousSession: true,
     });
 
-    // Función optimizada para modificar título
     const modifyTitle = () => {
       if (titleProcessed) return;
-      
+
       const titleElement = document.querySelector(".chat-heading h1");
       if (titleElement && !titleElement.querySelector("img")) {
         titleElement.innerHTML = `
@@ -47,27 +47,27 @@ export default function N8nChat() {
       }
     };
 
-    // Función optimizada para agregar avatares
     const addBotAvatars = () => {
-      // Procesar inmediatamente sin setTimeout
-      const botMessages = document.querySelectorAll<HTMLElement>(".chat-message-from-bot:not([data-avatar-added])");
-      
-      botMessages.forEach((msg: HTMLElement) => {
-        // Marcar como procesado inmediatamente
-        msg.setAttribute('data-avatar-added', 'true');
+      const botMessages = document.querySelectorAll<HTMLElement>(
+        ".chat-message-from-bot:not([data-avatar-added])"
+      );
 
-        // Guardar el contenido original del mensaje
+      botMessages.forEach((msg: HTMLElement) => {
+        msg.setAttribute("data-avatar-added", "true");
+
         const originalContent = msg.innerHTML;
 
-        // Aplicar estilo flex al mensaje
-        msg.setAttribute('style', `
+        msg.setAttribute(
+          "style",
+          `
           display: flex !important;
           align-items: flex-start !important;
           gap: 8px !important;
           margin-top: 8px !important;
           margin-bottom: 8px !important;
           z-index: 1000 !important;
-        `);
+        `
+        );
 
         // Crear imagen del avatar
         const img = document.createElement("img");
@@ -102,7 +102,6 @@ export default function N8nChat() {
     const setupObserver = () => {
       const chatContainer = document.querySelector("#n8n-chat");
       if (!chatContainer) {
-        // Reducir el intervalo de reintento
         setTimeout(setupObserver, 100);
         return;
       }
@@ -118,16 +117,20 @@ export default function N8nChat() {
                 const element = node as HTMLElement;
                 // Verificar mensajes del bot
                 if (
-                  (element.classList && element.classList.contains("chat-message-from-bot")) ||
-                  (element.querySelector && element.querySelector(".chat-message-from-bot"))
+                  (element.classList &&
+                    element.classList.contains("chat-message-from-bot")) ||
+                  (element.querySelector &&
+                    element.querySelector(".chat-message-from-bot"))
                 ) {
                   shouldProcessMessages = true;
                 }
-                
+
                 // Verificar título
                 if (
-                  (element.classList && element.classList.contains("chat-heading")) ||
-                  (element.querySelector && element.querySelector(".chat-heading h1"))
+                  (element.classList &&
+                    element.classList.contains("chat-heading")) ||
+                  (element.querySelector &&
+                    element.querySelector(".chat-heading h1"))
                 ) {
                   shouldProcessTitle = true;
                 }
@@ -140,7 +143,7 @@ export default function N8nChat() {
         if (shouldProcessMessages) {
           addBotAvatars();
         }
-        
+
         if (shouldProcessTitle) {
           modifyTitle();
         }

@@ -75,7 +75,7 @@ export const logoutUser = async (): Promise<void> => {
   try {
     await api.post("/logout");
   } catch (error) {
-    console.warn("Error during logout API call:", error);
+    throw error;
   } finally {
     store.dispatch(logout());
   }
@@ -107,16 +107,13 @@ export const loginWithGoogle = () => {
     if (typeof window !== "undefined") {
       const currentUrl = window.location.href;
       sessionStorage.setItem("redirectAfterLogin", currentUrl);
-      console.log("🔍 URL guardada para redirección:", currentUrl);
     }
 
     // ✅ CORREGIDO: Tu backend usa /auth/google/redirect (no /auth/google/callback)
     const googleAuthURL = `${baseURL}/auth/google/redirect`;
 
-    console.log("🚀 Iniciando Google Auth:", googleAuthURL);
     window.location.href = googleAuthURL;
   } catch (error) {
-    console.error("Error al iniciar login con Google:", error);
     throw new Error(
       "No se pudo iniciar el proceso de autenticación con Google"
     );
@@ -161,8 +158,6 @@ export const register = async (formData: RegisterFormData) => {
       customer,
     };
   } catch (error: any) {
-    console.error("Error en registro completo:", error);
-
     let errorMessage = "Error al registrar usuario";
     let validationErrors = {};
 
@@ -234,7 +229,6 @@ export const validateToken = async (): Promise<boolean> => {
     await api.get("/validate-token");
     return true;
   } catch (error) {
-    console.log("Token inválido:", error);
     store.dispatch(logout());
     return false;
   }
@@ -253,8 +247,6 @@ export const updateProfile = async (
 
     // ✅ SIMPLE: Solo quitar el ID, enviar el resto tal como viene del componente
     const { id, ...dataToSend } = data;
-
-    console.log("📤 Datos a enviar:", dataToSend);
 
     const response = await api.put(`/customers/${customerId}`, dataToSend);
 
@@ -277,8 +269,6 @@ export const updateProfile = async (
       customer: response.data.customer,
     };
   } catch (error: any) {
-    console.error(`❌ Error actualizando customer:`, error);
-
     throw {
       success: false,
       message: error.response?.data?.message || "Error al actualizar perfil",
@@ -286,37 +276,12 @@ export const updateProfile = async (
     };
   }
 };
-/**
- * ✅ NUEVA: Función para refrescar datos del customer después de una actualización
- * Si tu API devuelve los datos actualizados en algún endpoint, puedes usar esta función
- */
-export const refreshCustomerData = async (): Promise<Customer | null> => {
-  try {
-    const currentCustomer = getCurrentCustomer();
 
-    if (!currentCustomer?.id) {
-      return null;
-    }
-
-    // Si tienes un endpoint para obtener customer por ID, úsalo aquí
-    // const response = await api.get(`/customers/${currentCustomer.id}`);
-    // const updatedCustomer = response.data.customer;
-
-    // Por ahora, devolvemos los datos que ya tenemos en Redux
-    return currentCustomer;
-  } catch (error) {
-    console.error("Error refrescando datos del customer:", error);
-    return getCurrentCustomer();
-  }
-};
-
-// Resto de funciones...
 export const getDocumentTypes = async (): Promise<DocumentType[]> => {
   try {
     const response = await api.get<DocumentType[]>("/document-types");
     return response.data;
   } catch (error) {
-    console.error("Error fetching document types:", error);
     return [];
   }
 };
@@ -336,8 +301,6 @@ export const changePassword = async (
       message: response.data.message || "Contraseña cambiada exitosamente",
     };
   } catch (error: any) {
-    console.error("Error al cambiar contraseña:", error);
-
     const errorMessage =
       error.response?.data?.message || "Error al cambiar contraseña";
 
@@ -360,8 +323,6 @@ export const forgotPassword = async (email: string) => {
         "Se ha enviado un correo para recuperar tu contraseña",
     };
   } catch (error: any) {
-    console.error("Error en recuperación de contraseña:", error);
-
     const errorMessage =
       error.response?.data?.message || "Error al enviar correo de recuperación";
 
@@ -400,8 +361,6 @@ export const ResetPassword = async (resetData: {
       data: response.data,
     };
   } catch (error: any) {
-    console.error("❌ Error completo:", error);
-
     const errorMessage =
       error.response?.data?.message || "Error al restablecer la contraseña";
 
@@ -414,5 +373,4 @@ export const ResetPassword = async (resetData: {
   }
 };
 
-// Exportar tipos
 export type { Customer, LoginCredentials, RegisterFormData };

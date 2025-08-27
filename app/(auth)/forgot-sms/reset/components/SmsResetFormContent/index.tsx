@@ -17,23 +17,20 @@ import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
-import passwordRecoveryService from "@/service/passsword/passwordRecoveryService";
-
-const SmsResetPasswordSchema = z
-  .object({
-    password: z
-      .string()
-      .min(8, "La contraseña debe tener al menos 8 caracteres"),
-    password_confirmation: z.string(),
-  })
-  .refine((data) => data.password === data.password_confirmation, {
-    message: "Las contraseñas no coinciden",
-    path: ["password_confirmation"],
-  });
+import passwordRecoveryService from "@/service/password/passwordRecoveryService";
+import { SmsResetPasswordSchema } from "@/lib/validators/reset-sms";
 
 type SmsResetValues = z.infer<typeof SmsResetPasswordSchema>;
 
-export default function SmsResetFormContent({ phone, code }: { phone: string; code: string }) {
+interface SmsResetFormContentProps {
+  phone: string;
+  code: string;
+}
+
+export default function SmsResetFormContent({
+  phone,
+  code,
+}: SmsResetFormContentProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -73,8 +70,8 @@ export default function SmsResetFormContent({ phone, code }: { phone: string; co
 
   const formatPhoneDisplay = (phoneNumber: string) => {
     if (!phoneNumber || phoneNumber.length <= 4) return phoneNumber;
-    const lastFour = phoneNumber.slice(-4);
-    const masked = "*".repeat(Math.max(0, phoneNumber.length - 4));
+    const lastFour = phoneNumber.slice(-3);
+    const masked = "*".repeat(Math.max(0, phoneNumber.length - 3));
     return `${masked.slice(0, 3)}-${masked.slice(3, 6)}-${lastFour}`;
   };
 
@@ -188,5 +185,3 @@ export default function SmsResetFormContent({ phone, code }: { phone: string; co
     </div>
   );
 }
-
-

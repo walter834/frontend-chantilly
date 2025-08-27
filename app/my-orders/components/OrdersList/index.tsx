@@ -1,4 +1,3 @@
-// components/orders/OrdersList.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -64,15 +63,17 @@ export default function OrdersList({
 
   if (!isAuthenticated)
     return <p className="px-4">Inicia sesión para ver tus pedidos.</p>;
-  if (loading) return  <div className="mt-10 flex justify-center items-center py-12">
+  if (loading)
+    return (
+      <div className="mt-10 flex justify-center items-center py-12">
         <div className="flex flex-col items-center space-y-4">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#c41d1ada]"></div>
           <span className="text-gray-600 text-sm">Cargando...</span>
         </div>
-      </div>;
+      </div>
+    );
   if (err) return <p className="px-4 text-red-600">{err}</p>;
 
-  // ✅ Verificar filtros activos de manera más limpia
   const hasSearchQuery = searchQuery && searchQuery.trim().length > 0;
   const hasDateFilter = dateFilter && dateFilter.trim().length > 0;
   const hasAnyFilter = hasSearchQuery || hasDateFilter;
@@ -94,7 +95,6 @@ export default function OrdersList({
 
   return (
     <div className="flex flex-col gap-4">
-      {/* ✅ Mostrar información de filtros activos */}
       {hasAnyFilter && (
         <div className="px-4 text-sm text-gray-600">
           <p>

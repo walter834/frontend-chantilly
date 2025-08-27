@@ -1,6 +1,5 @@
 import api from "../api";
 
-// Types para type safety
 export interface SendRecoveryCodeRequest {
   phone: string;
 }

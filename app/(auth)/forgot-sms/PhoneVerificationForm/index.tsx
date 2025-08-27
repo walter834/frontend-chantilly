@@ -18,18 +18,10 @@ import {
 } from "@/components/ui/form";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Phone, Send, Loader2, ArrowLeft } from "lucide-react";
-import passwordRecoveryService from "@/service/passsword/passwordRecoveryService";
+import passwordRecoveryService from "@/service/password/passwordRecoveryService";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-
-// Esquema de validación
-const phoneVerificationSchema = z.object({
-  phone: z
-    .string()
-    .min(9, "El número debe tener al menos 9 dígitos")
-    .max(15, "El número no puede tener más de 15 dígitos")
-    .regex(/^\d+$/, "Solo se permiten números"),
-});
+import { phoneVerificationSchema } from "@/lib/validators/reset-sms";
 
 type PhoneVerificationFormData = z.infer<typeof phoneVerificationSchema>;
 
@@ -58,10 +50,8 @@ export default function PhoneVerificationForm({
   const phoneNumber = form.watch("phone");
 
   const formatPhoneNumber = (value: string) => {
-    // Remove all non-digit characters
     const cleanValue = value.replace(/\D/g, "");
 
-    // Limit to 15 digits (international standard)
     if (cleanValue.length > 15) {
       return cleanValue.slice(0, 15);
     }
@@ -87,27 +77,19 @@ export default function PhoneVerificationForm({
       setIsLoading(true);
       setError("");
       setSuccessMessage("");
-
-      // Llamar al servicio con el número de teléfono
+  
       const response = await passwordRecoveryService.sendRecoveryCode({
         phone: data.phone,
       });
-
-      // Si llega aquí, el código se envió exitosamente
+  
       setSuccessMessage(response.message || "Código enviado correctamente");
-
-      // Guardar el teléfono en sessionStorage (se limpia al cerrar pestaña)
+  
       sessionStorage.setItem("recovery_phone", data.phone);
-
-      // Callbacks opcionales
+  
+      router.push("/forgot-sms/verify-code");
+  
       onSuccess?.(data.phone);
-
-      setTimeout(() => {
-        // Redirigir a la página de verificación de código SIN parámetros
-        router.push("/forgot-sms/verify-code");
-      }, 1000);
     } catch (err: any) {
-      // Manejar el error del servicio
       const errorMessage =
         err.message || "Error al enviar el código de verificación";
       setError(errorMessage);

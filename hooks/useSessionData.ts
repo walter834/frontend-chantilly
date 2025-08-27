@@ -1,6 +1,7 @@
 // hooks/useSessionData.ts
 "use client";
 import { useRef, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 interface SessionData {
   phone: string;
@@ -15,7 +16,7 @@ export function useSessionData(): SessionData {
 
   // Efecto para manejar la hidratación una sola vez
   useEffect(() => {
-    if (!isHydrated) {
+    if (!isHydrated && typeof window !== 'undefined') {
       const recoveryPhone = sessionStorage.getItem("recovery_phone");
       const recoveryCode = sessionStorage.getItem("recovery_code");
       
