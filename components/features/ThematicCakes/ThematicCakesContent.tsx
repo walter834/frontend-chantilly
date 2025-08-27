@@ -96,7 +96,7 @@ export default function ThematicCakes() {
           <Paginations 
             currentPage={pagination.currentPage}
             totalPages={pagination.lastPage}
-            onPageChange={handlePageChange}
+            onPageChange={}
             hasNextPage={pagination.hasNextPage}
             hasPrevPage={pagination.hasPrevPage}
             pageParam="tematicas_page"

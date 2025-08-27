@@ -60,7 +60,7 @@ export default function SubcategoryPage({
       params.delete('search');
     }
     params.delete('page'); // Reset to page 1 when searching
-    router.push(`?${params.toString()}`);
+    router.push(`?${params.toString()}`, { scroll: false });
   };
 
   const handlePageChange = (page: number) => {
@@ -69,7 +69,7 @@ export default function SubcategoryPage({
     if (searchValue.trim()) {
       params.set('search', searchValue.trim());
     }
-    router.push(`?${params.toString()}`);
+    router.push(`?${params.toString()}`, { scroll: false });
   };
 
   return (

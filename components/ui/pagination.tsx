@@ -46,8 +46,16 @@ function PaginationLink({
   className,
   isActive,
   size = "icon",
+  onClick,
   ...props
-}: PaginationLinkProps) {
+}: PaginationLinkProps & { onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void }) {
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    if (onClick) {
+      onClick(e);
+    }
+  };
+
   return (
     <a
       aria-current={isActive ? "page" : undefined}
@@ -60,9 +68,10 @@ function PaginationLink({
         }),
         className
       )}
+      onClick={handleClick}
       {...props}
     />
-  )
+  );
 }
 
 function PaginationPrevious({
@@ -77,7 +86,7 @@ function PaginationPrevious({
       {...props}
     >
       <ChevronLeftIcon />
-     
+
     </PaginationLink>
   )
 }
@@ -93,7 +102,7 @@ function PaginationNext({
       className={cn("gap-1 px-2.5 sm:pr-2.5", className)}
       {...props}
     >
-      
+
       <ChevronRightIcon />
     </PaginationLink>
   )
