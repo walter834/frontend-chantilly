@@ -27,7 +27,9 @@ export default function LayoutShell({
     pathname.startsWith("/forgot-password") ||
     pathname.startsWith("/forgot-sms") ||
     pathname.startsWith("/reset-password") ||
-    pathname.startsWith("/reset");
+    pathname.startsWith("/reset") ||
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/admin/login")
 
   if (isClean) {
     return (
@@ -44,20 +46,20 @@ export default function LayoutShell({
       <div className="relative z-50">
         <Navbar />
       </div>
-      
+
       {/* Header */}
       <div className="relative z-40">
         <Header />
       </div>
-      
+
       {/* Main content */}
       <main className="flex-1 relative z-10">{children}</main>
-      
+
       {/* Toaster con z-index muy alto para notificaciones */}
       <div className="relative z-[9999]">
         <Toaster />
       </div>
-      
+
       {/* Otros componentes */}
       <CustomOrders />
       <OnlyHome>
@@ -71,7 +73,7 @@ export default function LayoutShell({
         <LocalCardGrid limit={3} />
       </OnlyHome>
       <Footer />
-      
+
       {/* ChatWidget con z-index más bajo */}
       <div className="relative z-30">
         <ChatWidget />
