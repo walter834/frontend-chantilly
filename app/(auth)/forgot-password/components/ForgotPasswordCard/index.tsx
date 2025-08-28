@@ -41,7 +41,7 @@ export default function ForgotPasswordCard() {
             <Link href="/forgot-sms" className="w-full block">
               <Button
                 variant="outline"
-                className="w-full border-2 border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 bg-transparent"
+                className="w-full border-2 border-blue-200 text-blue-700 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200 bg-transparent cursor-pointer"
               >
                 <Smartphone className="mr-2 h-4 w-4" />
                 Recuperar por SMS
@@ -52,7 +52,7 @@ export default function ForgotPasswordCard() {
           <div className="text-center">
             <Link
               href="/"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors underline-offset-4 hover:underline"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors underline-offset-4 hover:underline cursor-pointer"
             >
               Volver al inicio
             </Link>

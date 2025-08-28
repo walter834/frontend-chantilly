@@ -22,7 +22,7 @@ export default function HeroBanner({ slides , className = '', mobileSlides }: { 
           pagination={{ clickable: true }}
           autoplay={{ delay: 5000, disableOnInteraction: false }}
           loop={true}
-          className="w-full custom-pagination-swiper border-b-[10px] border-yellow-500"
+          className="custom-pagination-swiper border-b-[10px] border-yellow-500"
         >
           {(mobileSlides ?? slides).map((slide) => (
             <SwiperSlide key={`${slide.id}-m`}>
@@ -42,15 +42,17 @@ export default function HeroBanner({ slides , className = '', mobileSlides }: { 
           pagination={{ clickable: true }}
           autoplay={{ delay: 5000, disableOnInteraction: false }}
           loop={true}
-          className="w-full custom-pagination-swiper border-b-[10px] border-yellow-500"
+          className="custom-pagination-swiper border-b-[10px] border-yellow-500"
         >
           {slides.map((slide) => (
+            slide.image_movil_url === null && (
             <SwiperSlide key={slide.id}>
               <img
                 src={slide.image_url}
                 alt={slide.title}
               />
             </SwiperSlide>
+            )
           ))}
         </Swiper>
       )}

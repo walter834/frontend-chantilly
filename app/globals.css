@@ -231,3 +231,12 @@
   background: #b3b3b3;
 }
 /* fin scroll personalizado */
+
+/* selector personalizado */
+
+::selection {
+  background-color: #c41d1ada;
+  color: rgb(255, 255, 255);
+}
+  
+/* fin selector personalizado */

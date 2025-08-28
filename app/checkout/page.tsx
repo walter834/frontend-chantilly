@@ -61,7 +61,7 @@ export default function Contact() {
             router.replace('/');
         }
     }, [cartChecked, listShopping, router]);
-    
+
     const arrayOrder = {
         "customer_id": customer?.id,
         "voucher_type": voucherType,
@@ -420,76 +420,65 @@ export default function Contact() {
                             )}
                         </div>
                     </div>
-                    <div className='p-6 bg-white'>
+                    <div className='pl-5 pr-5 pt-5 bg-white'>
                         <div className='flex justify-between'>
-                            <h1 className='text-[25px] font-bold text-black mb-2'>Resumen de la compra</h1>
+                            <h1 className='text-[25px] font-bold text-black mb-5'>Resumen de la compra</h1>
                             <a
-                                className='flex items-center gap-2 text-[#c41c1a] hover:text-[#c41c1a] cursor-pointer'
+                                className='flex items-center gap-2 text-[#c41c1a] hover:text-[#c41c1a] cursor-pointer text-sm md:text-base'
                                 onClick={() => router.push('/?openCart=1')}
                             >
                                 <FaPencil /> Editar carrito
                             </a>
                         </div>
-                        <div className='overflow-x-auto'>
-                            <table className='w-full min-w-[640px]'>
-                                <thead className='bg-[#c41c1a] text-white h-12'>
-                                    <tr>
-                                        <th>Imagen</th>
-                                        <th className='text-left'>Producto</th>
-                                        <th>Cantidad</th>
-                                        <th>Precio S/</th>
-                                        <th>Total S/</th>
-                                    </tr>
-                                </thead>
-                                <tbody className='bg-[#f5f5f5] text-center border-b-2 border-[#c41c1a]'>
-                                    {(listShopping as any[]).map((item: any) => (
-                                        <tr key={item?.id} className='border-b-2 border-gray-300'>
-                                            <td>
-                                                {item?.product?.image ? (
-                                                    <Image className='border rounded-md' src={item.product.image} alt={item?.product?.name || 'Producto'} width={150} height={150} />
-                                                ) : (
-                                                    <span>-</span>
-                                                )}
-                                            </td>
-                                            <td className='text-left max-w-[200px]'>
-                                                {item?.product?.name || '-'}
-                                                <div className='mt-1 text-xs text-gray-700 space-y-0.5'>
-                                                    {item?.product?.portion && (
-                                                        <p>Porciones: {item.product.portion}</p>
-                                                    )}
-                                                    {item?.product?.diameter && (
-                                                        <p>Diámetro: {item.product.diameter}</p>
-                                                    )}
-                                                    {item?.product?.cakeFlavorName && (
-                                                        <p>Sabor: {item.product.cakeFlavorName}</p>
-                                                    )}
-                                                    {item?.product?.fillingName && (
-                                                        <p>Relleno: {item.product.fillingName}</p>
-                                                    )}
-                                                </div>
-                                            </td>
-                                            <td>{item?.quantity ?? 0}</td>
-                                            <td>{item?.price.toFixed(2) ?? 0.00}</td>
-                                            <td>{((item?.price.toFixed(2) || 0.00) * (item?.quantity || 0)).toFixed(2)}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                                <tfoot className='text-[#c41c1a]'>
-                                    <tr className='text-[20px]'>
-                                        <td colSpan={4} className="text-left font-bold pr-4">TOTAL</td>
-                                        <td className="text-right font-bold">S/ {total.toFixed(2)}</td>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                            <div className='grid grid-cols-1 gap-2 pt-3'>
-                                <div className='flex items-center gap-2'>
-                                    <input type="checkbox" name="terms" id="terms" onChange={(e) => setTermsChecked(e.target.checked)} />
-                                    <label htmlFor="terms" className='text-[18px]'>He leído y acepto las condiciones de <Link target="_blank" href="/politicas-privacidad" className='text-[#0C37ED]'>tratamiento de datos personales</Link></label>
+                        <div className='border border-gray-200 '>
+                            <div className='text-center flex justify-center mb-2 p-2 grid grid-cols-5 gap-2 bg-gray-200 text-black font-semibold'>
+                                <div>Imagen</div>
+                                <div>Producto</div>
+                                <div>Cantidad</div>
+                                <div>Precio S/</div>
+                                <div>Total S/</div>
+                            </div>
+                            {listShopping.map((item: any) => (
+                                <div key={item?.id} className='grid grid-cols-5 gap-2 p-3 border-b border-gray-200'>
+                                    <div className='border rounded-md w-16 h-16 md:w-24 md:h-24 object-cover mx-auto'><Image src={item?.product?.image} width={100} height={100} alt={item?.product?.name} /></div>
+                                    <div>{item?.product?.name}
+                                        <div className='mt-1 text-xs text-gray-700 space-y-0.5'>
+                                            {item?.product?.portion && (
+                                                <p>Porciones: {item.product.portion}</p>
+                                            )}
+                                            {item?.product?.diameter && (
+                                                <p>Diámetro: {item.product.diameter}</p>
+                                            )}
+                                            {item?.product?.cakeFlavorName && (
+                                                <p>Sabor: {item.product.cakeFlavorName}</p>
+                                            )}
+                                            {item?.product?.fillingName && (
+                                                <p>Relleno: {item.product.fillingName}</p>
+                                            )}
+                                            {item?.product?.dedication && (
+                                                <p>Dedicatoria: {item.product.dedication}</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className='text-center'>{item?.quantity}</div>
+                                    <div className='text-center'>{item?.product?.price.toFixed(2)}</div>
+                                    <div className='text-right'>{((item?.price.toFixed(2) || 0.00) * (item?.quantity || 0)).toFixed(2)}</div>
                                 </div>
-                                <div className='flex items-center gap-2'>
-                                    <input type="checkbox" name="conditions" id="conditions" onChange={(e) => setConditionsChecked(e.target.checked)} />
-                                    <label htmlFor="conditions" className='text-[18px]'>He leído y acepta nuestros <Link target="_blank" href="/terminos-condiciones" className='text-[#0C37ED]'>términos y condiciones</Link></label>
-                                </div>
+                            ))}
+                        </div>
+                        <div className='flex justify-between text-center p-3 gap-2 border-t-2 border-[#c41c1a]'>
+                            <div className='font-semibold text-[#c41c1a] text-center text-[18px]'>Total</div>
+                            <div className='font-semibold text-[#c41c1a] text-center text-[18px]'>S/{total.toFixed(2)}</div>
+                        </div>
+
+                        <div className='grid grid-cols-1 gap-2 pt-4 text-sm md:text-base'>
+                            <div className='flex items-start gap-2'>
+                                <input type="checkbox" name="terms" id="terms" onChange={(e) => setTermsChecked(e.target.checked)} />
+                                <label htmlFor="terms">He leído y acepto las condiciones de <Link target="_blank" href="/politicas-privacidad" className='text-[#0C37ED] hover:underline'>tratamiento de datos personales</Link></label>
+                            </div>
+                            <div className='flex items-start gap-2'>
+                                <input type="checkbox" name="conditions" id="conditions" onChange={(e) => setConditionsChecked(e.target.checked)} />
+                                <label htmlFor="conditions">He leído y acepto nuestros <Link target="_blank" href="/terminos-condiciones" className='text-[#0C37ED] hover:underline'>términos y condiciones</Link></label>
                             </div>
                         </div>
                         <div className='flex justify-center mt-4'>

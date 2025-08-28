@@ -10,6 +10,7 @@ import ThemedProductsSection from "@/components/features/ThemedProductsSection";
 import LocalCardGrid from "@/app/contacto/components/LocalCardGrid";
 import ChatWidget from "@/components/Chatbot";
 import { Toaster } from "@/components/ui/sonner";
+import { getBanner } from "@/service/bannerService";
 
 export default function LayoutShell({
   children,
@@ -29,6 +30,8 @@ export default function LayoutShell({
     pathname.startsWith("/reset-password") ||
     pathname.startsWith("/reset");
 
+
+
   if (isClean) {
     return (
       <>
@@ -40,25 +43,20 @@ export default function LayoutShell({
 
   return (
     <>
-      {/* Navbar con z-index alto para que esté siempre visible */}
       <div className="relative z-50">
         <Navbar />
       </div>
       
-      {/* Header */}
       <div className="relative z-40">
         <Header />
       </div>
       
-      {/* Main content */}
       <main className="flex-1 relative z-10">{children}</main>
       
-      {/* Toaster con z-index muy alto para notificaciones */}
       <div className="relative z-[9999]">
         <Toaster />
       </div>
       
-      {/* Otros componentes */}
       <CustomOrders />
       <OnlyHome>
         <ThemedProductsSection />
@@ -72,7 +70,6 @@ export default function LayoutShell({
       </OnlyHome>
       <Footer />
       
-      {/* ChatWidget con z-index más bajo */}
       <div className="relative z-30">
         <ChatWidget />
       </div>
