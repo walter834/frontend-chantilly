@@ -63,3 +63,22 @@ export async function getProducts(): Promise<Product[]> {
     throw err;
   }
 }
+
+export async function updateProductImage(
+  id: number,
+  image: File
+): Promise<any> {
+  try {
+    const formData = new FormData();
+    formData.append("image", image);
+
+    const response = await api.post(`/products/${id}`,formData,{
+      headers:{
+        'Content-Type': undefined
+      }
+    });
+    return response.data;
+  } catch (err) {
+    throw err;
+  }
+}

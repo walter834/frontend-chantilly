@@ -14,8 +14,7 @@ import {
 import { ImageIcon, Upload, X, File, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { ZodNumberFormat } from "zod";
-import { updateBannerImage } from "@/service/bannerService";
+import { updateProductImage } from "@/service/product/customizeProductService";
 
 interface Props {
   id: number;
@@ -82,7 +81,7 @@ export function FileUploadDialog({ id }: Props) {
     }
     setIsUploading(true);
     try {
-      const result = await updateBannerImage(id, files[0]);
+      const result = await updateProductImage(id, files[0]);
       toast.success("Imagen actualizada correctamente");
       setIsOpen(false);
       setFiles([]);
