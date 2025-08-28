@@ -99,7 +99,7 @@ export default function PayButtom({ arrayOrder }: { arrayOrder: any }) {
     }
 
     async function initSessionNiubiz(order: any) {
-        const session = await createNiubizSession(order);
+        const session = await createNiubizSession(order);        
         if (!session) {
             CustomAlert('No se pudo crear la sesión de niubiz.', 'error', 'bottom-right');
             return;
@@ -119,26 +119,14 @@ export default function PayButtom({ arrayOrder }: { arrayOrder: any }) {
             orderData:  session.data.order_data,
         };
 
+        localStorage.setItem('temporal-order', JSON.stringify(session.data.order_data));
+
         console.log('paymentData', paymentData);
 
         showNiubizPaymentForm(paymentData);
     }
 
     async function showNiubizPaymentForm(paymentData: any) {
-        const customer = await getCustomerById(paymentData.customer_id);
-        let name = customer?.name + ' ' + customer?.lastname;
-        
-        const data = {
-            sessionToken: paymentData.sessionToken,
-            channel: paymentData.channel,
-            merchantId: paymentData.merchantId,
-            purchaseNumber: paymentData.orderId,
-            amount: paymentData.amount,
-            currency: paymentData.currency,
-            name: name,
-            orderData: paymentData.orderData,
-        }
-
         try { sessionStorage.setItem('fromCheckout', '1'); } catch {}
         console.log('data', paymentData)
         VisanetCheckout.configure({
@@ -150,7 +138,7 @@ export default function PayButtom({ arrayOrder }: { arrayOrder: any }) {
             currency: paymentData.currency,
             formbuttoncolor: '#c41c1a',
             merchantlogo: paymentData.merchantLogo,
-            action: '/checkout/payconfirmation/callback?data=' + encodeURIComponent(JSON.stringify(data)),
+            action: 'http://192.168.18.28:8000/api/niubiz/pay-response',
             timeouturl: "http://localhost/pagos/error.php",
         });
         VisanetCheckout.open();

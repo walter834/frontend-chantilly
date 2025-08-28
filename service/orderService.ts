@@ -54,6 +54,14 @@ export async function processNiubizPayment(body: { tokenId: string, amount: numb
     return data;
 }
 
+export async function dataPayment(token: string): Promise<any> {
+    const { data } = await api.get<any>(API_ROUTES.PAYMENT_DATA + '?token=' + token);
+    console.log('data payment:', data);
+    return data;
+}
+
+
+
 export async function getOrderById(id: number): Promise<TransformedOrder | null> {
     const { data } = await api.get<TransformedOrder>(API_ROUTES.ORDERS + '?order_number=' + id);
     return data;

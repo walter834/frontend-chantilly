@@ -358,6 +358,16 @@ export default function Contact() {
                                     <label className="ml-2" htmlFor="deliveryType">Recoger <b>GRATIS</b> en tienda</label>
                                 </div>
                             </div>
+                            <div className='border-b-2 border-[#c41c1a] pt-3'>
+                                <h2 className='text-[18px] font-bold text-[#c41c1a]'>Fecha de entrega</h2>
+                            </div>
+                            <div className='flex flex-col sm:flex-row sm:justify-around items-start sm:items-center gap-3 sm:gap-5'>
+                                <div className='pb-5 pt-2 text-[15px]'>
+                                    <input type="date" name="date" id="date" className="w-full py-2 pl-2 pr-2 border-b-2 border-[#c41c1a]"/>
+                                </div>
+                            </div>
+
+
                             <div className='pb-3'>
                                 <h2 className='text-[18px] font-bold text-black'>Elige el local más cercano a ti:</h2>
                             </div>
