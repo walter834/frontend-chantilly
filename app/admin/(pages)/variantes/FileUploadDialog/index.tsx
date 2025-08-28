@@ -14,7 +14,7 @@ import {
 import { ImageIcon, Upload, X, File, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { updateProductImage } from "@/service/product/customizeProductService";
+import { updateVariantImage } from "@/service/variant/costumizeVariantService";
 
 interface Props {
   id: number;
@@ -81,7 +81,7 @@ export function FileUploadDialog({ id }: Props) {
     }
     setIsUploading(true);
     try {
-      const result = await updateProductImage(id, files[0]);
+      const result = await updateVariantImage(id, files[0]);
       toast.success("Imagen actualizada correctamente");
       setIsOpen(false);
       setFiles([]);

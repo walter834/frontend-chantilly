@@ -67,3 +67,21 @@ export async function getVariants(): Promise<Variant[]> {
     throw err;
   }
 }
+
+export async function updateVariantImage(
+  id: number,
+  image: File
+): Promise<any> {
+  try {
+    const formData = new FormData();
+    formData.append("image", image);
+    const response = await api.post(`/products-variant/${id}`, formData, {
+      headers: {
+        "Content-Type": undefined,
+      },
+    });
+    return response.data;
+  } catch (err) {
+    throw err;
+  }
+}
