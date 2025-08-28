@@ -12,11 +12,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Image } from "lucide-react";
+
 export interface Product {
   id: number;
   name: string;
   description: string;
-  product_type_id: string;
+  product_type_id: number;
+  product_type_name: string;
 }
 
 export interface TypeProduct {
@@ -37,10 +39,12 @@ export const columns: ColumnDef<Product>[] = [
     accessorKey: "description",
     header: "Descripción",
   },
+
   {
-    accessorKey: "product_type_id",
+    accessorKey: "product_type_name",
     header: "Tipo de producto",
   },
+  
   {
     id: "actions",
     enableHiding: false,

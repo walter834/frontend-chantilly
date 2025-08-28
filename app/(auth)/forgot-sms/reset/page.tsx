@@ -2,28 +2,17 @@
 "use client";
 import SmsResetFormContent from "./components/SmsResetFormContent";
 import { useRouter } from "next/navigation";
-import {
-  usePasswordRecoveryData,
-  useClearRecoveryData,
-} from "@/hooks/useSessionData";
+import { usePasswordRecoveryState } from "@/hooks/usePasswordRecoveryState";
 import { useEffect } from "react";
 import FormSkeleton from "./components/FormSkeleton";
 
 export default function SmsResetForm() {
-  const router = useRouter();
-  const { phone, code, isValid, isLoading } = usePasswordRecoveryData();
-  const clearRecoveryData = useClearRecoveryData();
+  const { state } = usePasswordRecoveryState();
 
-  useEffect(() => {
-    if (!isLoading && !isValid) {
-      clearRecoveryData();
-      router.replace("/forgot-sms");
-    }
-  }, [isLoading, isValid, router, clearRecoveryData]);
-
-  if (isLoading || !isValid) {
+  // Mostrar skeleton si no tenemos los datos necesarios
+  if (!state.phone || !state.code || !state.isVerified) {
     return <FormSkeleton />;
   }
 
-  return <SmsResetFormContent phone={phone} code={code} />;
+  return <SmsResetFormContent phone={state.phone} code={state.code} />;
 }

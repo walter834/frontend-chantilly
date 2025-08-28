@@ -24,12 +24,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
 } from "lucide-react";
-import { useState } from "react";
 import { Input } from "@/components/ui/input";
-
-interface GlobalFilter {
-  globalFilter: any;
-}
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -40,37 +35,34 @@ export function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
-  const [globalFilter, setGlobalFilter] = useState<any>([]);
-
   const table = useReactTable({
     data,
     columns,
-
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-
     initialState: {
       pagination: {
         pageSize: 12,
       },
     },
-    state: {
-      globalFilter,
-    },
-    onGlobalFilterChange: setGlobalFilter,
   });
 
   return (
     <div className="w-full space-y-6">
       <Input
-        type="text"
-        placeholder="Buscar..."
-        value={globalFilter ?? ""}
-        className="w-full sm:max-w-[350px]"
-        onChange={(e) => table.setGlobalFilter(String(e.target.value))}
-      />
+          type="text"
+          placeholder="Filtrar por título"
+          value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
+          onChange={(event) =>
+            table.getColumn("title")?.setFilterValue(event.target.value)
+          }
+          className="w-full sm:max-w-[350px]"
+          
+        />
+
       <div className="overflow-hidden rounded-md border">
+        
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -93,10 +85,7 @@ export function DataTable<TData, TValue>({
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
+                <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(
@@ -120,7 +109,7 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center space-x-6 lg:space-x-8 justify-end ">
+      <div className="flex items-center space-x-6 lg:space-x-8 justify-end">
         <div className="flex w-[100px] items-center justify-center text-sm font-medium">
           Página {table.getState().pagination.pageIndex + 1} de{" "}
           {table.getPageCount()}
