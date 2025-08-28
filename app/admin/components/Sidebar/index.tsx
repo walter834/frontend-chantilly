@@ -40,6 +40,10 @@ const data = {
           title: "Variantes",
           url: "/admin/variantes",
         },
+        {
+          title: "Banner Secundario",
+          url: "/admin/banner-secondary"
+        }
       ],
     },
   ],
