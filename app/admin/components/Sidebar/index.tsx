@@ -14,13 +14,12 @@ import {
 } from "@/components/ui/sidebar";
 import { NavMain } from "../NavMain";
 import { NavUser } from "../NavUser";
+import { useAuthAdmin } from "@/hooks/useAuthAdmin";
+import Image from "next/image";
+
 
 const data = {
-  user: {
-    name: "user",
-    email: "m@example.com",
-    avatar: "/avatar.jpeg",
-  },
+
   navMain: [
     {
       title: "Mantenimiento",
@@ -57,7 +56,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <div className="flex gap-2">
               <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                <Command className="size-4" />
+                
+                <Image src="/nuevologo.png" alt="aea" width={32} height={32} className="rounded-lg"/>
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">Chantilly SAC</span>
@@ -71,7 +71,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
   );

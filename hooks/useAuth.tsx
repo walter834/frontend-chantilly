@@ -27,23 +27,19 @@ export const useAuth = () => {
     dispatch(logout());
   };
 
-  // ✅ MEJORADO: Función para actualizar datos del customer (recalcula automáticamente campos derivados)
   const updateCustomerData = (updates: Partial<Customer>) => {
     dispatch(updateCustomer(updates));
   };
 
   return {
-    // ✅ Estados principales
     isAuthenticated,
     token,
     customer,
     
-    // ✅ OPTIMIZADOS: Campos derivados ya calculados y persistentes (NO se recalculan)
-    fullName,           // Ya viene calculado del store
-    displayName,        // Ya viene calculado del store  
-    initials,          // ✅ YA PERSISTENTE - no se pierde al refrescar
+    fullName,           
+    displayName,        
+    initials,          
     
-    // ✅ Datos específicos directos del customer
     id: customer?.id,
     name: customer?.name,
     lastname: customer?.lastname,

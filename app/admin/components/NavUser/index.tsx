@@ -25,28 +25,23 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import Image from "next/image";
-import { logoutAdmin } from "@/service/authAdmin/authAdminService";
+import { logoutAdmins } from "@/service/authAdmin/authAdminService";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useAuthAdmin } from "@/hooks/useAuthAdmin";
 
-export function NavUser({
-  user,
-}: {
-  user: {
-    name: string;
-    email: string;
-    avatar: string;
-  };
-}) {
+export function NavUser() {
+  const {username,email} = useAuthAdmin();
+
   const { isMobile } = useSidebar();
   const router = useRouter();
 
   const handleLogout = async () => {
     try {
-      await logoutAdmin();
+      await logoutAdmins();
       router.push("/admin")
     } catch (error) {
-      toast.error("Erro");
+      toast.error("Error al cerrar sesión");
     }
   };
 
@@ -60,11 +55,11 @@ export function NavUser({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <div className="h-8 w-8 rounded-lg">
-                <img src={user.avatar} alt={user.name} />
+                <img src="/avatar.jpeg" alt={username} />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
-                <span className="truncate text-xs">{user.email}</span>
+                <span className="truncate font-medium">{username}</span>
+                <span className="truncate text-xs">{email}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -78,11 +73,11 @@ export function NavUser({
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <div className="h-8 w-8 rounded-lg">
-                  <img src={user.avatar} alt={user.name} />
+                  <img src="/avatar.jpeg" alt={username} />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
-                  <span className="truncate text-xs">{user.email}</span>
+                  <span className="truncate font-medium">{username}</span>
+                  <span className="truncate text-xs">{email}</span>
                 </div>
               </div>
             </DropdownMenuLabel>

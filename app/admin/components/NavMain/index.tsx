@@ -21,6 +21,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export function NavMain({
   items,
@@ -58,9 +59,11 @@ export function NavMain({
       setOpenMobile(false);
     }
   };
+
+  const path = usePathname();
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Platform</SidebarGroupLabel>
+      <SidebarGroupLabel>Plataforma</SidebarGroupLabel>
       <SidebarMenu>
         {items.map((item) => (
           <Collapsible
@@ -74,7 +77,7 @@ export function NavMain({
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton
                       tooltip={item.title}
-                      className="flex justify-between items-center"
+                      className="flex justify-between items-center "
                     >
                       <div className="flex  gap-2">
                         <item.icon className="size-5" />
@@ -93,7 +96,12 @@ export function NavMain({
                   <CollapsibleContent>
                     <SidebarMenuSub>
                       {item.items?.map((subItem) => (
-                        <SidebarMenuSubItem key={subItem.title}>
+                        /* esteee */
+                        <SidebarMenuSubItem
+                          key={subItem.title}
+                          className={path === subItem.url ? "bg-red-300" : ""}
+
+                        >
                           <SidebarMenuSubButton asChild>
                             <Link href={subItem.url} onClick={handleNavClick}>
                               <span>{subItem.title}</span>

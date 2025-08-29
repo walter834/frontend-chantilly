@@ -1,6 +1,6 @@
 import { store } from "@/store/store";
 import api from "../api";
-import { loginAdminSuccess } from "@/store/slices/authAdminSlice";
+import { loginAdminSuccess,logoutAdmin } from "@/store/slices/authAdminSlice";
 
 interface LoginAdminCredentials {
   username: string;
@@ -38,10 +38,9 @@ export const loginAdmin = async (
   }
 };
 
-export const logoutAdmin = async () => {
+export const logoutAdmins = async ():Promise<void> =>{
   try {
-    const response = await api.post("/admin/logout");
-    return response.data;
+    await api.post("/admin/logout");
   } catch (error) {
     throw error;
   }finally{

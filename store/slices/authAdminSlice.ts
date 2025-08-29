@@ -15,33 +15,33 @@ interface AuthAdminState {
   isAuthenticated: boolean;
   token: string | null;
   user: User | null;
-
 }
 const initialState: AuthAdminState = {
- isAuthenticated: false,
+  isAuthenticated: false,
   token: null,
   user: null,
-}
+};
 
 export const authAdminSlice = createSlice({
-    name:'authAdmin',
-    initialState,
-    reducers : {
-        loginAdminSuccess:(state,action: PayloadAction<LoginAdminPayload>) => {
-            const {user,token} = action.payload;
+  name: "authAdmin",
+  initialState,
+  reducers: {
+    loginAdminSuccess: (state, action: PayloadAction<LoginAdminPayload>) => {
+      const { user, token } = action.payload;
 
-            state.isAuthenticated = true;
-            state.token = token;
-            state.user = user;
-        },
-        logoutAdmin: (state) =>{
-            state.isAuthenticated = false;
-            state.token = null;
-            state.user = null;
-        }
-    }
-
+      state.isAuthenticated = true;
+      state.token = token;
+      state.user = user;
+    },
+    logoutAdmin: (state) => {
+      state.isAuthenticated = false;
+      state.token = null;
+      state.user = null;
+    },
+  },
 });
 
-export const {loginAdminSuccess,logoutAdmin} = authAdminSlice.actions;
+export const { loginAdminSuccess, logoutAdmin } = authAdminSlice.actions;
 export default authAdminSlice.reducer;
+
+export type { User, AuthAdminState };
