@@ -22,7 +22,7 @@ import passwordRecoveryService from "@/service/password/passwordRecoveryService"
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { phoneVerificationSchema } from "@/lib/validators/reset-sms";
-import { usePasswordRecoveryState } from "@/hooks/usePasswordRecoveryState";
+import { usePasswordRecoveryRedux } from "@/hooks/usePasswordRecoveryRedux";
 
 type PhoneVerificationFormData = z.infer<typeof phoneVerificationSchema>;
 
@@ -40,7 +40,7 @@ export default function PhoneVerificationForm({
   const [successMessage, setSuccessMessage] = useState<string>("");
 
   const router = useRouter();
-  const { setPhone } = usePasswordRecoveryState();
+  const { setPhone } = usePasswordRecoveryRedux();
 
   const form = useForm<PhoneVerificationFormData>({
     resolver: zodResolver(phoneVerificationSchema),

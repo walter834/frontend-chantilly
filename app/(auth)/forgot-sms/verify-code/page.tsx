@@ -12,7 +12,8 @@ import {
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import passwordRecoveryService from "@/service/password/passwordRecoveryService";
-import { usePasswordRecoveryState } from "@/hooks/usePasswordRecoveryState";
+import { usePasswordRecoveryRedux } from "@/hooks/usePasswordRecoveryRedux";
+import PasswordRecoveryLoading from "@/components/PasswordRecoveryLoading";
 
 interface VerifyRecoveryCodeContentProps {
   phone: string;
@@ -20,7 +21,7 @@ interface VerifyRecoveryCodeContentProps {
 
 function VerifyRecoveryCodeContent({ phone }: VerifyRecoveryCodeContentProps) {
   const router = useRouter();
-  const { setCode, setVerified, clearState } = usePasswordRecoveryState();
+  const { setCode, setVerified, clearState } = usePasswordRecoveryRedux();
   const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
   const [countdown, setCountdown] = useState<number>(60);
   const [isVerifying, setIsVerifying] = useState<boolean>(false);
@@ -319,7 +320,7 @@ const VerifyCodeSkeleton = () => (
 export default function VerifyRecoveryCode() {
   const searchParams = useSearchParams();
   const urlPhone = searchParams.get('phone');
-  const { state, setPhone } = usePasswordRecoveryState();
+  const { state, setPhone } = usePasswordRecoveryRedux();
   
   // Priorizar el teléfono de la URL sobre el del contexto
   const phone = urlPhone || state.phone;
@@ -331,10 +332,13 @@ export default function VerifyRecoveryCode() {
     }
   }, [urlPhone, setPhone]);
 
-  // Mostrar skeleton si no hay teléfono
-  if (!phone) {
-    return <VerifyCodeSkeleton />;
-  }
-
-  return <VerifyRecoveryCodeContent phone={phone} />;
+  return (
+    <PasswordRecoveryLoading fallback={<VerifyCodeSkeleton />}>
+      {phone ? (
+        <VerifyRecoveryCodeContent phone={phone} />
+      ) : (
+        <VerifyCodeSkeleton />
+      )}
+    </PasswordRecoveryLoading>
+  );
 }

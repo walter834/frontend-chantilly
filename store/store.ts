@@ -18,6 +18,7 @@ import authReducer from "./slices/authSlice";
 import localSlice from "./slices/localSlice";
 import chatbotReducer from './slices/chatbotSlice';
 import authAdminReducer from './slices/authAdminSlice';
+import passwordRecoveryReducer from './slices/passwordRecoverySlice';
 
 const authPersistConfig = {
   key: 'auth',
@@ -46,11 +47,19 @@ const localPersistConfig = {
   blacklist: ['loading', 'error'], 
 };
 
+const passwordRecoveryPersistConfig = {
+  key: 'passwordRecovery',
+  storage,
+  whitelist: ['phone', 'code', 'isVerified'], 
+  blacklist: ['isInitialized'], 
+};
+
 // Crear los reducers persistidos
 const persistedAuthReducer = persistReducer(authPersistConfig, authReducer);
 const persistedChatbotReducer = persistReducer(chatbotPersistConfig, chatbotReducer);
 const persistedLocalReducer = persistReducer(localPersistConfig, localSlice);
 const persistedAuthAdminReducer = persistReducer(authAdminPersistConfig, authAdminReducer);
+const persistedPasswordRecoveryReducer = persistReducer(passwordRecoveryPersistConfig, passwordRecoveryReducer);
 
 
 export const store = configureStore({
@@ -58,7 +67,8 @@ export const store = configureStore({
     auth: persistedAuthReducer,        
     chatbot: persistedChatbotReducer, 
     local: persistedLocalReducer,
-    authAdmin: persistedAuthAdminReducer
+    authAdmin: persistedAuthAdminReducer,
+    passwordRecovery: persistedPasswordRecoveryReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
