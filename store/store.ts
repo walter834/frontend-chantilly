@@ -13,44 +13,63 @@ import {
   REGISTER,
 } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
+import sessionStorage from 'redux-persist/lib/storage/session';
 
 import authReducer from "./slices/authSlice";
 import localSlice from "./slices/localSlice";
 import chatbotReducer from './slices/chatbotSlice';
+import authAdminReducer from './slices/authAdminSlice';
+import passwordRecoveryReducer from './slices/passwordRecoverySlice';
 
-// ✅ AMPLIADA: Configuración de persistencia para auth (incluye más campos)
 const authPersistConfig = {
   key: 'auth',
   storage,
-  // ✅ Ahora persiste todo lo necesario para el perfil y navbar
-  whitelist: ['isAuthenticated', 'customer','initials'], // Persiste customer completo
+
+  whitelist: ['isAuthenticated', 'customer','initials'], 
 };
 
-// Configuración de persistencia para chatbot (mantienes tu configuración actual)
+const authAdminPersistConfig = {
+  key: 'authAdmin',
+  storage,
+  whitelist: ['isAuthenticated','user'],
+}
+
 const chatbotPersistConfig = {
   key: 'chatbot',
   storage,
-  whitelist: ['messages', 'unreadCount'], // solo persiste estos campos
+  whitelist: ['messages', 'unreadCount'], 
 };
 
-// Configuración de persistencia para locals (opcional, solo si quieres cache)
+
 const localPersistConfig = {
   key: 'local',
   storage,
-  whitelist: ['currentLocation'], // Solo persistir la ubicación actual
-  blacklist: ['loading', 'error'], // No persistir estados temporales
+  whitelist: ['currentLocation'], 
+  blacklist: ['loading', 'error'], 
+};
+
+const passwordRecoveryPersistConfig = {
+  key: 'passwordRecovery',
+  storage: sessionStorage,
+  whitelist: ['phone', 'code', 'isVerified'], 
+  blacklist: ['isInitialized'], 
 };
 
 // Crear los reducers persistidos
 const persistedAuthReducer = persistReducer(authPersistConfig, authReducer);
 const persistedChatbotReducer = persistReducer(chatbotPersistConfig, chatbotReducer);
 const persistedLocalReducer = persistReducer(localPersistConfig, localSlice);
+const persistedAuthAdminReducer = persistReducer(authAdminPersistConfig, authAdminReducer);
+const persistedPasswordRecoveryReducer = persistReducer(passwordRecoveryPersistConfig, passwordRecoveryReducer);
+
 
 export const store = configureStore({
   reducer: {
     auth: persistedAuthReducer,        
     chatbot: persistedChatbotReducer, 
-    local: persistedLocalReducer 
+    local: persistedLocalReducer,
+    authAdmin: persistedAuthAdminReducer,
+    passwordRecovery: persistedPasswordRecoveryReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

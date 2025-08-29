@@ -28,9 +28,9 @@ export default function LayoutShell({
     pathname.startsWith("/forgot-password") ||
     pathname.startsWith("/forgot-sms") ||
     pathname.startsWith("/reset-password") ||
-    pathname.startsWith("/reset");
-
-
+    pathname.startsWith("/reset") ||
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/admin/login")
 
   if (isClean) {
     return (

@@ -5,6 +5,7 @@ import { store } from "@/store/store";
 import { PersistGate } from "redux-persist/integration/react";
 import { persistor } from "@/store/store";
 import AuthCallbackHandler from "../AuthCallbackHandler";
+
 export function StoreProvider({ children }: { children: React.ReactNode }) {
   return (
     <Provider store={store}>
@@ -15,3 +16,5 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     </Provider>
   );
 }
+
+

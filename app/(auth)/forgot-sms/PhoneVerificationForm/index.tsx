@@ -22,6 +22,7 @@ import passwordRecoveryService from "@/service/password/passwordRecoveryService"
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { phoneVerificationSchema } from "@/lib/validators/reset-sms";
+import { usePasswordRecoveryRedux } from "@/hooks/usePasswordRecoveryRedux";
 
 type PhoneVerificationFormData = z.infer<typeof phoneVerificationSchema>;
 
@@ -39,6 +40,7 @@ export default function PhoneVerificationForm({
   const [successMessage, setSuccessMessage] = useState<string>("");
 
   const router = useRouter();
+  const { setPhone } = usePasswordRecoveryRedux();
 
   const form = useForm<PhoneVerificationFormData>({
     resolver: zodResolver(phoneVerificationSchema),
@@ -84,7 +86,8 @@ export default function PhoneVerificationForm({
   
       setSuccessMessage(response.message || "Código enviado correctamente");
   
-      sessionStorage.setItem("recovery_phone", data.phone);
+      // Guardar en el contexto para evitar parpadeo
+      setPhone(data.phone);
   
       router.push("/forgot-sms/verify-code");
   
@@ -203,7 +206,7 @@ export default function PhoneVerificationForm({
                 onClick={() => {
                   // Guardar un placeholder o pedir que ingrese el número primero
                   if (phoneNumber && phoneNumber.length >= 9) {
-                    sessionStorage.setItem("recovery_phone", phoneNumber);
+                    setPhone(phoneNumber);
                     router.push("/forgot-sms/verify-code");
                   } else {
                     setError("Primero ingresa tu número de teléfono");

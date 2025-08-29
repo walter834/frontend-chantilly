@@ -2,11 +2,62 @@
 import { useEffect } from "react";
 import "@n8n/chat/style.css";
 import { createChat } from "@n8n/chat";
+import { saveMessage } from "@/service/chat/chatService";
 
 export default function N8nChat() {
   useEffect(() => {
     let observer: MutationObserver | null = null;
     let titleProcessed = false;
+    let sessionId: string | null = null;
+
+    const getOrCreateSessionId = (): string => {
+      if (sessionId) return sessionId;
+
+      let existingSessionId = localStorage.getItem("n8n-chat-session-id");
+
+      if (!existingSessionId) {
+        existingSessionId = `session_${Date.now()}_${Math.random()
+          .toString(36)
+          .substr(2, 9)}`;
+        localStorage.setItem("n8n-chat-session-id", existingSessionId);
+      }
+      sessionId = existingSessionId;
+      return sessionId;
+    };
+
+    const sendUserMessage = async (message: string) => {
+      try {
+        const currentSessionId = getOrCreateSessionId();
+        console.log("🚀 Enviando mensaje del usuario:", message);
+
+        await saveMessage({
+          session_id: currentSessionId,
+          message: message,
+        });
+        console.log("✅ Mensaje guardado");
+      } catch (error) {
+        throw error;
+      }
+    };
+
+    // FUNCIÓN PARA CAPTURAR MENSAJES DEL USUARIO
+    const captureUserMessages = () => {
+      console.log("🔧 Buscando mensajes del usuario...");
+
+      const userMessages = document.querySelectorAll<HTMLElement>(
+        ".chat-message-from-user:not([data-captured])"
+      );
+
+      userMessages.forEach((msg: HTMLElement) => {
+        msg.setAttribute("data-captured", "true");
+
+        const messageText = msg.textContent?.trim();
+        if (messageText) {
+          console.log("👤 Mensaje encontrado:", messageText);
+          sendUserMessage(messageText);
+        }
+      });
+    };
 
     createChat({
       webhookUrl: process.env.NEXT_PUBLIC_CHATBOT_API_URL,
@@ -125,6 +176,16 @@ export default function N8nChat() {
                   shouldProcessMessages = true;
                 }
 
+                // Verificar mensajes del USUARIO
+                if (
+                  (element.classList &&
+                    element.classList.contains("chat-message-from-user")) ||
+                  (element.querySelector &&
+                    element.querySelector(".chat-message-from-user"))
+                ) {
+                  setTimeout(captureUserMessages, 100);
+                }
+
                 // Verificar título
                 if (
                   (element.classList &&
@@ -157,6 +218,7 @@ export default function N8nChat() {
       // Procesar contenido existente inmediatamente
       addBotAvatars();
       modifyTitle();
+      setTimeout(captureUserMessages,1000);
     };
 
     // Inicialización más rápida
