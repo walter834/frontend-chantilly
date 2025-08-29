@@ -51,7 +51,7 @@ export default function ThemedProductsSection() {
   const handlePageChange = (page: number) => {
     const params = new URLSearchParams(searchParams);
     params.set('tematica_page', page.toString());
-    router.push(`?${params.toString()}`);
+    router.push(`?${params.toString()}`, { scroll: false });
   };
 
   return (

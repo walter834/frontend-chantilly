@@ -11,6 +11,7 @@ export interface ApiBanner {
   title: string;
   description: string;
   image_url: string;
+  image_movil_url: string;
   link_url: string;
   status: boolean;
   display_order: number;

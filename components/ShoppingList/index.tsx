@@ -167,9 +167,9 @@ const ShoppingList = () => {
                                             <p className="text-black/60 text-sm mt-1 line-clamp-3">
                                                 Dedicatoria: {item.product.dedication || 'No especificado'}
                                             </p>
-                                            <p className="text-black/60 text-sm mt-1 line-clamp-3">
+                                            {/* <p className="text-black/60 text-sm mt-1 line-clamp-3">
                                                 Fecha de recojo: {item.product.pickupDate}
-                                            </p>
+                                            </p> */}
                                         </>
                                     ) : null}
                                 <p className="text-black/80 font-medium mt-2">S/ {item.price.toFixed(2)}</p>
