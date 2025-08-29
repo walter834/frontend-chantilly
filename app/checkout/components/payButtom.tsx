@@ -1,14 +1,72 @@
 "use client";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { CustomAlert } from "@/components/ui/custom-alert";
 import { ApiOrder } from "@/types/api";
 import { createNiubizSession } from "@/service/orderService";
-import { getCustomerById } from "@/service/customerService";
+import { DeliveryDateAlert } from "@/components/ui/delivery-date-alert";
 
 export default function PayButtom({ arrayOrder }: { arrayOrder: any }) {
     const currentSession = useRef<any>(null);
 
+    const [showDateAlert, setShowDateAlert] = useState(false);
+    const [deliveryInfo, setDeliveryInfo] = useState({
+        deadline: new Date(),
+        maxHours: 0,
+        products: [] as Array<{ name: string, hours: number, imageUrl?: string }>
+    });
+
+    function validateDate(maxHour: number): boolean {
+        const dateInput = document.getElementById('date') as HTMLInputElement;
+        if (!dateInput || !dateInput.value) {
+            CustomAlert('Por favor seleccione una fecha de entrega', 'error', 'bottom-right');
+            return false;
+        }
+
+        const selectedDate = new Date(dateInput.value);
+        const now = new Date();
+        
+        const deadline = new Date(now);
+        deadline.setHours(deadline.getHours() + maxHour);
+        
+        if (deadline.getHours() >= 18) {
+            deadline.setDate(deadline.getDate() + 1);
+            deadline.setHours(9, 0, 0, 0); 
+        }
+
+        if (selectedDate < deadline) {
+            const products = arrayOrder.items
+                .filter((item: any) => item.product?.hour)
+                .map((item: any) => ({
+                    name: item.product?.name || 'Producto sin nombre',
+                    hours: item.product?.hour,
+                    imageUrl: item.product?.image
+                }));
+
+            setDeliveryInfo({
+                deadline,
+                maxHours: maxHour,
+                products
+            });
+            setShowDateAlert(true);
+            return false;
+        }
+        return true;
+    }
+
     function validateData() {
+        console.log('arrayOrder.items', arrayOrder.items);
+
+        const maxHour = Math.max(
+            ...arrayOrder.items
+                .map((item: any) => item.product?.hour)
+                .filter((hour: any): hour is number => typeof hour === 'number')
+        ) || 0;
+        console.log('maxHour', maxHour);
+
+        if (maxHour > 0 && !validateDate(maxHour)) {
+            return false;
+        }
+
         switch (arrayOrder.voucher_type) {
             case 'FACTURA':
                 const rucDigits = String(arrayOrder?.billing_data?.ruc || '').replace(/\D/g, '');
@@ -74,6 +132,7 @@ export default function PayButtom({ arrayOrder }: { arrayOrder: any }) {
         const isValid = validateData();
         if (!isValid) return;
         const order = adaptFormatToOrder();
+        console.log('order items', order.items);
         if (!order.customer_id) {
             CustomAlert('Cliente inválido.', 'error', 'bottom-right');
             return;
@@ -89,7 +148,7 @@ export default function PayButtom({ arrayOrder }: { arrayOrder: any }) {
 
         try {
             await initSessionNiubiz(order);
-            
+
         } catch (err: any) {
             const data = err?.response?.data;
             let message = err?.message || 'Error al crear la orden';
@@ -99,7 +158,7 @@ export default function PayButtom({ arrayOrder }: { arrayOrder: any }) {
     }
 
     async function initSessionNiubiz(order: any) {
-        const session = await createNiubizSession(order);        
+        const session = await createNiubizSession(order);
         if (!session) {
             CustomAlert('No se pudo crear la sesión de niubiz.', 'error', 'bottom-right');
             return;
@@ -116,7 +175,7 @@ export default function PayButtom({ arrayOrder }: { arrayOrder: any }) {
             currency: 'PEN',
             customer_id: session.data.order_data.customer_id,
             merchantLogo: session.data.merchant_logo,
-            orderData:  session.data.order_data,
+            orderData: session.data.order_data,
         };
 
         localStorage.setItem('temporal-order', JSON.stringify(session.data.order_data));
@@ -127,7 +186,7 @@ export default function PayButtom({ arrayOrder }: { arrayOrder: any }) {
     }
 
     async function showNiubizPaymentForm(paymentData: any) {
-        try { sessionStorage.setItem('fromCheckout', '1'); } catch {}
+        try { sessionStorage.setItem('fromCheckout', '1'); } catch { }
         console.log('data', paymentData)
         VisanetCheckout.configure({
             sessiontoken: paymentData.sessionToken,
@@ -145,8 +204,18 @@ export default function PayButtom({ arrayOrder }: { arrayOrder: any }) {
     }
 
     return (
-        <button type="button" onClick={handlePayOrder} className='bg-[#c41c1a] text-white py-2 w-full rounded cursor-pointer'>
-            PAGAR
-        </button>
+        <>
+            <button type="button" onClick={handlePayOrder} className='bg-[#c41c1a] text-white py-2 w-full rounded cursor-pointer'>
+                PAGAR
+            </button>
+
+            <DeliveryDateAlert
+                open={showDateAlert}
+                onClose={() => setShowDateAlert(false)}
+                deadline={deliveryInfo.deadline}
+                maxHours={deliveryInfo.maxHours}
+                products={deliveryInfo.products}
+            />
+        </>
     );
 }

@@ -2,11 +2,10 @@
 import { toast } from 'sonner';
 import { FaCircleCheck, FaCircleExclamation, FaCircleInfo, FaTriangleExclamation } from 'react-icons/fa6';
 
-// Definimos la paleta de colores de la marca "La Casa del Chantilly"
 const brandColors = {
-  red: '#d62828', // Rojo oscuro de la marca
-  yellow: '#f4a261', // Amarillo/naranja mostaza de la marca
-  white: '#fefefe', // Blanco
+  red: '#d62828',
+  yellow: '#f4a261',
+  white: '#fefefe',
 };
 
 const alertConfig = {
@@ -18,12 +17,12 @@ const alertConfig = {
   warning: {
     icon: FaTriangleExclamation,
     textColor: `text-[${brandColors.yellow}]`,
-    bgColor: `bg-yellow-50`, // Usamos un tono más claro del amarillo para el fondo
+    bgColor: `bg-yellow-50`,
   },
   error: {
     icon: FaCircleExclamation,
     textColor: `text-[${brandColors.red}]`,
-    bgColor: `bg-red-50`, // Usamos un tono más claro del rojo para el fondo
+    bgColor: `bg-red-50`,
   },
   info: {
     icon: FaCircleInfo,
