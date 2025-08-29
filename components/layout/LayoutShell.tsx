@@ -74,7 +74,9 @@ export default function LayoutShell({
       </OnlyHome>
       <Footer />
 
+
       {/* ChatWidget con z-index más bajo */}
+
       <div className="relative z-30">
         <ChatWidget />
       </div>

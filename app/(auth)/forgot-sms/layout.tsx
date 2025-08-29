@@ -1,16 +1,17 @@
 //layout forgot-sms
 "use client";
 
-import { usePasswordRecoveryState } from "@/hooks/usePasswordRecoveryState";
+import { usePasswordRecoveryRedux } from "@/hooks/usePasswordRecoveryRedux";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import PasswordRecoveryInitializer from "@/components/PasswordRecoveryInitializer";
 
 export default function ForgotSmsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { state, isInitialized } = usePasswordRecoveryState();
+  const { state, isInitialized } = usePasswordRecoveryRedux();
   const router = useRouter();
 
   // Verificar que el usuario tenga acceso a las páginas del flujo
@@ -34,7 +35,9 @@ export default function ForgotSmsLayout({
 
   return (
     <div className="min-h-screen bg-gradient-to-br">
-      {children}
+      <PasswordRecoveryInitializer>
+        {children}
+      </PasswordRecoveryInitializer>
     </div>
   );
 }

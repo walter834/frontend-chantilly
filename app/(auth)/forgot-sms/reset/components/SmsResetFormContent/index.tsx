@@ -19,7 +19,7 @@ import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import passwordRecoveryService from "@/service/password/passwordRecoveryService";
 import { SmsResetPasswordSchema } from "@/lib/validators/reset-sms";
-import { usePasswordRecoveryState } from "@/hooks/usePasswordRecoveryState";
+import { usePasswordRecoveryRedux } from "@/hooks/usePasswordRecoveryRedux";
 
 type SmsResetValues = z.infer<typeof SmsResetPasswordSchema>;
 
@@ -33,7 +33,7 @@ export default function SmsResetFormContent({
   code,
 }: SmsResetFormContentProps) {
   const router = useRouter();
-  const { clearState } = usePasswordRecoveryState();
+  const { clearState } = usePasswordRecoveryRedux();
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<SmsResetValues>({
