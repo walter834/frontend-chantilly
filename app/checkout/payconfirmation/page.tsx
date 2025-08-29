@@ -2,11 +2,13 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Header from "../components/header";
-import { processNiubizPayment } from "@/service/orderService";
+import { processNiubizPayment, dataPayment } from "@/service/orderService";
 import { parseNiubizDate, formatDate } from "@/lib/utils";
 import Loading from '../components/loading';
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
+import { getCustomerById } from "@/service/customerService";
+import { getOrderById } from "@/service/orderService";
 
 interface PaymentSummary {
   orderNumber?: string | number;
@@ -37,11 +39,12 @@ export default function payconfirmation() {
     name: string;
   } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [orderItems, setOrderItems] = useState<any[]>([]);
   const searchParams = useSearchParams();
   const router = useRouter();
   const processedRef = useRef(false);
 
-  useEffect(() => {
+/*   useEffect(() => {
     if (typeof window === 'undefined') return;
     const hasParams = Boolean(
       searchParams.get("data") ||
@@ -66,100 +69,75 @@ export default function payconfirmation() {
         router.replace('/');
       }
     } catch {}
-  }, [router]);
+  }, [router]); */
+
+  const hasFetched = useRef(false);
 
   useEffect(() => {
-    try {
-      if (processedRef.current) return;
-      processedRef.current = true;
-      setLoading(true);
-      console.log("searchParams", searchParams)
-      const dataParam = searchParams.get("data");
-      const txParam = searchParams.get("transactionToken") || searchParams.get("transactiontoken") || searchParams.get("token");
-      let payload: any | null = null;
-
-      if (dataParam) {
-        try {
-          const decoded = (() => { try { return decodeURIComponent(dataParam); } catch { return dataParam; } })();
-          const base = JSON.parse(decoded);
-
-          let products: Array<{ name: string; detail?: string }> | undefined;
-          if (Array.isArray(base.items)) {
-            products = base.items.map((it: any) => {
-              const variantName = it?.product_variant?.description || it?.product_variant?.name;
-              const productName = it?.product?.short_description || it?.product?.large_description || variantName || "Producto";
-              const detailParts: string[] = [];
-              if (it?.product_variant?.portions) detailParts.push(String(it.product_variant.portions));
-              if (it?.product_variant?.size_portion) detailParts.push(String(it.product_variant.size_portion));
-              if (it?.dedication_text) detailParts.push(`Dedicatoria: ${it.dedication_text}`);
-              if (it?.delivery_date) detailParts.push(`Entrega: ${it.delivery_date}`);
-              const detail = detailParts.join(" · ");
-              return { name: productName, detail };
-            });
-          }
-
-          payload = {
-            ...base,
-            transactionToken: txParam || base.transactionToken,
-            products,
-          };
-          localStorage.setItem("lastPaymentResult", JSON.stringify(payload));
-          setSummary(payload);
-        } catch (e) {
-          console.warn("No se pudo parsear 'data' del query param", e);
-        }
-      }
-      if (!payload) {
-        const raw = localStorage.getItem("lastPaymentResult");
-
-        if (raw) {
-          try { payload = JSON.parse(raw); } catch {}
-        }
-        if (payload) setSummary(payload);
-      }
-
-      if (!payload) {
-        setLoading(false);
-        return;
-      }
-
-      (async () => {
-        try {
-          const purchaseNumber = String(payload.purchaseNumber || payload.purchasenumber || payload.purchase_number || "");
-          const amount = Number(payload.amount);
-          const tokenId = payload.transactionToken || payload.tokenId;
-
-          if (!tokenId) {
-            setPayment({
-              description: "Token de transacción no recibido",
-              amount,
-              currency: payload.currency || "PEN",
-              success: false,
-              order: purchaseNumber,
-              date: new Date(),
-              card: "-",
-              brand: "-",
-              name: payload.name || "",
-            });
-            return;
-          }
-          console.log("payload", payload)
-
-          const response = await processNiubizPayment({ tokenId, amount, purchaseNumber, order_data: payload.orderData });
-          const data = { response: response.data, name: payload.name, success: response.success };
-          convertionFormatData(data);
-          localStorage.setItem('chantilly-cart', '');
-
-        } catch (e) {
-          console.log("error", e);
-        } finally {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
+    
+    const processPayment = async () => {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        
+        if (!token) {
+          console.error("No se encontró el token en la URL");
           setLoading(false);
+          return;
         }
-      })();
-    } catch {
-      setLoading(false);
-    }
-  }, [searchParams]);
+
+        const respondeData = await dataPayment(token);
+        console.log("dataPayment", respondeData);
+
+        if (!respondeData?.data) {
+          throw new Error("Datos de pago inválidos");
+        }
+
+        const newOrder = JSON.parse(localStorage.getItem('temporal-order') || '{}');
+        console.log("newOrder", newOrder);
+        
+        if (!newOrder?.customer_id) {
+          throw new Error("No se pudo recuperar la información de la orden");
+        }
+
+        const response = await processNiubizPayment({ 
+          tokenId: respondeData.data.tokenId, 
+          amount: respondeData.data.amount, 
+          purchaseNumber: respondeData.data.purchaseNumber, 
+          order_data: newOrder 
+        });
+        
+        console.log("response", response);
+        
+        const customer = await getCustomerById(newOrder.customer_id);
+        const name = `${customer?.name || ''} ${customer?.lastname || ''}`.trim();
+
+        const order = await getOrderById(response.data.purchase_number);
+        console.log("getOrder", order);
+        if (order?.orders?.[0]?.items) {
+          setOrderItems(order.orders[0].items);
+        }
+        const data = { 
+          response: response.data, 
+          name: name || 'Cliente', 
+          success: response.success 
+        };
+        
+        convertionFormatData(data);
+        localStorage.setItem('chantilly-cart', '');
+        localStorage.removeItem('temporal-order');
+        setLoading(false);
+        
+      } catch (e) {
+        console.error("Error al procesar el pago:", e);
+        setLoading(false);
+      }
+    };
+
+    processPayment();
+  }, []);
 
   function convertionFormatData(data: any) {
     console.log("data", data)
@@ -176,18 +154,19 @@ export default function payconfirmation() {
     };
     console.log("mapped", mapped)
     setPayment(mapped);
+    setSummary(mapped);
     return mapped;
   }
 
   return (
     <>
-    {loading && <Loading text="Procesando pago..." />}
+      {loading && <Loading text="Procesando pago..." />}
       <Header />
       <div className="max-w-4xl mx-auto px-4 py-8">
         <h1 className="text-2xl md:text-3xl font-semibold text-center mb-6">Resumen de Transacción</h1>
         {summary ? (
           <div className="bg-white shadow rounded overflow-hidden">
-            <div className="px-4 py-3 border-b flex items-center justify-between">
+            <div className="px-4 py-3 border-b flex items-center justify-center">
               <span className={`text-sm font-medium px-3 py-1 rounded ${payment?.success ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
                 {payment?.success ? payment?.description : payment?.description}
               </span>
@@ -232,35 +211,57 @@ export default function payconfirmation() {
               </tbody>
             </table>
 
-            {Array.isArray(summary?.products) && summary!.products.length > 0 && (
-              <div className="px-4 py-3 border-t">
-                <div className="font-medium mb-2">Productos</div>
-                <ul className="list-disc ml-6 space-y-1">
-                  {summary!.products.map((p: any, i: number) => (
-                    <li key={i}>
-                      <span className="font-medium">{p.name}</span>
-                      {p.detail ? <span className="text-gray-600"> — {p.detail}</span> : null}
-                    </li>
+            {orderItems.length > 0 && (
+              <div className="p-4 border-t">
+                <h3 className="text-lg font-medium text-gray-900 mb-4">Productos</h3>
+                <div className="space-y-4">
+                  {orderItems.map((item, index) => (
+                    <div key={index} className="flex items-start p-4 border rounded-lg">
+                      {item.image_url && (
+                        <img 
+                          src={item.image_url} 
+                          alt={item.product?.short_description || item.product_variant?.description} 
+                          className="w-16 h-16 object-cover rounded"
+                        />
+                      )}
+                      <div className="ml-4 flex-1">
+                        <h4 className="text-sm font-medium text-gray-900">
+                          {item.product?.short_description || item.product_variant?.description}
+                        </h4>
+                        <p className="text-sm text-gray-500">
+                          Cantidad: {item.quantity}
+                        </p>
+                        {item.dedication_text && (
+                          <p className="text-sm text-gray-500 mt-1">
+                            <span className="font-medium">Dedicatoria:</span> {item.dedication_text}
+                          </p>
+                        )}
+                      </div>
+                      <div className="text-sm font-medium text-gray-900">
+                        S/ {parseFloat(item.subtotal).toFixed(2)}
+                      </div>
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
             )}
           </div>
         ) : (
-          <div className="text-center text-gray-600">No hay información de pago disponible.</div>
+          <div className="text-center py-8">
+            <p>No se encontraron detalles de la transacción</p>
+          </div>
         )}
-
-        <div className="flex flex-wrap gap-3 mt-6 justify-center">
-          <button onClick={() => window.print()} className="bg-[#c41c1a] hover:opacity-90 text-white px-4 py-2 rounded cursor-pointer">
-            Imprimir
-          </button>
-          <Link href="/" className="bg-[#c41c1a] hover:opacity-90 text-white px-4 py-2 rounded">
-            Seguir comprando
-          </Link>
-          <Link href={`${process.env.NEXT_PUBLIC_BASE_URL}/my-orders`} className="bg-[#c41c1a] hover:opacity-90 text-white px-4 py-2 rounded">
-            Ir a mis compras
-          </Link>
-        </div>
+      </div>
+      <div className="flex flex-wrap gap-3 mt-6 justify-center">
+        <button onClick={() => window.print()} className="bg-[#c41c1a] hover:opacity-90 text-white px-4 py-2 rounded cursor-pointer">
+          Imprimir
+        </button>
+        <Link href="/" className="bg-[#c41c1a] hover:opacity-90 text-white px-4 py-2 rounded">
+          Seguir comprando
+        </Link>
+        <Link href={`${process.env.NEXT_PUBLIC_BASE_URL}/my-orders`} className="bg-[#c41c1a] hover:opacity-90 text-white px-4 py-2 rounded">
+          Ir a mis compras
+        </Link>
       </div>
     </>
   );

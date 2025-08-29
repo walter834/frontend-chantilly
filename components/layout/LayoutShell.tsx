@@ -42,44 +42,35 @@ export default function LayoutShell({
   }
 
   return (
-    <>
-      <div className="relative z-50">
-        <Navbar />
-      </div>
-
-      {/* Header */}
-      <div className="relative z-40">
-        <Header />
-      </div>
-
-      {/* Main content */}
-      <main className="flex-1 relative z-10">{children}</main>
-
-      {/* Toaster con z-index muy alto para notificaciones */}
-      <div className="relative z-[9999]">
-        <Toaster />
-      </div>
-
-      {/* Otros componentes */}
-      <CustomOrders />
-      <OnlyHome>
-        <ThemedProductsSection />
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center">
-          Locales más cercanos a tu ubicación
-        </h1>
-        <p className="text-center mt-4 text-muted-foreground text-xl">
-          Conoce un poco más de nuestros locales a nivel nacional
-        </p>
-        <LocalCardGrid limit={3} />
-      </OnlyHome>
-      <Footer />
-
-
-      {/* ChatWidget con z-index más bajo */}
-
-      <div className="relative z-30">
+    <div className="min-h-screen flex flex-col">
+      <header className="sticky top-0 z-50 w-full ">
+      <Navbar />
+      </header>
+      <Header />
+      <main className="flex-grow">
+        {children}
+        <CustomOrders />
+        <OnlyHome>
+          <ThemedProductsSection />
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center">
+            Locales más cercanos a tu ubicación
+          </h1>
+          <p className="text-center mt-4 text-muted-foreground text-xl">
+            Conoce un poco más de nuestros locales a nivel nacional
+          </p>
+          <LocalCardGrid limit={3} />
+        </OnlyHome>
+      </main>
+      
+      <footer>
+        <Footer />
+      </footer>
+      
+      <div className="fixed bottom-4 right-4 z-50">
         <ChatWidget />
       </div>
-    </>
+      
+      <Toaster position="top-center" />
+    </div>
   );
 }

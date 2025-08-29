@@ -16,10 +16,11 @@ export const API_ROUTES = {
   // Legacy
   INIT_SESSION_NIUBIZ: "/session",
   // New Niubiz flow
-  NIUBIZ_CONFIG: "/config",
-  NIUBIZ_SESSION: "/session",
-  NIUBIZ_PAY: "/pay",
-  BANNER: "/banner",
+  NIUBIZ_CONFIG: '/config',
+  NIUBIZ_SESSION: '/session',
+  NIUBIZ_PAY: '/pay',
+  BANNER: '/banner',
+  PAYMENT_DATA: '/payment-data',
 } as const;
 
 const api = axios.create({

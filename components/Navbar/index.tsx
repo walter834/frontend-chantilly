@@ -13,7 +13,8 @@ export default function Navbar() {
   
   return (
     //fix
-    <header className="sticky overflow-x-hidden bg-[#c41c1a] backdrop-blur-3xl text-white top-0 z-50 flex justify-between items-center px-5 lg:px-10 py-4 w-full lg:min-w-[1024px] gap-12">
+    <header className="w-full bg-[#c41c1a] backdrop-blur-3xl text-white ">
+    <div className="mx-auto flex justify-between items-center px-5 lg:px-10 py-4 gap-12">
       <div className="hidden xl:flex">
         <Link href="/">
           <Image
@@ -46,6 +47,7 @@ export default function Navbar() {
           <Shopping showCount={true} isPrimary={false} />
         </div>
       </div>
-    </header>
+    </div>
+  </header>
   );
 }

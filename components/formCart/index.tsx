@@ -133,6 +133,7 @@ const FormCart: React.FC<FormCartProps> = ({
           } : {}),
           dedication: dedication,
           pickupDate: pickupDate,
+          hour: hour,
         },
         quantity: 1,
         price: parseFloat(productVariant?.price || initialPrice.toString())

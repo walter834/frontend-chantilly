@@ -358,6 +358,21 @@ export default function Contact() {
                                     <label className="ml-2" htmlFor="deliveryType">Recoger <b>GRATIS</b> en tienda</label>
                                 </div>
                             </div>
+                            <div className='border-b-2 border-[#c41c1a] pt-3'>
+                                <h2 className='text-[18px] font-bold text-[#c41c1a]'>FECHA DE ENTREGA</h2>
+                            </div>
+                            <div className='flex flex-col sm:flex-row sm:justify-around items-start sm:items-center gap-3 sm:gap-5'>
+                                <div className='pb-5 pt-2 text-[15px] w-full'>
+                                    <input
+                                        type="date"
+                                        name="date"
+                                        id="date"
+                                        className="w-full py-2 pl-2 pr-2 border-b-2 border-[#c41c1a]"
+                                        min={new Date().toISOString().split('T')[0]}
+                                        required
+                                    />
+                                </div>
+                            </div>
                             <div className='pb-3'>
                                 <h2 className='text-[18px] font-bold text-black'>Elige el local más cercano a ti:</h2>
                             </div>
@@ -440,7 +455,9 @@ export default function Contact() {
                             </div>
                             {listShopping.map((item: any) => (
                                 <div key={item?.id} className='grid grid-cols-5 gap-2 p-3 border-b border-gray-200'>
-                                    <div className='border rounded-md w-16 h-16 md:w-24 md:h-24 object-cover mx-auto'><Image src={item?.product?.image} width={100} height={100} alt={item?.product?.name} /></div>
+                                    <div>
+                                        <Image src={item?.product?.image} width={100} height={100} alt={item?.product?.name} />
+                                    </div>
                                     <div>{item?.product?.name}
                                         <div className='mt-1 text-xs text-gray-700 space-y-0.5'>
                                             {item?.product?.portion && (
