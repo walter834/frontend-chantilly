@@ -13,7 +13,6 @@ import {
 import { useRouter } from "next/navigation";
 import passwordRecoveryService from "@/service/password/passwordRecoveryService";
 import { usePasswordRecoveryRedux } from "@/hooks/usePasswordRecoveryRedux";
-import PasswordRecoveryLoading from "@/components/PasswordRecoveryLoading";
 
 interface VerifyRecoveryCodeContentProps {
   phone: string;
@@ -47,14 +46,12 @@ function VerifyRecoveryCodeContent({ phone }: VerifyRecoveryCodeContentProps) {
       setError("");
       setSuccess("");
   
-      const response = await passwordRecoveryService.verifyRecoveryCode({
+      await passwordRecoveryService.verifyRecoveryCode({
         phone: phone,
         code: otpCode,
       });
-  
-      setSuccess(response.message || "Código verificado correctamente");
-      
-      // Guardar en el contexto para evitar parpadeo
+
+      // Guardar en el contexto y navegar de inmediato para evitar parpadeo
       setCode(otpCode);
       setVerified(true);
   
@@ -265,68 +262,12 @@ function VerifyRecoveryCodeContent({ phone }: VerifyRecoveryCodeContentProps) {
     </div>
   );
 }
-
-
-
-// Skeleton que replica exactamente la estructura del verify code
-const VerifyCodeSkeleton = () => (
-  <div className="min-h-screen bg-gradient-to-br flex items-center justify-center p-4">
-    <div className="w-full max-w-md bg-white backdrop-blur-sm rounded-2xl p-8 shadow-2xl border">
-      {/* Back button skeleton */}
-      <div className="flex justify-start mb-6">
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-gray-300 rounded animate-pulse"></div>
-          <div className="w-24 h-4 bg-gray-300 rounded animate-pulse"></div>
-        </div>
-      </div>
-
-      {/* Logo skeleton */}
-      <div className="flex justify-start mb-8">
-        <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center">
-          <span className="text-yellow-300 font-bold text-xl">C</span>
-        </div>
-      </div>
-
-      {/* Title and description skeleton */}
-      <div className="mb-8">
-        <div className="h-8 bg-gray-200 rounded mb-3 w-48 animate-pulse"></div>
-        <div className="space-y-2">
-          <div className="h-4 bg-gray-200 rounded w-full animate-pulse"></div>
-          <div className="h-4 bg-gray-200 rounded w-32 animate-pulse"></div>
-        </div>
-      </div>
-
-      {/* OTP inputs skeleton */}
-      <div className="flex gap-3 mb-8 justify-center">
-        {[...Array(6)].map((_, index) => (
-          <div
-            key={index}
-            className="w-12 h-12 border border-slate-600/10 rounded-xl bg-gray-100 animate-pulse"
-          ></div>
-        ))}
-      </div>
-
-      {/* Verify button skeleton */}
-      <div className="w-full h-14 bg-red-300 rounded-xl mb-6 animate-pulse"></div>
-
-      {/* Resend text skeleton */}
-      <div className="text-center">
-        <div className="h-4 bg-gray-200 rounded w-40 mx-auto animate-pulse"></div>
-      </div>
-    </div>
-  </div>
-);
-
 export default function VerifyRecoveryCode() {
   const { state } = usePasswordRecoveryRedux();
 
   return (
-    <PasswordRecoveryLoading fallback={<VerifyCodeSkeleton />}>
-      {state.phone ? (
-        <VerifyRecoveryCodeContent phone={state.phone} />
-      ) : (
-        <VerifyCodeSkeleton />
-      )}
-    </PasswordRecoveryLoading>
+    state.phone ? (
+      <VerifyRecoveryCodeContent phone={state.phone} />
+    ) : null
   );
 }

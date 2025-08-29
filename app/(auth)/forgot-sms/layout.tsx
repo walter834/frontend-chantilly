@@ -4,7 +4,6 @@
 import { usePasswordRecoveryRedux } from "@/hooks/usePasswordRecoveryRedux";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import PasswordRecoveryInitializer from "@/components/PasswordRecoveryInitializer";
 
 export default function ForgotSmsLayout({
   children,
@@ -35,9 +34,7 @@ export default function ForgotSmsLayout({
 
   return (
     <div className="min-h-screen bg-gradient-to-br">
-      <PasswordRecoveryInitializer>
-        {children}
-      </PasswordRecoveryInitializer>
+      {children}
     </div>
   );
 }

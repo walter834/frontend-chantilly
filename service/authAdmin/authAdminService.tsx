@@ -44,5 +44,7 @@ export const logoutAdmin = async () => {
     return response.data;
   } catch (error) {
     throw error;
+  }finally{
+    store.dispatch(logoutAdmin());
   }
 };

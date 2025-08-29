@@ -45,7 +45,7 @@ export default function HeroBanner({ slides , className = '', mobileSlides }: { 
           className="custom-pagination-swiper border-b-[10px] border-yellow-500"
         >
           {slides.map((slide) => (
-            slide.image_movil_url === null && (
+            slide.image_movil_url !== null && (
             <SwiperSlide key={slide.id}>
               <img
                 src={slide.image_url}

@@ -25,6 +25,9 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import Image from "next/image";
+import { logoutAdmin } from "@/service/authAdmin/authAdminService";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export function NavUser({
   user,
@@ -36,6 +39,16 @@ export function NavUser({
   };
 }) {
   const { isMobile } = useSidebar();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await logoutAdmin();
+      router.push("/admin")
+    } catch (error) {
+      toast.error("Erro");
+    }
+  };
 
   return (
     <SidebarMenu>
@@ -75,7 +88,7 @@ export function NavUser({
             </DropdownMenuLabel>
 
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
               <LogOut />
               Cerrar sesión
             </DropdownMenuItem>

@@ -13,6 +13,7 @@ import {
   REGISTER,
 } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
+import sessionStorage from 'redux-persist/lib/storage/session';
 
 import authReducer from "./slices/authSlice";
 import localSlice from "./slices/localSlice";
@@ -49,7 +50,7 @@ const localPersistConfig = {
 
 const passwordRecoveryPersistConfig = {
   key: 'passwordRecovery',
-  storage,
+  storage: sessionStorage,
   whitelist: ['phone', 'code', 'isVerified'], 
   blacklist: ['isInitialized'], 
 };
