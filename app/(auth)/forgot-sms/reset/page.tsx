@@ -1,29 +1,22 @@
 // reset/page.tsx
 "use client";
 import SmsResetFormContent from "./components/SmsResetFormContent";
-import { useRouter, useSearchParams } from "next/navigation";
-import {
-  usePasswordRecoveryData,
-  useClearRecoveryData,
-} from "@/hooks/useSessionData";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { usePasswordRecoveryRedux } from "@/hooks/usePasswordRecoveryRedux";
+import { useEffect } from "react";
 import FormSkeleton from "./components/FormSkeleton";
+import PasswordRecoveryLoading from "@/components/PasswordRecoveryLoading";
 
 export default function SmsResetForm() {
-  const router = useRouter();
-  const { phone, code, isValid, isLoading } = usePasswordRecoveryData();
-  const clearRecoveryData = useClearRecoveryData();
+  const { state } = usePasswordRecoveryRedux();
 
-  useEffect(() => {
-    if (!isLoading && !isValid) {
-      clearRecoveryData();
-      router.replace("/forgot-sms");
-    }
-  }, [isLoading, isValid, router, clearRecoveryData]);
-
-  if (isLoading || !isValid) {
-    return <FormSkeleton />;
-  }
-
-  return <SmsResetFormContent phone={phone} code={code} />;
+  return (
+    <PasswordRecoveryLoading fallback={<FormSkeleton />}>
+      {state.phone && state.code && state.isVerified ? (
+        <SmsResetFormContent phone={state.phone} code={state.code} />
+      ) : (
+        <FormSkeleton />
+      )}
+    </PasswordRecoveryLoading>
+  );
 }

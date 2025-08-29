@@ -2,7 +2,7 @@
 "use client";
 
 import type React from "react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   Lock,
   Loader2,
@@ -10,8 +10,10 @@ import {
   AlertCircle,
   ArrowLeft,
 } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import passwordRecoveryService from "@/service/password/passwordRecoveryService";
+import { usePasswordRecoveryRedux } from "@/hooks/usePasswordRecoveryRedux";
+import PasswordRecoveryLoading from "@/components/PasswordRecoveryLoading";
 
 interface VerifyRecoveryCodeContentProps {
   phone: string;
@@ -19,6 +21,7 @@ interface VerifyRecoveryCodeContentProps {
 
 function VerifyRecoveryCodeContent({ phone }: VerifyRecoveryCodeContentProps) {
   const router = useRouter();
+  const { setCode, setVerified, clearState } = usePasswordRecoveryRedux();
   const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
   const [countdown, setCountdown] = useState<number>(60);
   const [isVerifying, setIsVerifying] = useState<boolean>(false);
@@ -35,13 +38,47 @@ function VerifyRecoveryCodeContent({ phone }: VerifyRecoveryCodeContentProps) {
     }
   }, [countdown]);
 
+  const handleVerifyCode = useCallback(async (): Promise<void> => {
+    const otpCode = otp.join("");
+    if (otpCode.length !== 6 || !phone) return;
+  
+    try {
+      setIsVerifying(true);
+      setError("");
+      setSuccess("");
+  
+      const response = await passwordRecoveryService.verifyRecoveryCode({
+        phone: phone,
+        code: otpCode,
+      });
+  
+      setSuccess(response.message || "Código verificado correctamente");
+      
+      // Guardar en el contexto para evitar parpadeo
+      setCode(otpCode);
+      setVerified(true);
+  
+      // Navegar sin exponer datos sensibles en la URL
+      router.push("/forgot-sms/reset");
+      
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Código inválido o expirado";
+      setError(errorMessage);
+      setOtp(["", "", "", "", "", ""]);
+      inputRefs.current[0]?.focus();
+    } finally {
+      setIsVerifying(false);
+    }
+  }, [otp, phone, setCode, setVerified, router]);
+
   // Auto-verificar cuando se completen los 6 dígitos
   useEffect(() => {
     const otpCode = otp.join("");
     if (otpCode.length === 6 && !isVerifying && phone) {
       handleVerifyCode();
     }
-  }, [otp, isVerifying, phone]);
+  }, [otp, isVerifying, phone, handleVerifyCode]);
 
   const handleInputChange = (index: number, value: string): void => {
     if (!/^\d*$/.test(value)) return;
@@ -67,38 +104,7 @@ function VerifyRecoveryCodeContent({ phone }: VerifyRecoveryCodeContentProps) {
     }
   };
 
-  const handleVerifyCode = async (): Promise<void> => {
-    const otpCode = otp.join("");
-    if (otpCode.length !== 6 || !phone) return;
-  
-    try {
-      setIsVerifying(true);
-      setError("");
-      setSuccess("");
-  
-      const response = await passwordRecoveryService.verifyRecoveryCode({
-        phone: phone,
-        code: otpCode,
-      });
-  
-      setSuccess(response.message || "Código verificado correctamente");
-      
-      // Guardar el código en sessionStorage
-      sessionStorage.setItem("recovery_code", otpCode);
-  
-      // Navegar sin exponer datos sensibles en la URL
-      router.push("/forgot-sms/reset");
-      
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Código inválido o expirado";
-      setError(errorMessage);
-      setOtp(["", "", "", "", "", ""]);
-      inputRefs.current[0]?.focus();
-    } finally {
-      setIsVerifying(false);
-    }
-  };
+
 
   const handleResendCode = async (): Promise<void> => {
     if (countdown > 0 || !phone) return;
@@ -122,8 +128,8 @@ function VerifyRecoveryCodeContent({ phone }: VerifyRecoveryCodeContentProps) {
   };
 
   const handleGoBack = () => {
-    sessionStorage.removeItem("recovery_phone");
-    sessionStorage.removeItem("recovery_code");
+    // Limpiar el contexto
+    clearState();
     router.push("/forgot-sms");
   };
 
@@ -260,25 +266,7 @@ function VerifyRecoveryCodeContent({ phone }: VerifyRecoveryCodeContentProps) {
   );
 }
 
-// Hook personalizado para manejar el teléfono
-function useRecoveryPhone() {
-  const phoneRef = useRef<string>("");
-  const [isHydrated, setIsHydrated] = useState(false);
 
-  useEffect(() => {
-    if (!isHydrated && typeof window !== "undefined") {
-      const recoveryPhone = sessionStorage.getItem("recovery_phone");
-      phoneRef.current = recoveryPhone || "";
-      setIsHydrated(true);
-    }
-  }, [isHydrated]);
-
-  return {
-    phone: phoneRef.current,
-    isValid: isHydrated && phoneRef.current !== "",
-    isLoading: !isHydrated
-  };
-}
 
 // Skeleton que replica exactamente la estructura del verify code
 const VerifyCodeSkeleton = () => (
@@ -330,39 +318,15 @@ const VerifyCodeSkeleton = () => (
 );
 
 export default function VerifyRecoveryCode() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const urlPhone = searchParams.get('phone');
-  
-  // Usar el hook personalizado para obtener el teléfono de sessionStorage
-  const { phone: storedPhone, isValid, isLoading } = useRecoveryPhone();
-  
-  // Priorizar el teléfono de la URL sobre el almacenado
-  const phone = urlPhone || storedPhone;
-  
-  // Sincronizar con sessionStorage si viene de URL
-  useEffect(() => {
-    if (urlPhone) {
-      sessionStorage.setItem("recovery_phone", urlPhone);
-    }
-  }, [urlPhone]);
+  const { state } = usePasswordRecoveryRedux();
 
-  // Redirigir solo después de la hidratación si no hay datos válidos
-  useEffect(() => {
-    if (!isLoading && !urlPhone && !isValid) {
-      router.replace("/forgot-sms");
-    }
-  }, [isLoading, isValid, router, urlPhone]);
-
-  // Mostrar skeleton durante la hidratación o mientras redirige
-  if (isLoading && !urlPhone) {
-    return <VerifyCodeSkeleton />;
-  }
-
-  if (!phone) {
-    router.replace("/forgot-sms");
-    return <VerifyCodeSkeleton />;
-  }
-
-  return <VerifyRecoveryCodeContent phone={phone} />;
+  return (
+    <PasswordRecoveryLoading fallback={<VerifyCodeSkeleton />}>
+      {state.phone ? (
+        <VerifyRecoveryCodeContent phone={state.phone} />
+      ) : (
+        <VerifyCodeSkeleton />
+      )}
+    </PasswordRecoveryLoading>
+  );
 }
