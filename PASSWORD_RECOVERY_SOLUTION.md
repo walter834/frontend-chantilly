@@ -79,5 +79,6 @@ const { state, setPhone, setCode, clearState } = usePasswordRecoveryRedux();
 2. **Seguridad**: Los datos sensibles no se exponen en URLs
 3. **Performance**: Redux-persist optimiza la hidratación
 4. **Testing**: La solución es fácil de testear
+5. **Simplicidad**: Se removió useSearchParams para evitar conflictos y mejorar la seguridad
 
 Esta solución elimina completamente el flicker y proporciona una experiencia de usuario mucho más fluida.

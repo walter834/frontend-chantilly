@@ -10,7 +10,7 @@ import {
   AlertCircle,
   ArrowLeft,
 } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import passwordRecoveryService from "@/service/password/passwordRecoveryService";
 import { usePasswordRecoveryRedux } from "@/hooks/usePasswordRecoveryRedux";
 import PasswordRecoveryLoading from "@/components/PasswordRecoveryLoading";
@@ -318,24 +318,12 @@ const VerifyCodeSkeleton = () => (
 );
 
 export default function VerifyRecoveryCode() {
-  const searchParams = useSearchParams();
-  const urlPhone = searchParams.get('phone');
-  const { state, setPhone } = usePasswordRecoveryRedux();
-  
-  // Priorizar el teléfono de la URL sobre el del contexto
-  const phone = urlPhone || state.phone;
-  
-  // Sincronizar con el contexto si viene de URL
-  useEffect(() => {
-    if (urlPhone) {
-      setPhone(urlPhone);
-    }
-  }, [urlPhone, setPhone]);
+  const { state } = usePasswordRecoveryRedux();
 
   return (
     <PasswordRecoveryLoading fallback={<VerifyCodeSkeleton />}>
-      {phone ? (
-        <VerifyRecoveryCodeContent phone={phone} />
+      {state.phone ? (
+        <VerifyRecoveryCodeContent phone={state.phone} />
       ) : (
         <VerifyCodeSkeleton />
       )}
