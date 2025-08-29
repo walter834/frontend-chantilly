@@ -25,10 +25,7 @@ export const API_ROUTES = {
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
   
-  headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-  },
+ 
 });
 
 // Interceptor para incluir token automáticamente en todas las peticiones
@@ -39,6 +36,11 @@ api.interceptors.request.use(
     
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+    }
+
+     if (!(config.data instanceof FormData)) {
+      config.headers['Content-Type'] = 'application/json';
+      config.headers['Accept'] = 'application/json';
     }
     
     return config;

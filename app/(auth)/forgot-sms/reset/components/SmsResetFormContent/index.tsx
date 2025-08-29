@@ -19,6 +19,7 @@ import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import passwordRecoveryService from "@/service/password/passwordRecoveryService";
 import { SmsResetPasswordSchema } from "@/lib/validators/reset-sms";
+import { usePasswordRecoveryState } from "@/hooks/usePasswordRecoveryState";
 
 type SmsResetValues = z.infer<typeof SmsResetPasswordSchema>;
 
@@ -32,6 +33,7 @@ export default function SmsResetFormContent({
   code,
 }: SmsResetFormContentProps) {
   const router = useRouter();
+  const { clearState } = usePasswordRecoveryState();
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<SmsResetValues>({
@@ -54,8 +56,8 @@ export default function SmsResetFormContent({
 
       toast.success("Contraseña restablecida exitosamente.");
 
-      sessionStorage.removeItem("recovery_phone");
-      sessionStorage.removeItem("recovery_code");
+      // Limpiar el contexto
+      clearState();
 
       setTimeout(() => router.push("/"), 1500);
     } catch (e) {
@@ -170,7 +172,7 @@ export default function SmsResetFormContent({
         <div className="text-center mt-6">
           <button
             onClick={() => router.push("/")}
-            className="text-red-400 hover:text-red-300 text-sm font-medium transition-colors"
+            className="text-red-400 hover:text-red-300 text-sm font-medium transition-colors cursor-pointer"
           >
             ← Volver al inicio
           </button>
