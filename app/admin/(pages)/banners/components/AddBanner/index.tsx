@@ -11,16 +11,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ImageIcon, Upload, X, File, Loader2 } from "lucide-react";
+import { Upload, X, File, Loader2, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { updateBannerImage } from "@/service/bannerService";
+import { addBanner, addBannersWithLimit } from "@/service/bannerService";
 
-interface Props {
-  id: number;
-}
-
-export function FileUploadDialog({ id }: Props) {
+export function AddBanner() {
   const [isOpen, setIsOpen] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
@@ -46,7 +42,7 @@ export function FileUploadDialog({ id }: Props) {
         file.type.startsWith("image/")
       );
       // Solo permitir una imagen
-      setFiles(newFiles.slice(0, 1));
+      setFiles(newFiles.slice(0, 12));
     }
   }, []);
 
@@ -56,7 +52,7 @@ export function FileUploadDialog({ id }: Props) {
         file.type.startsWith("image/")
       );
       // Solo permitir una imagen
-      setFiles(newFiles.slice(0, 1));
+      setFiles(newFiles.slice(0, 12));
     }
   };
 
@@ -74,19 +70,52 @@ export function FileUploadDialog({ id }: Props) {
     );
   };
 
-  const handleUpload = async () => {
+  const handleAdd = async () => {
     if (files.length === 0) {
       toast.error("Selecciona una imagen primero");
       return;
     }
     setIsUploading(true);
     try {
-      const result = await updateBannerImage(id, files[0]);
-      toast.success("Imagen actualizada correctamente");
+      const results = await addBannersWithLimit(files, 3);
+      const successCount = results.filter((r:any) => r.success).length;
+      const errorCount = results.filter((r:any) => !r.success).length;
+
+      if (successCount > 0) {
+        toast.success(`${successCount} imagen${successCount > 1 ? 'es' : ''} añadida${successCount > 1 ? 's' : ''} correctamente`);
+      }
+       if (errorCount > 0) {
+        const failedFiles = results.filter((r:any) => !r.success).map((r:any) => r.fileName).join(', ');
+        toast.error(`Error al subir ${errorCount} imagen${errorCount > 1 ? 'es' : ''}: ${failedFiles}`);
+      }
+       if (successCount > 0) {
+        setIsOpen(false);
+        setFiles([]);
+
+        // Refrescar la tabla si existe la función
+        if (
+          typeof window !== "undefined" &&
+          (window as any).refreshBannersTable
+        ) {
+          (window as any).refreshBannersTable();
+        }
+      } else {
+        // Si ninguna imagen se subió correctamente, mantener el modal abierto
+        // pero quitar las imágenes que fallaron (opcional)
+        // setFiles(prev => prev.filter((_, index) => results[index]?.success));
+      }
+      toast.success("Imagen añadida correctamente");
       setIsOpen(false);
       setFiles([]);
+
+      if (
+        typeof window !== "undefined" &&
+        (window as any).refreshBannersTable
+      ) {
+        (window as any).refreshBannersTable();
+      }
     } catch (error) {
-      toast.error("Error al actualizar la imagen");
+      toast.error("Error al subir la imagen");
     } finally {
       setIsUploading(false);
     }
@@ -95,9 +124,10 @@ export function FileUploadDialog({ id }: Props) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <button className="h-12 w-12 p-0 rounded-md  border-gray-200 hover:bg-gray-50 transition-colors flex items-center justify-center cursor-pointer">
-          <ImageIcon className="h-8 w-8 text-green-600" />
-        </button>
+        <Button className="">
+          <Plus className="h-8 w-8" color="white" />
+          Añadir banner
+        </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
@@ -108,6 +138,8 @@ export function FileUploadDialog({ id }: Props) {
         </DialogHeader>
 
         <div className="space-y-4">
+          {/*  */}
+
           {/* Drag and Drop Area */}
           <div
             className={cn(
@@ -196,7 +228,7 @@ export function FileUploadDialog({ id }: Props) {
               Cancelar
             </Button>
             <Button
-              onClick={handleUpload}
+              onClick={handleAdd}
               disabled={files.length === 0 || isUploading}
             >
               {isUploading ? (
@@ -205,7 +237,7 @@ export function FileUploadDialog({ id }: Props) {
                   Subiendo...
                 </>
               ) : (
-                `Actualizar imagen`
+                `Añadir`
               )}
             </Button>
           </div>

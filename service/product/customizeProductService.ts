@@ -32,6 +32,7 @@ export interface Product {
   description: string;
   product_type_id: number;
   product_type_name: string;
+  image: string;
 }
 
 export enum Name {
@@ -55,6 +56,7 @@ export async function getProducts(): Promise<Product[]> {
         description: apiProduct.large_description,
         product_type_id: apiProduct.product_type_id.id,
         product_type_name: apiProduct.product_type_id.name,
+        image: apiProduct.image,
       })
     );
 

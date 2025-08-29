@@ -6,7 +6,9 @@ import { ApiBanner } from "@/types/api";
 
 import { ColumnDef } from "@tanstack/react-table";
 
-import { FileUploadDialog } from "./FileUploadDialog";
+import { FileUploadDialog } from "./components/FileUploadDialog";
+import DeleteBanner from "./components/DeleteBanner";
+import Image from "next/image";
 
 export const columns: ColumnDef<ApiBanner>[] = [
   {
@@ -14,29 +16,18 @@ export const columns: ColumnDef<ApiBanner>[] = [
     header: "Código",
   },
   {
-    accessorKey: "title",
-    header: "Título",
-  },
-  {
-    accessorKey: "description",
-    header: "Descripción",
-    cell: ({ row }) => {
-      const description = row.getValue("description") as string;
+    accessorKey: "image",
+    header: "Imagen",
+    cell: ({row}) => {
+      const image = row.original.image_url;
       return (
-        <span
-          className={
-            !description || description.trim() === ""
-              ? "text-gray-500 italic"
-              : ""
-          }
-        >
-          {!description || description.trim() === ""
-            ? "No tiene descripción"
-            : description}
-        </span>
-      );
-    },
+        <div>
+          <Image src={`${image}`} width={160} height={40} alt="image_banner" className="rounded-sm"/>
+        </div>
+      )
+    }
   },
+  
   {
     accessorKey: "display_order",
     header: "Número de orden",
@@ -47,7 +38,10 @@ export const columns: ColumnDef<ApiBanner>[] = [
     cell: ({ row }) => {
       const banner = row.original;
       return (
-        <FileUploadDialog id={banner.id}/>
+        <div className="flex gap-2 items-center">
+          <FileUploadDialog id={banner.id} />
+          <DeleteBanner id={banner.id}  />
+        </div>
       );
     },
   },
