@@ -152,7 +152,7 @@ export default function ForgotPasswordForm({
 
           <Button
             type="submit"
-            className="w-full bg-red-700"
+            className="w-full bg-[#c41c1a] hover:bg-[#c41c1a] cursor-pointer"
             disabled={isLoading || !emailValue || emailValue.trim() === ""}
           >
             {isLoading ? (

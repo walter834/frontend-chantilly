@@ -66,7 +66,7 @@ const FormCart: React.FC<FormCartProps> = ({
     event.preventDefault();
     const today = new Date();
 
-    if (productType === '2' || productType === '1') {
+    /* if (productType === '2' || productType === '1') {
       const pickup = new Date(pickupDate);
       const hoursRequired = Number(hour);
     
@@ -87,7 +87,7 @@ const FormCart: React.FC<FormCartProps> = ({
         );
         return;
       }
-    }
+    } */
     
     const currentCart = JSON.parse(localStorage.getItem('chantilly-cart') || '{"items":[],"total":0,"itemCount":0}');
     const existingItemIndex = currentCart.items.findIndex((item: LocalCartItem) =>
@@ -235,7 +235,7 @@ const FormCart: React.FC<FormCartProps> = ({
         </div>
       )}
   
-      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+      {/* <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
         <label className="text-sm font-medium text-black sm:w-32 sm:flex-shrink-0">Día de recojo</label>
         <input
           type="date"
@@ -245,7 +245,7 @@ const FormCart: React.FC<FormCartProps> = ({
           onChange={(e) => setPickupDate(e.target.value)}
           className="w-full sm:flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#c41c1a] focus:border-[#c41c1a]"
         />
-      </div>
+      </div> */}
   
       {productType !== '4' && (
       <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4">

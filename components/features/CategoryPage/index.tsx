@@ -50,7 +50,7 @@ export default function CategoryPage({
       params.delete('search');
     }
     params.delete('page');
-    router.push(`?${params.toString()}`);
+    router.push(`?${params.toString()}`, { scroll: false });
   };
 
   const handlePageChange = (page: number) => {
@@ -59,7 +59,7 @@ export default function CategoryPage({
     if (searchValue.trim()) {
       params.set('search', searchValue.trim());
     }
-    router.push(`?${params.toString()}`);
+    router.push(`?${params.toString()}`, { scroll: false });
   };
 
   return (

@@ -7,7 +7,6 @@ import { getBanner } from '@/service/bannerService';
 export default async function HomePage() {
 
   const bannerSlides = await getBanner();
-  console.log('bannerSlides', bannerSlides);
   return (
     <div className="min-h-screen">
       <HeroBanner slides={bannerSlides} />
