@@ -59,10 +59,13 @@ export function DataTable<TData, TValue>({
 
   // Función para actualizar los display_order
   const updateDisplayOrders = (array: TData[]): TData[] => {
-    return array.map((item, index) => ({
-      ...item,
-      display_order: index + 1,
-    } as TData));
+    return array.map(
+      (item, index) =>
+        ({
+          ...item,
+          display_order: index + 1,
+        } as TData)
+    );
   };
 
   const table = useReactTable({
@@ -78,16 +81,25 @@ export function DataTable<TData, TValue>({
     },
   });
 
-  const reorderArray = (array: TData[], fromIndex: number, toIndex: number): TData[] => {
-    if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0 || 
-        fromIndex >= array.length || toIndex >= array.length) {
+  const reorderArray = (
+    array: TData[],
+    fromIndex: number,
+    toIndex: number
+  ): TData[] => {
+    if (
+      fromIndex === toIndex ||
+      fromIndex < 0 ||
+      toIndex < 0 ||
+      fromIndex >= array.length ||
+      toIndex >= array.length
+    ) {
       return array;
     }
-    
+
     const newArray = [...array];
     const [movedItem] = newArray.splice(fromIndex, 1);
     newArray.splice(toIndex, 0, movedItem);
-    
+
     return updateDisplayOrders(newArray);
   };
 
@@ -99,97 +111,155 @@ export function DataTable<TData, TValue>({
 
     if (tableBodyRef.current && isEditMode) {
       const container = tableBodyRef.current;
-      
+
       dragulaInstance.current = dragula([container], {
         moves: (el) => isEditMode,
         accepts: () => true,
       });
 
       // ✅ CAPTURAR información en drag start (datos originales)
-      dragulaInstance.current.on('drag', (el: HTMLElement) => {
-        const rowId = el.getAttribute('data-row-id');
+      dragulaInstance.current.on("drag", (el: HTMLElement) => {
+        const rowId = el.getAttribute("data-row-id");
         if (rowId) {
-          dragStartIndex.current = reorderedData.findIndex((item: any) => item.id?.toString() === rowId);
+          dragStartIndex.current = reorderedData.findIndex(
+            (item: any) => item.id?.toString() === rowId
+          );
           draggedElement.current = reorderedData[dragStartIndex.current];
-          console.log(`🎯 DRAG START: ID ${rowId} desde índice ${dragStartIndex.current}`);
+          console.log(
+            `🎯 DRAG START: ID ${rowId} desde índice ${dragStartIndex.current}`
+          );
         }
-        el.classList.add('opacity-50');
+        el.classList.add("opacity-50");
       });
 
       // ✅ SOLO usar DROP para el reordenamiento final
-      dragulaInstance.current.on('drop', (el: HTMLElement, target: HTMLElement, source: HTMLElement, sibling: HTMLElement | null) => {
-        console.log('🎯 DROP EVENT');
-        
-        if (dragStartIndex.current === -1 || !draggedElement.current) {
-          console.error('❌ Información de drag incompleta');
-          return;
-        }
+      dragulaInstance.current.on(
+        "drop",
+        (
+          el: HTMLElement,
+          target: HTMLElement,
+          source: HTMLElement,
+          sibling: HTMLElement | null
+        ) => {
+          console.log("🎯 DROP EVENT");
 
-        try {
-          // ✅ Calcular posición final basándose en el sibling
-          let targetIndex: number;
-          
-          if (!sibling) {
-            // Sin sibling = al final
-            targetIndex = reorderedData.length - 1;
-          } else {
-            // ✅ Buscar el sibling en nuestros datos actuales
-            const siblingId = sibling.getAttribute('data-row-id');
-            if (siblingId) {
-              const siblingDataIndex = reorderedData.findIndex((item: any) => item.id?.toString() === siblingId);
-              targetIndex = siblingDataIndex;
+          if (dragStartIndex.current === -1 || !draggedElement.current) {
+            console.error("❌ Información de drag incompleta");
+            return;
+          }
+
+          try {
+            // ✅ Calcular posición final basándose en el sibling
+            let targetIndex: number;
+
+            if (!sibling) {
+              // Sin sibling = al final
+              targetIndex = reorderedData.length - 1;
             } else {
-              console.error('❌ No se encontró sibling ID');
-              return;
+              // ✅ Buscar el sibling en nuestros datos actuales
+              const siblingId = sibling.getAttribute("data-row-id");
+              if (siblingId) {
+                const siblingDataIndex = reorderedData.findIndex(
+                  (item: any) => item.id?.toString() === siblingId
+                );
+
+                // 🔧 AQUÍ ESTÁ LA CORRECCIÓN:
+                // Si estamos arrastrando hacia abajo, queremos insertar ANTES del sibling
+                // Si estamos arrastrando hacia arriba, también ANTES del sibling
+                // Pero debemos ajustar por el elemento que se va a remover primero
+
+                if (dragStartIndex.current < siblingDataIndex) {
+                  // Arrastrando hacia ABAJO: insertar antes del sibling,
+                  // pero restar 1 porque el elemento original se removió primero
+                  targetIndex = siblingDataIndex - 1;
+                } else {
+                  // Arrastrando hacia ARRIBA: insertar antes del sibling
+                  targetIndex = siblingDataIndex;
+                }
+
+                console.log(
+                  `📍 Sibling encontrado en índice ${siblingDataIndex}`
+                );
+                console.log(
+                  `📍 Dirección: ${
+                    dragStartIndex.current < siblingDataIndex
+                      ? "ABAJO"
+                      : "ARRIBA"
+                  }`
+                );
+                console.log(`📍 Target index calculado: ${targetIndex}`);
+              } else {
+                console.error("❌ No se encontró sibling ID");
+                return;
+              }
             }
-          }
 
-          console.log(`🔄 REORDENAMIENTO: desde ${dragStartIndex.current} hacia ${targetIndex}`);
-          
-          // ✅ Verificar si realmente cambió
-          if (dragStartIndex.current !== targetIndex) {
-            const newOrder = reorderArray(reorderedData, dragStartIndex.current, targetIndex);
-            
-            console.log('📋 ORDEN ANTES:', reorderedData.map((item: any, idx) => 
-              `${idx}: ID ${item.id} - order ${item.display_order}`
-            ));
-            
-            console.log('📋 ORDEN DESPUÉS:', newOrder.map((item: any, idx) => 
-              `${idx}: ID ${item.id} - order ${item.display_order}`
-            ));
-            
-            setReorderedData(newOrder);
-          } else {
-            console.log('⚠️ Sin cambios - mismo índice');
-          }
+            console.log(
+              `🔄 REORDENAMIENTO: desde ${dragStartIndex.current} hacia ${targetIndex}`
+            );
 
-        } catch (error) {
-          console.error('❌ Error en drop:', error);
-        } finally {
-          // ✅ Limpiar referencias
-          dragStartIndex.current = -1;
-          draggedElement.current = null;
+            // ✅ Verificar si realmente cambió
+            if (dragStartIndex.current !== targetIndex) {
+              const newOrder = reorderArray(
+                reorderedData,
+                dragStartIndex.current,
+                targetIndex
+              );
+
+              console.log(
+                "📋 ORDEN ANTES:",
+                reorderedData.map(
+                  (item: any, idx) =>
+                    `${idx}: ID ${item.id} - order ${item.display_order}`
+                )
+              );
+
+              console.log(
+                "📋 ORDEN DESPUÉS:",
+                newOrder.map(
+                  (item: any, idx) =>
+                    `${idx}: ID ${item.id} - order ${item.display_order}`
+                )
+              );
+
+              setReorderedData(newOrder);
+            } else {
+              console.log("⚠️ Sin cambios - mismo índice");
+            }
+          } catch (error) {
+            console.error("❌ Error en drop:", error);
+          } finally {
+            // ✅ Limpiar referencias
+            dragStartIndex.current = -1;
+            draggedElement.current = null;
+          }
         }
-      });
+      );
 
       // ✅ Eventos de limpieza
-      dragulaInstance.current.on('dragend', (el: HTMLElement) => {
-        el.classList.remove('opacity-50');
+      dragulaInstance.current.on("dragend", (el: HTMLElement) => {
+        el.classList.remove("opacity-50");
       });
 
-      dragulaInstance.current.on('cancel', () => {
+      dragulaInstance.current.on("cancel", () => {
         dragStartIndex.current = -1;
         draggedElement.current = null;
-        console.log('🚫 DRAG CANCELADO');
+        console.log("🚫 DRAG CANCELADO");
       });
 
-      dragulaInstance.current.on('over', (el: HTMLElement, container: HTMLElement) => {
-        container.classList.add('bg-blue-50');
-      });
+      dragulaInstance.current.on(
+        "over",
+        (el: HTMLElement, container: HTMLElement) => {
+          container.classList.add("bg-blue-50");
+        }
+      );
 
-      dragulaInstance.current.on('out', (el: HTMLElement, container: HTMLElement) => {
-        container.classList.remove('bg-blue-50');
-      });
+      dragulaInstance.current.on(
+        "out",
+        (el: HTMLElement, container: HTMLElement) => {
+          container.classList.remove("bg-blue-50");
+        }
+      );
     }
   };
 
@@ -217,10 +287,10 @@ export function DataTable<TData, TValue>({
   // ✅ Reinicializar solo cuando los datos cambian SIGNIFICATIVAMENTE
   useEffect(() => {
     if (isEditMode && dragulaInstance.current) {
-      console.log('♻️ Datos actualizados, reinicializando Dragula...');
+      console.log("♻️ Datos actualizados, reinicializando Dragula...");
       initializeDragula();
     }
-  }, [reorderedData.map((item: any) => item.id).join(',')]); // Solo cuando cambia el orden de IDs
+  }, [reorderedData.map((item: any) => item.id).join(",")]); // Solo cuando cambia el orden de IDs
 
   const handleEditMode = () => {
     setIsEditMode(true);
@@ -229,9 +299,12 @@ export function DataTable<TData, TValue>({
   const handleSaveOrder = () => {
     setIsEditMode(false);
     if (onReorderData) {
-      console.log('💾 GUARDANDO ORDEN FINAL:', reorderedData.map((item: any) => 
-        `ID ${item.id} - order ${item.display_order}`
-      ));
+      console.log(
+        "💾 GUARDANDO ORDEN FINAL:",
+        reorderedData.map(
+          (item: any) => `ID ${item.id} - order ${item.display_order}`
+        )
+      );
       onReorderData(reorderedData);
     }
   };
@@ -239,7 +312,7 @@ export function DataTable<TData, TValue>({
   const handleCancelEdit = () => {
     setIsEditMode(false);
     setReorderedData(data);
-    console.log('🔄 ORDEN RESTAURADO AL ORIGINAL');
+    console.log("🔄 ORDEN RESTAURADO AL ORIGINAL");
   };
 
   return (
@@ -273,7 +346,9 @@ export function DataTable<TData, TValue>({
           <strong>Modo edición activo:</strong> Arrastra las filas para cambiar
           el orden. Suelta donde quieras posicionar el elemento.
           <br />
-          <small className="opacity-75">Los elementos se insertarán en la posición exacta donde sueltes.</small>
+          <small className="opacity-75">
+            Los elementos se insertarán en la posición exacta donde sueltes.
+          </small>
         </div>
       )}
 
@@ -303,14 +378,14 @@ export function DataTable<TData, TValue>({
               table.getRowModel().rows.map((row, tableIndex) => {
                 const rowData = row.original as any;
                 const displayOrder = rowData.display_order;
-                
+
                 return (
                   <TableRow
                     key={`row-${rowData.id}-${displayOrder}`} // ✅ Key estable basado en orden
                     data-row-id={rowData.id}
                     className={
-                      isEditMode 
-                        ? "cursor-move hover:bg-gray-50 transition-colors duration-150 border-l-4 border-l-blue-400" 
+                      isEditMode
+                        ? "cursor-move hover:bg-gray-50 transition-colors duration-150 border-l-4 border-l-blue-400"
                         : ""
                     }
                   >
