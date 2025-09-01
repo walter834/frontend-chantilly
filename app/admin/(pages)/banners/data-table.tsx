@@ -57,7 +57,6 @@ export function DataTable<TData, TValue>({
     setReorderedData(data);
   }, [data]);
 
-  // Función para actualizar los display_order
   const updateDisplayOrders = (array: TData[]): TData[] => {
     return array.map(
       (item, index) =>
@@ -125,9 +124,6 @@ export function DataTable<TData, TValue>({
             (item: any) => item.id?.toString() === rowId
           );
           draggedElement.current = reorderedData[dragStartIndex.current];
-          console.log(
-            `🎯 DRAG START: ID ${rowId} desde índice ${dragStartIndex.current}`
-          );
         }
         el.classList.add("opacity-50");
       });
@@ -141,62 +137,31 @@ export function DataTable<TData, TValue>({
           source: HTMLElement,
           sibling: HTMLElement | null
         ) => {
-          console.log("🎯 DROP EVENT");
-
           if (dragStartIndex.current === -1 || !draggedElement.current) {
-            console.error("❌ Información de drag incompleta");
             return;
           }
 
           try {
-            // ✅ Calcular posición final basándose en el sibling
             let targetIndex: number;
 
             if (!sibling) {
-              // Sin sibling = al final
               targetIndex = reorderedData.length - 1;
             } else {
-              // ✅ Buscar el sibling en nuestros datos actuales
               const siblingId = sibling.getAttribute("data-row-id");
               if (siblingId) {
                 const siblingDataIndex = reorderedData.findIndex(
                   (item: any) => item.id?.toString() === siblingId
                 );
 
-                // 🔧 AQUÍ ESTÁ LA CORRECCIÓN:
-                // Si estamos arrastrando hacia abajo, queremos insertar ANTES del sibling
-                // Si estamos arrastrando hacia arriba, también ANTES del sibling
-                // Pero debemos ajustar por el elemento que se va a remover primero
-
                 if (dragStartIndex.current < siblingDataIndex) {
-                  // Arrastrando hacia ABAJO: insertar antes del sibling,
-                  // pero restar 1 porque el elemento original se removió primero
                   targetIndex = siblingDataIndex - 1;
                 } else {
-                  // Arrastrando hacia ARRIBA: insertar antes del sibling
                   targetIndex = siblingDataIndex;
                 }
-
-                console.log(
-                  `📍 Sibling encontrado en índice ${siblingDataIndex}`
-                );
-                console.log(
-                  `📍 Dirección: ${
-                    dragStartIndex.current < siblingDataIndex
-                      ? "ABAJO"
-                      : "ARRIBA"
-                  }`
-                );
-                console.log(`📍 Target index calculado: ${targetIndex}`);
               } else {
-                console.error("❌ No se encontró sibling ID");
                 return;
               }
             }
-
-            console.log(
-              `🔄 REORDENAMIENTO: desde ${dragStartIndex.current} hacia ${targetIndex}`
-            );
 
             // ✅ Verificar si realmente cambió
             if (dragStartIndex.current !== targetIndex) {
@@ -206,37 +171,17 @@ export function DataTable<TData, TValue>({
                 targetIndex
               );
 
-              console.log(
-                "📋 ORDEN ANTES:",
-                reorderedData.map(
-                  (item: any, idx) =>
-                    `${idx}: ID ${item.id} - order ${item.display_order}`
-                )
-              );
-
-              console.log(
-                "📋 ORDEN DESPUÉS:",
-                newOrder.map(
-                  (item: any, idx) =>
-                    `${idx}: ID ${item.id} - order ${item.display_order}`
-                )
-              );
-
               setReorderedData(newOrder);
             } else {
-              console.log("⚠️ Sin cambios - mismo índice");
             }
           } catch (error) {
-            console.error("❌ Error en drop:", error);
           } finally {
-            // ✅ Limpiar referencias
             dragStartIndex.current = -1;
             draggedElement.current = null;
           }
         }
       );
 
-      // ✅ Eventos de limpieza
       dragulaInstance.current.on("dragend", (el: HTMLElement) => {
         el.classList.remove("opacity-50");
       });
@@ -244,7 +189,6 @@ export function DataTable<TData, TValue>({
       dragulaInstance.current.on("cancel", () => {
         dragStartIndex.current = -1;
         draggedElement.current = null;
-        console.log("🚫 DRAG CANCELADO");
       });
 
       dragulaInstance.current.on(
@@ -272,7 +216,6 @@ export function DataTable<TData, TValue>({
     draggedElement.current = null;
   };
 
-  // ✅ Solo reinicializar cuando cambia el modo de edición
   useEffect(() => {
     if (isEditMode) {
       const timer = setTimeout(initializeDragula, 100);
@@ -284,13 +227,11 @@ export function DataTable<TData, TValue>({
     return destroyDragula;
   }, [isEditMode]);
 
-  // ✅ Reinicializar solo cuando los datos cambian SIGNIFICATIVAMENTE
   useEffect(() => {
     if (isEditMode && dragulaInstance.current) {
-      console.log("♻️ Datos actualizados, reinicializando Dragula...");
       initializeDragula();
     }
-  }, [reorderedData.map((item: any) => item.id).join(",")]); // Solo cuando cambia el orden de IDs
+  }, [reorderedData.map((item: any) => item.id).join(",")]);
 
   const handleEditMode = () => {
     setIsEditMode(true);
@@ -299,12 +240,6 @@ export function DataTable<TData, TValue>({
   const handleSaveOrder = () => {
     setIsEditMode(false);
     if (onReorderData) {
-      console.log(
-        "💾 GUARDANDO ORDEN FINAL:",
-        reorderedData.map(
-          (item: any) => `ID ${item.id} - order ${item.display_order}`
-        )
-      );
       onReorderData(reorderedData);
     }
   };
@@ -312,15 +247,12 @@ export function DataTable<TData, TValue>({
   const handleCancelEdit = () => {
     setIsEditMode(false);
     setReorderedData(data);
-    console.log("🔄 ORDEN RESTAURADO AL ORIGINAL");
   };
 
   return (
     <div className="w-full space-y-6">
-      <div className="flex ">
-        <AddBanner />
-        <AllDeleteBanners />
-        <div className="flex gap-2">
+      <div className="flex justify-between">
+        <div className="flex gap-2 justify-end">
           {!isEditMode ? (
             <Button onClick={handleEditMode} variant="outline" size="sm">
               <Edit3 className="h-4 w-4 mr-2" />
@@ -339,6 +271,12 @@ export function DataTable<TData, TValue>({
             </>
           )}
         </div>
+
+        {!isEditMode && (
+          <div className="flex gap-2 items-center">
+            <AddBanner /> <AllDeleteBanners />
+          </div>
+        )}
       </div>
 
       {isEditMode && (

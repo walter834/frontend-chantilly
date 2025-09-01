@@ -99,7 +99,7 @@ export function NavMain({
                         /* esteee */
                         <SidebarMenuSubItem
                           key={subItem.title}
-                          className={path === subItem.url ? "bg-red-300" : ""}
+                          className={path === subItem.url ? "bg-red-50 text-red-700 border border-red-200" : ""}
 
                         >
                           <SidebarMenuSubButton asChild>

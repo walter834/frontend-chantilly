@@ -132,7 +132,8 @@ export function AddBanner() {
       }
     } catch (error) {
       toast.error("Error al subir las imágenes");
-      console.error("Error uploading banners:", error);40
+      console.error("Error uploading banners:", error);
+      40;
     } finally {
       setIsUploading(false);
     }
@@ -141,8 +142,8 @@ export function AddBanner() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="">
-          <Plus className="h-8 w-8" color="white" />
+        <Button className="bg-red-700 hover:bg-red-800 text-white cursor-pointer">
+          <Plus className="w-4 h-4 mr-2" />
           Añadir banner
         </Button>
       </DialogTrigger>

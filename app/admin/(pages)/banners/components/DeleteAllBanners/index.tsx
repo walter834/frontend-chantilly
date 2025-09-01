@@ -20,6 +20,7 @@ export const AllDeleteBanners = () => {
   const [isOpen, setIsOpen] = useState(false);
   async function handleDeleteAll() {
     try {
+      setIsDeleting(true);
       await deleteAllBanners();
       if (
         typeof window !== "undefined" &&
@@ -27,19 +28,20 @@ export const AllDeleteBanners = () => {
       ) {
         (window as any).refreshBannersTable();
       }
+      setIsOpen(false);
     } catch (err) {
       throw err;
+    } finally {
+      setIsDeleting(false);
     }
   }
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogTrigger asChild>
         <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
+          variant="outline"
+          className="border-red-200 text-red-700 hover:bg-red-50 bg-transparent"
         >
-          <BrushCleaning className="h-4 w-4" />
           Borrar todo
         </Button>
       </AlertDialogTrigger>

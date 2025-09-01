@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { deleteBanner } from "@/service/bannerService";
-import { Loader2, Trash } from "lucide-react";
+import { Loader2, Trash, Trash2 } from "lucide-react";
 import React, { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -32,10 +32,12 @@ export default function DeleteBanner({ id, bannerTitle }: Props) {
       toast.success("Banner eliminado correctamente");
       setIsOpen(false);
 
-      if (typeof window !== 'undefined' && (window as any).refreshBannersTable) {
-      (window as any).refreshBannersTable();
-    }
-    
+      if (
+        typeof window !== "undefined" &&
+        (window as any).refreshBannersTable
+      ) {
+        (window as any).refreshBannersTable();
+      }
     } catch (err) {
       console.error("Error al eliminar banner:", err);
       toast.error("No se pudo eliminar el banner. Inténtalo de nuevo.");
@@ -47,15 +49,8 @@ export default function DeleteBanner({ id, bannerTitle }: Props) {
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
-          aria-label={`Eliminar banner${
-            bannerTitle ? ` "${bannerTitle}"` : ""
-          }`}
-        >
-          <Trash className="h-4 w-4" />
+        <Button size="sm" className="bg-red-700 hover:bg-red-800 text-white">
+          <Trash2 className="w-4 h-4" />
         </Button>
       </AlertDialogTrigger>
 
