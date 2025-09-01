@@ -1,5 +1,15 @@
+import { success } from "zod";
 import api, { API_ROUTES } from "./api";
 import { ApiBanner } from "@/types/api";
+
+type UploadResult = {
+  success: boolean;
+  data?: ApiBanner;
+  error?: string;
+  fileName: string;
+  isLimitError?: boolean;
+  notProcessed?: boolean;
+};
 
 export async function getBanner(): Promise<ApiBanner[]> {
   try {
@@ -45,54 +55,102 @@ export const addBanner = async (image: File): Promise<ApiBanner> => {
   }
 };
 
-export const addBannersWithLimit = async (
+export async function addBannersWithLimit(
   images: File[],
   maxSimultaneous: number = 3
-) => {
-  const allResults: any = [];
+): Promise<UploadResult[]> {
+  const results: UploadResult[] = [];
 
-  const uploadOneImage = async (image: File) => {
+  const uploadOneImage = async (image: File): Promise<UploadResult> => {
     try {
       const response = await addBanner(image);
-
-      return {
-        success: true,
-        data: response,
-        fileName: image.name,
-      };
+      return { success: true, data: response, fileName: image.name };
     } catch (error: any) {
-      return {
-        success: false,
-        error: error?.response?.data?.message || "Error al subir imagen",
-        fileName: image.name,
-      };
+      const status = error?.response?.status;
+      const message = error?.response?.data?.message || "Error al subir imagen";
+
+      if (status === 422) {
+        return {
+          success: false,
+          error: message,
+          fileName: image.name,
+          isLimitError: true,
+        };
+      }
+
+      return { success: false, error: message, fileName: image.name };
     }
   };
 
+  // Procesar en lotes
   for (let i = 0; i < images.length; i += maxSimultaneous) {
-    const imageGroup = images.slice(i, i + maxSimultaneous);
-    const groupResults = await Promise.allSettled(
-      imageGroup.map(uploadOneImage)
-    );
+    const batch = images.slice(i, i + maxSimultaneous);
+    const batchResults = await Promise.allSettled(batch.map(uploadOneImage));
 
-    groupResults.forEach((result, index) => {
+    for (let j = 0; j < batchResults.length; j++) {
+      const result = batchResults[j];
+
       if (result.status === "fulfilled") {
-        allResults.push(result.value);
+        results.push(result.value);
+
+        if (result.value.isLimitError) {
+          const processedCount = i + j + 1;
+          const remaining = images.slice(processedCount);
+
+          remaining.forEach((img) => {
+            results.push({
+              success: false,
+              error: "No procesado debido al límite alcanzado",
+              fileName: img.name,
+              notProcessed: true,
+            });
+          });
+
+          return results;
+        }
       } else {
-        allResults.push({
+        results.push({
           success: false,
           error: "Error inesperado",
-          fileName: imageGroup[index].name,
+          fileName: batch[j].name,
         });
       }
-    });
+    }
   }
-  return allResults;
+
+  return results;
+}
+
+export const updateBannerOrder = async (
+  id: number,
+  display_order: string
+): Promise<void> => {
+  try {
+    const formData = new FormData();
+    formData.append("display_order", display_order);
+
+    const response = await api.post(`/banner/${id}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const deleteBanner = async (id: number): Promise<void> => {
   try {
     await api.delete(`/banner/${id}`);
+  } catch (err) {
+    throw err;
+  }
+};
+
+export const deleteAllBanners = async (): Promise<void> => {
+  try {
+    await api.delete("/banners/all");
   } catch (err) {
     throw err;
   }

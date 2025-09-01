@@ -78,44 +78,61 @@ export function AddBanner() {
     setIsUploading(true);
     try {
       const results = await addBannersWithLimit(files, 3);
-      const successCount = results.filter((r:any) => r.success).length;
-      const errorCount = results.filter((r:any) => !r.success).length;
+      const successCount = results.filter((r: any) => r.success).length;
+      const errorCount = results.filter((r: any) => !r.success).length;
+      const limitError = results.find((r: any) => r.isLimitError);
 
-      if (successCount > 0) {
-        toast.success(`${successCount} imagen${successCount > 1 ? 'es' : ''} añadida${successCount > 1 ? 's' : ''} correctamente`);
-      }
-       if (errorCount > 0) {
-        const failedFiles = results.filter((r:any) => !r.success).map((r:any) => r.fileName).join(', ');
-        toast.error(`Error al subir ${errorCount} imagen${errorCount > 1 ? 'es' : ''}: ${failedFiles}`);
-      }
-       if (successCount > 0) {
-        setIsOpen(false);
-        setFiles([]);
+      if (limitError) {
+        toast.error(limitError.error);
 
-        // Refrescar la tabla si existe la función
-        if (
-          typeof window !== "undefined" &&
-          (window as any).refreshBannersTable
-        ) {
-          (window as any).refreshBannersTable();
+        if (successCount > 0) {
+          toast.success(
+            `${successCount} imagen${
+              successCount > 1 ? "es" : ""
+            } se subieron antes de alcanzar el límite`
+          );
         }
-      } else {
-        // Si ninguna imagen se subió correctamente, mantener el modal abierto
-        // pero quitar las imágenes que fallaron (opcional)
-        // setFiles(prev => prev.filter((_, index) => results[index]?.success));
-      }
-      toast.success("Imagen añadida correctamente");
-      setIsOpen(false);
-      setFiles([]);
 
+        const failedFiles = results
+          .filter((r: any) => !r.success && !r.notProcessed)
+          .map((_: any, index: any) => files[index])
+          .filter(Boolean);
+
+        setFiles(failedFiles);
+      } else {
+        if (successCount > 0) {
+          toast.success(
+            `${successCount} imagen${successCount > 1 ? "es" : ""}añadida${
+              successCount > 1 ? "s" : ""
+            } correctamente`
+          );
+        }
+        if (errorCount > 0) {
+          const failedFiles = results
+            .filter((r: any) => !r.success)
+            .map((r: any) => r.fileName)
+            .join(", ");
+          toast.error(
+            `Error al subir ${errorCount} imagen${
+              errorCount > 1 ? "es" : ""
+            }: ${failedFiles}`
+          );
+        }
+        if (successCount > 0) {
+          setIsOpen(false);
+          setFiles([]);
+        }
+      }
       if (
+        successCount > 0 &&
         typeof window !== "undefined" &&
         (window as any).refreshBannersTable
       ) {
         (window as any).refreshBannersTable();
       }
     } catch (error) {
-      toast.error("Error al subir la imagen");
+      toast.error("Error al subir las imágenes");
+      console.error("Error uploading banners:", error);40
     } finally {
       setIsUploading(false);
     }

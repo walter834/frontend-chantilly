@@ -1,11 +1,12 @@
-"use client"
+"use client";
 
 import { columns } from "./columns";
-import { getBanner } from "@/service/bannerService";
+import { getBanner, updateBannerOrder } from "@/service/bannerService";
 import { DataTable } from "./data-table";
 import { ApiBanner } from "@/types/api";
 import { AddBanner } from "./components/AddBanner";
 import { use, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export default function Banners() {
   const [data, setData] = useState<ApiBanner[]>([]);
@@ -13,7 +14,9 @@ export default function Banners() {
 
   const getData = async (): Promise<ApiBanner[]> => {
     try {
-      return await getBanner();
+      const banners = await getBanner();
+      // ✅ CRÍTICO: Ordenar por display_order
+      return banners.sort((a, b) => a.display_order - b.display_order);
     } catch (error) {
       return [];
     }
@@ -28,6 +31,34 @@ export default function Banners() {
   const refreshData = async () => {
     const banners = await getData();
     setData(banners);
+  };
+
+  const handleReorderData = async (newData: ApiBanner[]) => {
+    try {
+      console.log(
+        "Datos a enviar:",
+        newData.map((b) => ({ id: b.id, display_order: b.display_order }))
+      );
+
+      // ✅ Actualizar estado local inmediatamente para feedback visual
+      setData(newData);
+
+      // ✅ Crear promesas de actualización
+      const updatePromises = newData.map((banner) =>
+        updateBannerOrder(banner.id, banner.display_order.toString())
+      );
+
+      // ✅ Ejecutar todas las actualizaciones
+      await Promise.all(updatePromises);
+
+      toast.success("Orden actualizado correctamente");
+      console.log("✅ Todas las actualizaciones completadas");
+    } catch (error) {
+      console.error("❌ Error al actualizar orden:", error);
+      toast.error("Error al actualizar el orden");
+      // ✅ Revertir cambios si falla
+      await refreshData();
+    }
   };
 
   useEffect(() => {
@@ -49,7 +80,11 @@ export default function Banners() {
   }
   return (
     <div className="container mx-auto py-10">
-      <DataTable columns={columns} data={data} />
+      <DataTable
+        columns={columns}
+        data={data}
+        onReorderData={handleReorderData}
+      />
     </div>
   );
 }
