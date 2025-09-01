@@ -8,6 +8,11 @@ import FormCart from '@/components/formCart';
 import { useRouter } from 'next/navigation';
 import { portionsOptions } from './data';
 import { FaClock } from "react-icons/fa6";
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Autoplay, Navigation, Pagination } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 
 interface ProductDetailProps {
   id: string;
@@ -15,21 +20,90 @@ interface ProductDetailProps {
   price: number;
   originalPrice?: number;
   theme?: string | null;
-  image: string;
+  image: string[];
   productType: string;
   description: string;
   product_link: string;
 }
 
+interface AccessoryItemProps {
+  accessory: any;
+  onAddToCart: (product: any, isAccessory?: boolean) => void;
+}
+
+const AccessoryItem = ({ accessory, onAddToCart }: AccessoryItemProps) => {
+  const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
+  const [isHovered, setIsHovered] = React.useState(false);
+  const imageUrls = accessory.images?.map((image: any) => image.url) || [];
+
+  return (
+    <div className="flex flex-col items-center p-2">
+      <div className="w-full">
+        <div 
+          className="bg-gray-200 rounded mb-1 overflow-hidden relative"
+          onMouseEnter={() => {
+            setIsHovered(true);
+            if (imageUrls.length > 1) {
+              setCurrentImageIndex(1);
+            }
+          }}
+          onMouseLeave={() => {
+            setIsHovered(false);
+            setCurrentImageIndex(0);
+          }}
+          style={{ aspectRatio: '1/1' }}
+        >
+          {imageUrls.map((url: string, imgIndex: number) => (
+            <Image
+              key={imgIndex}
+              src={url}
+              alt={accessory.short_description}
+              width={128}
+              height={128}
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+                imgIndex === currentImageIndex ? 'opacity-100' : 'opacity-0'
+              }`}
+              style={{
+                aspectRatio: '1/1',
+                transform: isHovered ? 'scale(1.05)' : 'scale(1)',
+                transition: 'transform 0.7s cubic-bezier(0.4,0,0.2,1), opacity 0.7s cubic-bezier(0.4,0,0.2,1)'
+              }}
+              priority={imgIndex === 0}
+              loading={imgIndex === 0 ? 'eager' : 'lazy'}
+            />
+          ))}
+        </div>
+        <p className="text-sm text-[#c41c1a] font-bold text-center">
+          {accessory.short_description}
+        </p>
+        <div className="grid grid-cols-1 gap-2 items-center justify-center">
+          <div className="font-bold text-[14px] text-center">
+            S/ {parseInt(accessory.max_price).toFixed(2)}
+          </div>
+          <div className="text-center">
+            <button
+              onClick={() => onAddToCart(accessory, true)}
+              className="bg-[#c41c1a] text-white text-xs px-2 py-1 rounded cursor-pointer hover:bg-[#a01818] transition-colors"
+            >
+              Agregar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ProductDetail = ({ id, name, price, originalPrice, theme, image, productType, description, product_link }: ProductDetailProps) => {
   const router = useRouter();
   const [cakeFlavors, setCakeFlavors] = useState<TransformedCakeFlavor[]>([]);
   const [selectedCake, setSelectedCake] = useState('');
-  const [accessories, setAccessories] = useState<TransformedProductAccessory[]>([]); const [bocaditos, setBocaditos] = useState<TransformedProduct[]>([]);
+  const [accessories, setAccessories] = useState<TransformedProductAccessory[]>([]); 
+  const [bocaditos, setBocaditos] = useState<TransformedProduct[]>([]);
   const [loadingAccessories, setLoadingAccessories] = useState(true);
   const [loadingBocaditos, setLoadingBocaditos] = useState(true);
   const [productVariant, setProductVariant] = useState<TransformedProductVariant | null>(null);
-  const [imageProduct, setImageProduct] = useState<string>('');
+  const [imageProduct, setImageProduct] = useState<string[]>([]);
   const [hour, setHour] = useState<string>('');
   const [diameter, setDiameter] = useState<string>('');
 
@@ -59,6 +133,7 @@ const ProductDetail = ({ id, name, price, originalPrice, theme, image, productTy
         price: (isAccessory ? parseFloat((product as TransformedProductAccessory).max_price) : (product as TransformedProduct).price)
       };
     } else {
+      console.log('productSelected', product);
       const unitPrice = isAccessory ? parseFloat((product as TransformedProductAccessory).max_price) : (product as TransformedProduct).price;
       const nameText = isAccessory ? (product as TransformedProductAccessory).short_description : (product as TransformedProduct).name;
       const newItem = {
@@ -69,7 +144,7 @@ const ProductDetail = ({ id, name, price, originalPrice, theme, image, productTy
           name: nameText,
           description: `${isAccessory ? 'Accesorio' : 'Bocadito'}: ${nameText}`,
           price: unitPrice,
-          image: product.image,
+          image: product.images.find((img: any) => img.is_primary === 1)?.url || '',
           type: productType
         },
         quantity: 1,
@@ -107,8 +182,8 @@ const ProductDetail = ({ id, name, price, originalPrice, theme, image, productTy
       console.log('variant', variant);
       if (variant) {
         setProductVariant(variant);
-        setImageProduct(variant.image);
-        setHour(variant.hours);
+        setImageProduct(variant.images.map((img: any) => img.url));
+        setHour(variant.hours.toString());
       }
     } catch (error) {
       console.error('Error fetching product variant:', error);
@@ -120,6 +195,7 @@ const ProductDetail = ({ id, name, price, originalPrice, theme, image, productTy
     const fetchCategoryProducts = async () => {
       try {
         const accessoriesResponse = await fetchAccessories();
+        console.log('accessoriesResponse', accessoriesResponse);
         setAccessories(accessoriesResponse);
         setLoadingAccessories(false);
 
@@ -157,6 +233,7 @@ const ProductDetail = ({ id, name, price, originalPrice, theme, image, productTy
     const fetchProductVariant = async () => {
       try {
         const variantResponse = await getProductVariantById(id, '');
+        console.log('variantResponse', variantResponse);
         setProductVariant(variantResponse);
       } catch (error) {
         console.error('Error fetching product variant:', error);
@@ -170,18 +247,49 @@ const ProductDetail = ({ id, name, price, originalPrice, theme, image, productTy
     router.push(`/detalle/${productId}`);
   };
 
+  const displayImages = imageProduct.length > 0 ? imageProduct : image;
+
   return (
     <div className="mx-auto">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-4">
           <div className="aspect-square overflow-hidden rounded-lg bg-gray-100">
-            <Image
-              src={(imageProduct || image)}
-              alt={name}
-              width={400}
-              height={400}
-              className="w-full h-full object-cover"
-            />
+            {displayImages.length > 1 ? (
+              <Swiper
+                modules={[Navigation, Pagination, Autoplay]}
+                spaceBetween={0}
+                slidesPerView={1}
+                navigation={true}
+                pagination={{ clickable: true }}
+                /* autoplay={{
+                  delay: 3000,
+                  disableOnInteraction: false,
+                }} */
+               className="custom-pagination-swiper"
+              >
+                {displayImages.map((img: string, index: number) => (
+                  <SwiperSlide key={index}>
+                    <Image
+                      src={img}
+                      alt={`${name} - Imagen ${index + 1}`}
+                      width={400}
+                      height={400}
+                      className="w-full h-full object-cover"
+                      priority={index === 0}
+                    />
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            ) : (
+              <Image
+                src={displayImages[0] || '/placeholder-product.jpg'}
+                alt={name}
+                width={400}
+                height={400}
+                className="w-full h-full object-cover"
+                priority
+              />
+            )}
           </div>
         </div>
 
@@ -219,8 +327,8 @@ const ProductDetail = ({ id, name, price, originalPrice, theme, image, productTy
             cakeFlavors={cakeFlavors}
             onPortionChange={handlePortionChange}
             theme={theme}
-            imageProduct={imageProduct}
-            initialImage={image}
+            imageProduct={imageProduct[0]}
+            initialImage={image[0]}
             productType={productType}
             hour={hour}
           />
@@ -233,37 +341,11 @@ const ProductDetail = ({ id, name, price, originalPrice, theme, image, productTy
                 <div className="text-center text-gray-500">Cargando...</div>
               ) : (
                 accessories.map((accessory, index) => (
-                  <div key={accessory.id || index} className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="bg-gray-200 rounded mb-1 overflow-hidden">
-                        {accessory.image && (
-                          <Image
-                            src={accessory.image}
-                            alt={accessory.short_description}
-                            width={128}
-                            height={128}
-                            className="w-full h-full object-cover"
-                          />
-                        )}
-                      </div>
-                      <p className="text-sm text-[#c41c1a] font-bold text-center">
-                        {accessory.short_description}
-                      </p>
-                      <div className="grid grid-cols-1 gap-2 flex items-center justify-center">
-                        <div className="font-bold text-[14px] text-center">
-                          S/ {parseInt(accessory.max_price).toFixed(2)}
-                        </div>
-                        <div className='text-center'>
-                          <button
-                            onClick={() => handleAddToCart(accessory, true)}
-                            className="bg-[#c41c1a] text-white text-xs px-2 py-1 rounded cursor-pointer hover:bg-[#a01818] transition-colors"
-                          >
-                            Agregar
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <AccessoryItem 
+                    key={accessory.id || index} 
+                    accessory={accessory} 
+                    onAddToCart={handleAddToCart} 
+                  />
                 ))
               )}
             </div>
@@ -282,7 +364,7 @@ const ProductDetail = ({ id, name, price, originalPrice, theme, image, productTy
               <div key={bocadito.id} className="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow cursor-pointer">
                 <div className="aspect-square overflow-hidden rounded-md mb-2">
                   <Image
-                    src={bocadito.image}
+                    src={bocadito.images.find((img: any) => img.is_primary === 1)?.url || ''}
                     alt={bocadito.name}
                     width={150}
                     height={150}

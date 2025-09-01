@@ -64,14 +64,6 @@ export default function HomePageContent() {
     setSearchValue(searchTerm);
   }, [searchTerm]);
 
-  const handleAddToCart = (productId: string) => {
-    console.log('Agregar al carrito:', productId);
-  };
-
-  const handleToggleFavorite = (productId: string) => {
-    console.log('Toggle favorito:', productId);
-  };
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const params = new URLSearchParams(searchParams);
@@ -159,8 +151,6 @@ export default function HomePageContent() {
         <div className="mt-6">
           <ProductGrid
             products={products}
-            onAddToCart={handleAddToCart}
-            onToggleFavorite={handleToggleFavorite}
           />
         </div>
       )}
