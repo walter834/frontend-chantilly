@@ -10,6 +10,7 @@ export interface Product {
   description: string;
   product_type_id: number;
   product_type_name: string;
+  image: string;
 }
 
 export interface TypeProduct {
@@ -22,6 +23,17 @@ export const columns: ColumnDef<Product>[] = [
     accessorKey: "id",
     header: "Codigo",
   },
+  {
+    accessorKey: "image",
+    header: "Imagen",
+    cell: ({row}) =>{
+      const url = row.original.image
+      return (
+        <img src={url} alt="preview " className="w-16 h-16 object-cover rounded-full"/>
+      )
+    }
+  },
+
   {
     accessorKey: "name",
     header: "Nombre",

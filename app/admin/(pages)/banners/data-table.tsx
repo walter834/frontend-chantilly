@@ -25,6 +25,8 @@ import {
   ChevronsRight,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { AddBanner } from "./components/AddBanner";
+
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -50,16 +52,10 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="w-full space-y-6">
-      <Input
-          type="text"
-          placeholder="Filtrar por título"
-          value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("title")?.setFilterValue(event.target.value)
-          }
-          className="w-full sm:max-w-[350px]"
-          
-        />
+     <div className="flex ">
+       
+        <AddBanner/>
+     </div>
 
       <div className="overflow-hidden rounded-md border">
         
