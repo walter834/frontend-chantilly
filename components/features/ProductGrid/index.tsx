@@ -5,15 +5,11 @@ import { TransformedProduct } from '@/types/api';
 
 interface ProductGridProps {
   products: TransformedProduct[];
-  onAddToCart?: (id: string) => void;
-  onToggleFavorite?: (id: string) => void;
   loading?: boolean;
 }
 
 export default function ProductGrid({ 
   products, 
-  onAddToCart, 
-  onToggleFavorite, 
   loading = false 
 }: ProductGridProps) {
   if (loading) {
@@ -56,7 +52,7 @@ export default function ProductGrid({
           description={product.description}
           price={product.price}
           originalPrice={product.originalPrice}
-          image={product.image}
+          images={product.images}
           product_link={product.product_link}
         />
       ))}

@@ -20,6 +20,13 @@ export default function Footer({ empresa = 'CHANTILLY' }) {
             Somos una empresa apasionada en elaboracion y venta de tortas, postres y bocaditos.
             Así mismo ofrecemos la mejor calidad entre otros.
           </p>
+          <br />
+          <p className="text-lg mx-auto sm:mx-0 sm:text-left font-semibold">
+            Libro de reclamaciones:
+            <a href="#" className="cursor-pointer">
+              <img src="/libro.png" alt="Libro de reclamaciones" />
+            </a>
+          </p>
         </div>
         <div className="flex flex-col items-center text-center space-y-4">
           <a href="#" className="hidden md:block">

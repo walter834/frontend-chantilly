@@ -1,3 +1,5 @@
+import { string } from "zod";
+
 export interface ApiPage {
   id: number;
   name: string;
@@ -74,7 +76,7 @@ export interface ApiInitSessionNiubizTransformed {
 
 export interface TransformedOrder {
   orders: {
-    0:{
+    0: {
       billing_data: null,
       customer_id: number,
       id: number,
@@ -191,7 +193,12 @@ export interface ApiProduct {
     name: string;
     image_url: string;
   };
-  image: string;
+  images: Array<{
+    id: number;
+    url: string;
+    is_primary: number;
+    sort_order: number;
+  }>;
   status: boolean;
   best_status: boolean;
   theme: ApiTheme;
@@ -208,60 +215,50 @@ export interface ApiProductAccessory {
   large_description: string;
   min_price: string;
   max_price: string;
-  image: string;
+  images: Array<{
+    id: number;
+    url: string;
+    sort_order: number;
+    is_primary?: number;
+  }>;
   status: boolean;
   best_status: boolean
 }
 
 export interface ApiProductVariant {
-  data: {
-    0: {
-      id: number;
-      cod_fav: string;
-      description: string;
-      portion: number;
-      size_portion: number;
-      price: string;
-      hours: string;
-      sort: string;
-      image: string;
-      product: {
-        id: number;
-        short_description: string;
-        large_description: string;
-        product_type_id: number;
-        category_id: number;
-        min_price: string;
-        max_price: string;
-        theme_id: number;
-        image: string;
-        status: boolean;
-        best_status: boolean;
-        theme: ApiTheme;
-        category: {
-          id: number;
-          name: string;
-        };
-        product_type: {
-          id: number;
-          name: string;
-          status: number;
-        };
-      }
+  data: [
+    {
+      id: number,
+      product_id: number,
+      description: string,
+      portions: string,
+      price: string,
+      hours: number,
+      status: number,
+      images: [
+        {
+          id: number,
+          url: string,
+          is_primary: number,
+        }
+      ]
     }
-  }
+  ]
 }
 
 export interface TransformedProductVariant {
   id: number;
-  cod_fav: string;
+  product_id: number;
   description: string;
-  portion: number;
-  size_portion: number;
+  portions: string;
   price: string;
-  hours: string;
-  sort: string;
-  image: string;
+  hours: number;
+  status: number;
+  images: Array<{
+    id: number;
+    url: string;
+    is_primary: number;
+  }>;
 }
 
 export interface ApiProductsResponse {
@@ -332,7 +329,12 @@ export interface TransformedProduct {
   description: string;
   price: number;
   originalPrice?: number;
-  image: string;
+  images: Array<{
+    id: number;
+    url: string;
+    is_primary: number;
+    sort_order: number;
+  }>
   category_id: string;
   product_type_id: string;
   theme_id?: string;
@@ -346,7 +348,12 @@ export interface TransformedProductAccessory {
   large_description: string;
   min_price: string;
   max_price: string;
-  image: string;
+  images: Array<{
+    id: number;
+    url: string;
+    is_primary: number;
+    sort_order: number;
+  }>
   status: boolean;
   best_status: boolean;
 }
@@ -405,7 +412,7 @@ export function transformProduct(apiProduct: ApiProduct): TransformedProduct {
     description: apiProduct.large_description,
     price: minPrice,
     originalPrice: maxPrice > minPrice ? maxPrice : undefined,
-    image: apiProduct.image,
+    images: apiProduct.images,
     category_id: apiProduct.category_id?.toString() || '',
     product_type_id: apiProduct.product_type_id?.id?.toString() || '',
     theme_id: apiProduct.theme_id?.id?.toString() || '',
@@ -424,7 +431,12 @@ export function transformProductAccessory(apiProductAccessory: ApiProductAccesso
     large_description: apiProductAccessory.large_description,
     min_price: minPrice.toString(),
     max_price: maxPrice.toString(),
-    image: apiProductAccessory.image,
+    images: apiProductAccessory.images.map((image) => ({
+      id: image.id,
+      url: image.url,
+      is_primary: image.is_primary || 0,
+      sort_order: image.sort_order,
+    })),
     status: apiProductAccessory.status,
     best_status: apiProductAccessory.best_status,
   };
@@ -434,14 +446,13 @@ export function transformProductVariant(apiProductVariant: ApiProductVariant): T
   const variant = apiProductVariant.data[0];
   return {
     id: variant.id,
-    cod_fav: variant.cod_fav,
+    product_id: variant.product_id,
     description: variant.description,
-    portion: variant.portion,
-    size_portion: variant.size_portion,
+    portions: variant.portions,
     price: variant.price,
     hours: variant.hours,
-    sort: variant.sort,
-    image: variant.image,
+    status: variant.status,
+    images: variant.images,
   };
 }
 

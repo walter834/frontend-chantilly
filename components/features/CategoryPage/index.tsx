@@ -11,8 +11,6 @@ interface CategoryPageProps {
   products: TransformedProduct[];
   totalResults?: number;
   currentResults?: number;
-  onAddToCart?: (productId: string) => void;
-  onToggleFavorite?: (productId: string) => void;
   pagination?: {
     currentPage: number;
     perPage: number;
@@ -31,10 +29,7 @@ export default function CategoryPage({
   products,
   totalResults = 0,
   currentResults = 0,
-  onAddToCart,
-  onToggleFavorite,
   pagination,
-  currentPage = 1,
   searchTerm = ''
 }: CategoryPageProps) {
   const router = useRouter();

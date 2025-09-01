@@ -77,17 +77,17 @@ export function DeliveryDateAlert({
 
         <div className="space-y-4">
           <p className="text-gray-700">
-            Algunos productos requieren tiempo de preparación. La fecha de entrega más temprana posible es:
+            Algunos productos requieren tiempo mínimo de preparación.
           </p>
           <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
             <div className="flex flex-col gap-2 text-yellow-700">
               <div className="flex items-center gap-2">
                 <FaClock className="h-5 w-5 flex-shrink-0" />
                 <div>
-                  <p className="font-medium">Fecha límite: {formattedDeadline}</p>
+                  <p className="font-medium">Fecha mínima: {formattedDeadline}</p>
                   <p className="text-sm">
                     {daysDiff > 1 
-                      ? `Disponible en ${daysDiff} días (${maxHours} horas de preparación)`
+                      ? `Elaboración minima de ${maxHours} horas`
                       : `Disponible mañana a las ${adjustedDeadline.getHours()}:${adjustedDeadline.getMinutes().toString().padStart(2, '0')} hrs`}
                   </p>
                 </div>

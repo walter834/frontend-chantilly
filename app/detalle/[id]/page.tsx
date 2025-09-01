@@ -72,8 +72,6 @@ export default function DetallePage() {
     );
   }
 
-  console.log("product",product);
-
   return (
     <div className="container mx-auto px-4 py-8">
       <ProductDetail
@@ -83,7 +81,7 @@ export default function DetallePage() {
         price={product.price}
         originalPrice={product.originalPrice}
         theme={product.theme_id}
-        image={product.image}
+        image={product.images.map((img: any) => img.url)}
         productType={product.product_type_id}
         product_link={product.product_link}
       />
