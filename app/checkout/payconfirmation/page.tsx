@@ -171,7 +171,6 @@ export default function payconfirmation() {
                 {payment?.success ? payment?.description : payment?.description}
               </span>
             </div>
-
             <table className="w-full text-sm">
               <tbody>
                 <tr className="odd:bg-gray-50">
@@ -259,7 +258,7 @@ export default function payconfirmation() {
         <Link href="/" className="bg-[#c41c1a] hover:opacity-90 text-white px-4 py-2 rounded">
           Seguir comprando
         </Link>
-        <Link href="my-orders" className="bg-[#c41c1a] hover:opacity-90 text-white px-4 py-2 rounded">
+        <Link href="/my-orders" className="bg-[#c41c1a] hover:opacity-90 text-white px-4 py-2 rounded">
           Ir a mis compras
         </Link>
       </div>
