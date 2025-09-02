@@ -88,15 +88,15 @@ export async function getProducts(): Promise<Product[]> {
   }
 }
 
-export async function updateProductImage(
+export async function updateProductImages(
   id: number,
   images: File[]
 ): Promise<{ message: string; product: ApiProduct }> {
   try {
     const formData = new FormData();
 
-    images.forEach((image) => {
-      formData.append("images", image);
+    images.forEach((image,index) => {
+      formData.append(`images[${index}]`, image);
     });
 
     const response = await api.post(`/products/${id}`, formData, {
@@ -107,5 +107,16 @@ export async function updateProductImage(
     return response.data;
   } catch (err) {
     throw err;
+  }
+}
+
+export async function setPrimaryImage(id:number,imageId:number):Promise<{message:string;product:ApiProduct}> {
+  try {
+    const response = await api.post(`/products/${id}/set-primary-image`,{
+      image_id: imageId
+    });
+    return response.data;
+  } catch (error) {
+    throw error
   }
 }
