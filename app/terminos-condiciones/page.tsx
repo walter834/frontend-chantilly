@@ -1,4 +1,4 @@
-import Header from "../checkout/components/header";
+import Header from "@/components/HeaderIndi/header";
 
 export default function Terminos() {
     return (

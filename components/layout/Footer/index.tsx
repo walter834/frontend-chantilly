@@ -1,5 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import {
   FaFacebook,
   FaInstagram,
@@ -9,7 +10,8 @@ import {
 } from 'react-icons/fa6';
 
 export default function Footer({ empresa = 'CHANTILLY' }) {
-  return (
+    const pathname = usePathname();
+    return (
     <footer className="bg-[#c41c1a] text-white w-full py-6 pt-10">
       <div className="w-[95%] mx-auto grid grid-cols-1 md:grid-cols-3 gap-y-8 md:gap-x-12 items-start">
         <div className="flex flex-col items-start text-left space-y-2">
@@ -23,13 +25,13 @@ export default function Footer({ empresa = 'CHANTILLY' }) {
           <br />
           <p className="text-lg mx-auto sm:mx-0 sm:text-left font-semibold">
             Libro de reclamaciones:
-            <a href="#" className="cursor-pointer">
+            <a href="/libro-reclamaciones" className="cursor-pointer" target="_blank" rel="noreferrer">
               <img src="/libro.png" alt="Libro de reclamaciones" />
             </a>
           </p>
         </div>
         <div className="flex flex-col items-center text-center space-y-4">
-          <a href="#" className="hidden md:block">
+          <a href="/" className="hidden md:block">
             <Image
               src="/imgs/icons/icon-wthout-fondo.png"
               alt="Logo Footer"

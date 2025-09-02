@@ -47,6 +47,15 @@ export class LocalService {
     });
   }
 
+  static async getLocalsAll(): Promise<Local[]> {
+    try {
+      const response = await api.get(`/locals`);
+      return response.data;
+    } catch (error) {
+      throw new Error("Error al obtener los locales");
+    }
+  }
+
   /**
    * Obtiene los locales cercanos basándose en las coordenadas
    */

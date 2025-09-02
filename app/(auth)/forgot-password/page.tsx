@@ -1,5 +1,5 @@
 import ForgotPasswordCard from "./components/ForgotPasswordCard";
-import Header from "../../checkout/components/header";
+import Header from "@/components/HeaderIndi/header";
 
 
 export default function ForgotPassword() {
