@@ -30,7 +30,8 @@ export default function LayoutShell({
     pathname.startsWith("/reset-password") ||
     pathname.startsWith("/reset") ||
     pathname.startsWith("/admin") ||
-    pathname.startsWith("/admin/login")
+    pathname.startsWith("/admin/login") ||
+    pathname.startsWith("/libro-reclamaciones")
 
   if (isClean) {
     return (

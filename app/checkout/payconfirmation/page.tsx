@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import Header from "../components/header";
+import Header from "@/components/HeaderIndi/header";
 import { processNiubizPayment, dataPayment } from "@/service/orderService";
 import { parseNiubizDate, formatDate } from "@/lib/utils";
 import Loading from '../components/loading';

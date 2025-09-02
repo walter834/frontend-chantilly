@@ -2,7 +2,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { FaMagnifyingGlass, FaPencil } from "react-icons/fa6";
-import Header from "./components/header";
+import Header from "@/components/HeaderIndi/header";
 import { useRouter } from 'next/navigation';
 import { store } from '@/store/store';
 import { useEffect, useState } from 'react';

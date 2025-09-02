@@ -21,6 +21,7 @@ export const API_ROUTES = {
   NIUBIZ_PAY: '/pay',
   BANNER: '/banner',
   PAYMENT_DATA: '/payment-data',
+  COMPLAINT: '/complaints',
 } as const;
 
 const api = axios.create({
