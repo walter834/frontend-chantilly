@@ -25,6 +25,7 @@ export function FileUploadDialog({ id }: Props) {
   const [dragActive, setDragActive] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [primaryImageIndex, setPrimaryImageIndex] = useState(0);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -81,7 +82,13 @@ export function FileUploadDialog({ id }: Props) {
     }
     setIsUploading(true);
     try {
-      const result = await updateProductImage(id, files[0]);
+      const imagesWithMetadata = files.map((file,index)=>({
+        file,
+        is_primary:index === primaryImageIndex ? "1" : "0",
+        sort_order:index
+      }));
+
+      const result = await updateProductImage(id,imagesWithMetadata);
       toast.success("Imagen actualizada correctamente");
       setIsOpen(false);
       setFiles([]);

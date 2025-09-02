@@ -126,6 +126,33 @@ export async function addBannersWithLimit(
   return results;
 }
 
+export const addBannersBulk = async(images:File[],status:boolean = true): Promise<{success:boolean;data?:any;error?:string}> => {
+  try {
+    const formData = new FormData();
+    images.forEach((image,index)=>{
+      formData.append(`banners[${index}][image]`,image);
+      formData.append(`banners[${index}][status]`,status ? "1" : "0");
+    });
+
+    const response = await api.post("/banners/bulk",formData,{
+      headers:{
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    console.log(response)
+
+     return { success: true, data: response.data };
+  } catch (error:any) {
+     console.error("Error in bulk banner upload:", error);
+    return {
+      success: false,
+      error: error?.response?.data?.message || "Error al subir los banners"
+    };
+  }
+}
+
+
 export const updateBannerOrder = async (
   id: number,
   display_order: string

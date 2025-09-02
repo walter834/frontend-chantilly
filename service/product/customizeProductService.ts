@@ -6,7 +6,7 @@ export interface ApiProduct {
   large_description: string;
   min_price: string;
   max_price: string;
-  image: string;
+  images: Image[];
   status: boolean;
   best_status: boolean;
   product_type_id: ProductTypeID;
@@ -20,19 +20,17 @@ export interface CategoryID {
   name: string;
 }
 
+export interface Image {
+  id: number;
+  url: string;
+  is_primary: number;
+  sort_order: number;
+}
+
 export interface ProductTypeID {
   id: number;
   name: Name;
   status: number;
-}
-
-export interface Product {
-  id: number;
-  name: string;
-  description: string;
-  product_type_id: number;
-  product_type_name: string;
-  image: string;
 }
 
 export enum Name {
@@ -43,21 +41,45 @@ export enum Name {
   TortaTematica = "TORTA TEMATICA",
 }
 
+export interface Product {
+  id: number;
+  name: string;
+  description: string;
+  product_type_id: number;
+  product_type_name: string;
+  image: string;
+  images: Image[];
+}
+
+export interface ImageWithMetadata {
+  file: File;
+  is_primary: number;
+  sort_order: number;
+}
+
 export async function getProducts(): Promise<Product[]> {
   try {
-    let data;
     const { data: responseData } = await api.get("/products/all");
-    data = responseData;
 
-    const transformedProducts: Product[] = data.map(
-      (apiProduct: ApiProduct) => ({
-        id: apiProduct.id,
-        name: apiProduct.short_description,
-        description: apiProduct.large_description,
-        product_type_id: apiProduct.product_type_id.id,
-        product_type_name: apiProduct.product_type_id.name,
-        image: apiProduct.image,
-      })
+    const transformedProducts: Product[] = responseData.map(
+      (apiProduct: ApiProduct) => {
+        const primaryImage = apiProduct.images.find(
+          (img) => img.is_primary === 1
+        );
+        const fallbackImage = apiProduct.images.sort(
+          (a, b) => a.sort_order - b.sort_order
+        )[0];
+
+        return {
+          id: apiProduct.id,
+          name: apiProduct.short_description,
+          description: apiProduct.large_description,
+          product_type_id: apiProduct.product_type_id.id,
+          product_type_name: apiProduct.product_type_id.name,
+          image: primaryImage?.url || fallbackImage?.url || "",
+          images: apiProduct.images,
+        };
+      }
     );
 
     return transformedProducts;
@@ -68,16 +90,19 @@ export async function getProducts(): Promise<Product[]> {
 
 export async function updateProductImage(
   id: number,
-  image: File
-): Promise<any> {
+  images: File[]
+): Promise<{ message: string; product: ApiProduct }> {
   try {
     const formData = new FormData();
-    formData.append("image", image);
 
-    const response = await api.post(`/products/${id}`,formData,{
-      headers:{
-        'Content-Type': undefined
-      }
+    images.forEach((image) => {
+      formData.append("images", image);
+    });
+
+    const response = await api.post(`/products/${id}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
     });
     return response.data;
   } catch (err) {
