@@ -20,7 +20,7 @@ interface ProductDetailProps {
   price: number;
   originalPrice?: number;
   theme?: string | null;
-  image: string[];
+  image: any[];
   productType: string;
   description: string;
   product_link: string;
@@ -39,7 +39,7 @@ const AccessoryItem = ({ accessory, onAddToCart }: AccessoryItemProps) => {
   return (
     <div className="flex flex-col items-center p-2">
       <div className="w-full">
-        <div 
+        <div
           className="bg-gray-200 rounded mb-1 overflow-hidden relative"
           onMouseEnter={() => {
             setIsHovered(true);
@@ -60,9 +60,8 @@ const AccessoryItem = ({ accessory, onAddToCart }: AccessoryItemProps) => {
               alt={accessory.short_description}
               width={128}
               height={128}
-              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] ${
-                imgIndex === currentImageIndex ? 'opacity-100' : 'opacity-0'
-              }`}
+              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] ${imgIndex === currentImageIndex ? 'opacity-100' : 'opacity-0'
+                }`}
               style={{
                 aspectRatio: '1/1',
                 transform: isHovered ? 'scale(1.05)' : 'scale(1)',
@@ -98,7 +97,7 @@ const ProductDetail = ({ id, name, price, originalPrice, theme, image, productTy
   const router = useRouter();
   const [cakeFlavors, setCakeFlavors] = useState<TransformedCakeFlavor[]>([]);
   const [selectedCake, setSelectedCake] = useState('');
-  const [accessories, setAccessories] = useState<TransformedProductAccessory[]>([]); 
+  const [accessories, setAccessories] = useState<TransformedProductAccessory[]>([]);
   const [bocaditos, setBocaditos] = useState<TransformedProduct[]>([]);
   const [loadingAccessories, setLoadingAccessories] = useState(true);
   const [loadingBocaditos, setLoadingBocaditos] = useState(true);
@@ -248,7 +247,6 @@ const ProductDetail = ({ id, name, price, originalPrice, theme, image, productTy
   };
 
   const displayImages = imageProduct.length > 0 ? imageProduct : image;
-
   return (
     <div className="mx-auto">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -261,33 +259,41 @@ const ProductDetail = ({ id, name, price, originalPrice, theme, image, productTy
                 slidesPerView={1}
                 navigation={true}
                 pagination={{ clickable: true }}
-                /* autoplay={{
-                  delay: 3000,
-                  disableOnInteraction: false,
-                }} */
-               className="custom-pagination-swiper"
+                className="custom-pagination-swiper"
               >
-                {displayImages.map((img: string, index: number) => (
-                  <SwiperSlide key={index}>
-                    <Image
-                      src={img}
-                      alt={`${name} - Imagen ${index + 1}`}
-                      width={400}
-                      height={400}
-                      className="w-full h-full object-cover"
-                      priority={index === 0}
-                    />
-                  </SwiperSlide>
-                ))}
+                {/* Ordenar imágenes con is_primary: 1 primero */}
+                {[...displayImages]
+                  .sort((a, b) => {
+                    const aPrimary = typeof a === 'object' ? a.is_primary === 1 : false;
+                    const bPrimary = typeof b === 'object' ? b.is_primary === 1 : false;
+                    return bPrimary ? 1 : aPrimary ? -1 : 0;
+                  })
+                  .map((img, index) => {
+                    const src = typeof img === 'string' ? img : img.url;
+                    const isPrimary = typeof img === 'object' ? img.is_primary === 1 : index === 0;
+
+                    return (
+                      <SwiperSlide key={src}>
+                        <Image
+                          src={src}
+                          alt={`${name} - Imagen ${index + 1}`}
+                          width={400}
+                          height={400}
+                          className="w-full h-full object-cover"
+                          priority={isPrimary}
+                        />
+                      </SwiperSlide>
+                    );
+                  })}
               </Swiper>
             ) : (
               <Image
-                src={displayImages[0] || '/placeholder-product.jpg'}
+                src={displayImages[0]?.url || displayImages[0] || '/placeholder-product.jpg'}
                 alt={name}
                 width={400}
                 height={400}
                 className="w-full h-full object-cover"
-                priority
+                priority={displayImages[0]?.is_primary === 1 || true}
               />
             )}
           </div>
@@ -341,10 +347,10 @@ const ProductDetail = ({ id, name, price, originalPrice, theme, image, productTy
                 <div className="text-center text-gray-500">Cargando...</div>
               ) : (
                 accessories.map((accessory, index) => (
-                  <AccessoryItem 
-                    key={accessory.id || index} 
-                    accessory={accessory} 
-                    onAddToCart={handleAddToCart} 
+                  <AccessoryItem
+                    key={accessory.id || index}
+                    accessory={accessory}
+                    onAddToCart={handleAddToCart}
                   />
                 ))
               )}

@@ -34,7 +34,7 @@ export default function ProductCard({
 
   return (
     <div className="text-center group">
-      <div 
+      <div
         className="relative mb-4 overflow-hidden rounded-lg cursor-pointer"
         onMouseEnter={() => {
           setIsHovered(true);
@@ -49,30 +49,31 @@ export default function ProductCard({
         onClick={handleViewDetails}
       >
         <div className="relative w-full h-full" style={{ aspectRatio: '1/1' }}>
-          {imageUrls.map((url, index) => (
-            <Image
-              key={index}
-              src={url}
-              alt={name}
-              width={300}
-              height={300}
-              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] ${
-                index === currentImageIndex ? 'opacity-100' : 'opacity-0'
-              }`}
-              style={{
-                transform: isHovered ? 'scale(1.05)' : 'scale(1)',
-                transition: 'transform 0.7s cubic-bezier(0.4,0,0.2,1), opacity 0.7s cubic-bezier(0.4,0,0.2,1)'
-              }}
-              priority={index === 0}
-              loading={index === 0 ? 'eager' : 'lazy'}
-            />
-          ))}
+          {images
+            .sort((a, b) => (b.is_primary || 0) - (a.is_primary || 0)) // Sort with primary images first
+            .map((image, index) => (
+              <Image
+                key={image.id || index}
+                src={image.url}
+                alt={name}
+                width={300}
+                height={300}
+                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] ${index === currentImageIndex ? 'opacity-100' : 'opacity-0'
+                  }`}
+                style={{
+                  transform: isHovered ? 'scale(1.05)' : 'scale(1)',
+                  transition: 'transform 0.7s cubic-bezier(0.4,0,0.2,1), opacity 0.7s cubic-bezier(0.4,0,0.2,1)'
+                }}
+                priority={index === 0 && image.is_primary === 1} // Set priority only for primary image
+                loading={index === 0 && image.is_primary === 1 ? 'eager' : 'lazy'}
+              />
+            ))}
         </div>
       </div>
 
       <div className="space-y-2">
         <h3 className="font-semibold text-[#c41c1a] text-lg">{name}</h3>
-        
+
         <p className="text-black font-normal text-sm">{description}</p>
 
         <div className="flex items-center justify-center space-x-2">
