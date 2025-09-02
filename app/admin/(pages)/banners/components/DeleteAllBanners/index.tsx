@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { deleteBanner } from "@/service/bannerService";
-import { Loader2, Trash, Trash2 } from "lucide-react";
+import { deleteAllBanners } from "@/service/bannerService";
+import { BrushCleaning, Loader2, Trash } from "lucide-react";
 import React, { useState } from "react";
-import { toast } from "sonner";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,66 +14,51 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-interface Props {
-  id: number;
 
-  bannerTitle?: string;
-}
-
-export default function DeleteBanner({ id, bannerTitle }: Props) {
+export const AllDeleteBanners = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-
-  async function handleDelete() {
-    setIsDeleting(true);
-
+  async function handleDeleteAll() {
     try {
-      await deleteBanner(id);
-      toast.success("Banner eliminado correctamente");
-      setIsOpen(false);
-
+      setIsDeleting(true);
+      await deleteAllBanners();
       if (
         typeof window !== "undefined" &&
         (window as any).refreshBannersTable
       ) {
         (window as any).refreshBannersTable();
       }
+      setIsOpen(false);
     } catch (err) {
-      console.error("Error al eliminar banner:", err);
-      toast.error("No se pudo eliminar el banner. Inténtalo de nuevo.");
+      throw err;
     } finally {
       setIsDeleting(false);
     }
   }
-
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogTrigger asChild>
-        <Button size="sm" className="bg-red-700 hover:bg-red-800 text-white">
-          <Trash2 className="w-4 h-4" />
+        <Button
+          variant="outline"
+          className="border-red-200 text-red-700 hover:bg-red-50 bg-transparent"
+        >
+          Borrar todo
         </Button>
       </AlertDialogTrigger>
 
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>¿Eliminar banner?</AlertDialogTitle>
+          <AlertDialogTitle>¿Eliminar todo?</AlertDialogTitle>
           <AlertDialogDescription>
-            {bannerTitle ? (
-              <>
-                Estás a punto de eliminar el banner{" "}
-                <strong>"{bannerTitle}"</strong>. Esta acción no se puede
-                deshacer.
-              </>
-            ) : (
-              "Esta acción no se puede deshacer. El banner será eliminado permanentemente."
-            )}
+            Esta acción no se puede deshacer. Todos los banners serán eliminados
+            permanentemente.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
           <AlertDialogAction
-            onClick={handleDelete}
+            onClick={handleDeleteAll}
             disabled={isDeleting}
             className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
           >
@@ -90,4 +75,6 @@ export default function DeleteBanner({ id, bannerTitle }: Props) {
       </AlertDialogContent>
     </AlertDialog>
   );
-}
+};
+
+export default AllDeleteBanners;

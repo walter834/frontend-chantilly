@@ -95,15 +95,12 @@ export function FileUploadDialog({ id }: Props) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        {/* <button className="h-12 w-12 p-0 rounded-md  border-gray-200 hover:bg-gray-50 transition-colors flex items-center justify-center cursor-pointer">
-          <ImageIcon className="h-8 w-8 text-green-600" />
-        </button> */}
         <Button
-          variant="ghost"
           size="sm"
-          className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
+          variant="outline"
+          className="border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300 bg-transparent"
         >
-          <Pencil />
+          <Pencil className="w-4 h-4" />
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
