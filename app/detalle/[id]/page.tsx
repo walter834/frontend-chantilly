@@ -81,7 +81,7 @@ export default function DetallePage() {
         price={product.price}
         originalPrice={product.originalPrice}
         theme={product.theme_id}
-        image={product.images.map((img: any) => img.url)}
+        image={product.images.map((img: any) => img)}
         productType={product.product_type_id}
         product_link={product.product_link}
       />
