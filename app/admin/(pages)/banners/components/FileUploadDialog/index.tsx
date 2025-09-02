@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,17 +14,40 @@ import {
 import { ImageIcon, Upload, X, File, Loader2, Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { updateBannerImage } from "@/service/bannerService";
+import { updateBannerImage, updateBannerStatus } from "@/service/bannerService";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
 
 interface Props {
   id: number;
+  currentStatus?: boolean;
 }
 
-export function FileUploadDialog({ id }: Props) {
+export function FileUploadDialog({ id, currentStatus }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  // Keep track of the original status to compare changes
+  const [originalStatus, setOriginalStatus] = useState<boolean>(currentStatus ?? false);
+  const [status, setStatus] = useState<boolean>(currentStatus ?? false);
+
+  useEffect(() => {
+    // Debug: vamos a ver qué valor exacto está llegando
+    console.log('🔍 Debug currentStatus:', {
+      value: currentStatus,
+      type: typeof currentStatus,
+      isUndefined: currentStatus === undefined,
+      isNull: currentStatus === null,
+      isFalsy: !currentStatus,
+      normalized: currentStatus ?? false
+    });
+    
+    const normalizedStatus = currentStatus ?? false;
+    setOriginalStatus(normalizedStatus);
+    setStatus(normalizedStatus);
+  }, [currentStatus]);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -74,23 +97,62 @@ export function FileUploadDialog({ id }: Props) {
     );
   };
 
-  const handleUpload = async () => {
-    if (files.length === 0) {
-      toast.error("Selecciona una imagen primero");
-      return;
-    }
+  const handleUpdate = async () => {
     setIsUploading(true);
+    
     try {
-      const result = await updateBannerImage(id, files[0]);
-      toast.success("Imagen actualizada correctamente");
+      const promises = [];
+      if (files.length > 0) {
+        promises.push(updateBannerImage(id, files[0]));
+      }
+      // Compare with the original status that was set when component mounted/updated
+      if (status !== originalStatus) {
+        promises.push(updateBannerStatus(id, status));
+      }
+
+      if (promises.length === 0) {
+        toast.info("No hay cambios que guardar");
+        return;
+      }
+
+      await Promise.all(promises);
+
+      let message = "";
+
+      if (files.length > 0 && status !== originalStatus) {
+        message = "Imagen y estado actualizados correctamente";
+      } else if (files.length > 0) {
+        message = "Imagen actualizada correctamente";
+      } else {
+        message = "Estado actualizado correctamente";
+      }
+      toast.success(message);
       setIsOpen(false);
       setFiles([]);
+
+      // Update the original status after successful save
+      setOriginalStatus(status);
+
+      if (typeof window !== "undefined" && (window as any).refreshBannersTable) {
+        (window as any).refreshBannersTable();
+      }
     } catch (error) {
       toast.error("Error al actualizar la imagen");
     } finally {
       setIsUploading(false);
     }
   };
+
+  // Compare with original status instead of currentStatus
+  const hasChanges = files.length > 0 || status !== originalStatus;
+
+  // Debug render
+  console.log('🔄 Render states:', {
+    currentStatus,
+    originalStatus,
+    status,
+    hasChanges
+  });
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -112,6 +174,24 @@ export function FileUploadDialog({ id }: Props) {
         </DialogHeader>
 
         <div className="space-y-4">
+          <div className="flex items-center justify-between space-x-2 p-3 bg-gray-50 rounded-lg">
+            <div className="space-y-1">
+              <Label htmlFor="status-switch" className="text-sm font-medium">
+                Estado del banner
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {status ? 'El banner será visible para los usuarios' : 'El banner estará oculto'}
+              </p>
+            </div>
+            <Switch
+              id="status-switch"
+              checked={status}
+              onCheckedChange={setStatus}
+              disabled={isUploading}
+            />
+          </div>
+
+          <Separator />
           {/* Drag and Drop Area */}
           <div
             className={cn(
@@ -194,14 +274,18 @@ export function FileUploadDialog({ id }: Props) {
           <div className="flex justify-end gap-2 pt-4">
             <Button
               variant="outline"
-              onClick={() => setIsOpen(false)}
+              onClick={() => {
+                setIsOpen(false);
+                setFiles([]);
+                setStatus(originalStatus);
+              }}
               disabled={isUploading}
             >
               Cancelar
             </Button>
             <Button
-              onClick={handleUpload}
-              disabled={files.length === 0 || isUploading}
+              onClick={handleUpdate}
+              disabled={!hasChanges || isUploading}
             >
               {isUploading ? (
                 <>
@@ -209,7 +293,7 @@ export function FileUploadDialog({ id }: Props) {
                   Subiendo...
                 </>
               ) : (
-                `Actualizar imagen`
+                "Guardar cambios"
               )}
             </Button>
           </div>
