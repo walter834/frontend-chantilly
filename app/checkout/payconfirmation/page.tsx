@@ -259,7 +259,7 @@ export default function payconfirmation() {
         <Link href="/" className="bg-[#c41c1a] hover:opacity-90 text-white px-4 py-2 rounded">
           Seguir comprando
         </Link>
-        <Link href={`${process.env.NEXT_PUBLIC_BASE_URL}/my-orders`} className="bg-[#c41c1a] hover:opacity-90 text-white px-4 py-2 rounded">
+        <Link href="my-orders" className="bg-[#c41c1a] hover:opacity-90 text-white px-4 py-2 rounded">
           Ir a mis compras
         </Link>
       </div>

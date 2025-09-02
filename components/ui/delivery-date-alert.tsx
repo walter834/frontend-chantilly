@@ -109,7 +109,7 @@ export function DeliveryDateAlert({
                   )}
                   <div>
                     <p className="text-sm font-medium text-gray-900">{product.name}</p>
-                    <p className="text-xs text-gray-500">Tiempo de preparación: {product.hours} horas</p>
+                    <p className="text-xs text-gray-500">Tiempo de preparación mínima: {product.hours} horas</p>
                   </div>
                 </li>
               ))}

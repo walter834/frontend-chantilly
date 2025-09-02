@@ -59,7 +59,7 @@ export default function PayButtom({ arrayOrder }: { arrayOrder: any }) {
         const maxHour = Math.max(
             ...arrayOrder.items
                 .map((item: any) => item.product?.hour)
-                .filter((hour: any): hour is number => typeof hour === 'number')
+                .filter((hour: any): hour is string => typeof hour === 'string')
         ) || 0;
         console.log('maxHour', maxHour);
 
