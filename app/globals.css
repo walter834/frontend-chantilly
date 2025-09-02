@@ -270,3 +270,24 @@
 }
   
 /* fin selector personalizado */
+
+/* react-select */
+
+.css-13cymwt-control:hover{
+  border-color: #c41d1ada !important;
+}
+
+.css-13cymwt-control:focus{
+  border-color: #c41d1ada !important;
+}
+
+.css-13cymwt-control:focus-within{
+  border-color: #c41d1ada !important;
+}
+
+.css-13cymwt-control{
+  border-color: #c41d1ada !important;
+  box-shadow: 0 0 0 1px #c41d1ada !important;
+}
+
+/* fin react-select */

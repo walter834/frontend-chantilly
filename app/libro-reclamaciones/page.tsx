@@ -8,6 +8,7 @@ import { createComplaint, getNextNumber } from '@/service/reclamacion/claimServi
 import { CustomAlert } from '@/components/ui/custom-alert';
 import Loading from '../checkout/components/loading';
 import { useAuth } from "@/hooks/useAuth";
+import Select from 'react-select'
 
 interface ComplaintFormData {
     number_complaint: string;
@@ -43,7 +44,7 @@ type Local = {
 export default function LibroReclamaciones() {
     const router = useRouter();
     const fechaActual = new Date().toISOString().split('T')[0];
-    const [locals, setLocals] = useState<Local[]>([]);
+    const [locals, setLocals] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const { isAuthenticated, customerId, name, lastname, email, phone, address, documentNumber } = useAuth();
     const [confirmData, setConfirmData] = useState(false);
@@ -52,7 +53,11 @@ export default function LibroReclamaciones() {
         const fetchLocals = async () => {
             try {
                 const data = await LocalService.getLocalsAll();
-                setLocals(data);
+                const options = data.map((local: any) => ({
+                    value: local.id,
+                    label: local.name,
+                }));
+                setLocals(options);
             } catch (error) {
                 console.error('Error fetching locals:', error);
             }
@@ -111,9 +116,17 @@ export default function LibroReclamaciones() {
         signaturePreview: ''
     });
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement> | any, { name, value }: { name?: string; value?: any } = {}) => {
+        if (e && e.value !== undefined) {
+            setFormData(prev => ({ ...prev, [e.name]: e.value }));
+        } 
+        else if (e && e.target) {
+            const { name, value } = e.target;
+            setFormData(prev => ({ ...prev, [name]: value }));
+        }
+        else if (name && value !== undefined) {
+            setFormData(prev => ({ ...prev, [name]: value }));
+        }
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -131,6 +144,7 @@ export default function LibroReclamaciones() {
         e.preventDefault();
         setIsLoading(true);
         const formDataToSend = new FormData();
+        console.log(formData);
 
         Object.entries(formData).forEach(([key, value]) => {
             if (key === 'path_evidence' && value.length > 0) {
@@ -159,7 +173,7 @@ export default function LibroReclamaciones() {
         <>
             <Header />
             {isLoading && <Loading text="Enviando reclamo..." />}
-            <main className="bg-gray-50 py-8">
+            <main className="bg-gray-50 z-0 py-8">
                 <div className="container mx-auto px-4">
                     {!confirmData ? (
                         <div className="max-w-6xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
@@ -193,20 +207,15 @@ export default function LibroReclamaciones() {
                                 </div>
                                 <div className="pt-4">
                                     <label htmlFor="local_id" className="block text-gray-700 text-sm font-bold mb-2">Establecimiento *</label>
-                                    <select
-                                        id="local_id"
-                                        name="local_id"
-                                        value={formData.local_id}
-                                        required
-                                        onChange={handleChange}
-                                        className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-[#c41c1a] focus:border-transparent"
-                                    >   <option value="">Seleccione un establecimiento</option>
-                                        {locals.map((local: any) => (
-                                            <option key={local.id} value={local.id}>
-                                                {local.name}
-                                            </option>
-                                        ))}
-                                    </select>
+                                            <Select
+                                                name="local_id"
+                                                placeholder="Seleccione un establecimiento"
+                                                options={locals} 
+                                                onChange={(selectedOption) => handleChange({ 
+                                                    name: 'local_id', 
+                                                    value: selectedOption?.value 
+                                                })}
+                                            />
                                 </div>
                             </div>
 
