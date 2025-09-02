@@ -14,7 +14,7 @@ import {
 import { Upload, X, File, Loader2, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { addBanner, addBannersWithLimit } from "@/service/bannerService";
+import { addBannersBulk } from "@/service/bannerService";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 
@@ -44,7 +44,7 @@ export function AddBanner() {
       const newFiles = Array.from(e.dataTransfer.files).filter((file) =>
         file.type.startsWith("image/")
       );
-      // Solo permitir una imagen
+      // Limitar a 12 imágenes según tu backend
       setFiles(newFiles.slice(0, 12));
     }
   }, []);
@@ -54,7 +54,7 @@ export function AddBanner() {
       const newFiles = Array.from(e.target.files).filter((file) =>
         file.type.startsWith("image/")
       );
-      // Solo permitir una imagen
+      // Limitar a 12 imágenes según tu backend
       setFiles(newFiles.slice(0, 12));
     }
   };
@@ -75,68 +75,48 @@ export function AddBanner() {
 
   const handleAdd = async () => {
     if (files.length === 0) {
-      toast.error("Selecciona una imagen primero");
+      toast.error("Selecciona al menos una imagen");
       return;
     }
+
+    if (files.length > 12) {
+      toast.error("No puedes subir más de 12 imágenes a la vez");
+      return;
+    }
+
     setIsUploading(true);
+    
     try {
-      const results = await addBannersWithLimit(files, status, 3);
-      const successCount = results.filter((r: any) => r.success).length;
-      const errorCount = results.filter((r: any) => !r.success).length;
-      const limitError = results.find((r: any) => r.isLimitError);
-
-      if (limitError) {
-        toast.error(limitError.error);
-
-        if (successCount > 0) {
-          toast.success(
-            `${successCount} imagen${
-              successCount > 1 ? "es" : ""
-            } se subieron antes de alcanzar el límite`
-          );
+      const result = await addBannersBulk(files, status);
+      
+      if (result.success) {
+        toast.success(
+          `${files.length} banner${files.length > 1 ? 's' : ''} ${files.length > 1 ? 'añadidos' : 'añadido'} correctamente`
+        );
+        
+        setIsOpen(false);
+        setFiles([]);
+        
+        // Refresh the table
+        if (typeof window !== "undefined" && (window as any).refreshBannersTable) {
+          (window as any).refreshBannersTable();
         }
-
-        const failedFiles = results
-          .filter((r: any) => !r.success && !r.notProcessed)
-          .map((_: any, index: any) => files[index])
-          .filter(Boolean);
-
-        setFiles(failedFiles);
       } else {
-        if (successCount > 0) {
-          toast.success(
-            `${successCount} imagen${successCount > 1 ? "es" : ""} añadida${
-              successCount > 1 ? "s" : ""
-            } correctamente`
-          );
-        }
-        if (errorCount > 0) {
-          const failedFiles = results
-            .filter((r: any) => !r.success)
-            .map((r: any) => r.fileName)
-            .join(", ");
-          toast.error(
-            `Error al subir ${errorCount} imagen${
-              errorCount > 1 ? "es" : ""
-            }: ${failedFiles}`
-          );
-        }
-        if (successCount > 0) {
-          setIsOpen(false);
-          setFiles([]);
-        }
+        toast.error(result.error || "Error al crear los banners");
       }
-      if (
-        successCount > 0 &&
-        typeof window !== "undefined" &&
-        (window as any).refreshBannersTable
-      ) {
-        (window as any).refreshBannersTable();
-      }
-    } catch (error) {
-      toast.error("Error al subir las imágenes");
+    } catch (error: any) {
       console.error("Error uploading banners:", error);
-      40;
+      
+      // Handle specific error messages from backend
+      if (error?.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else if (error?.response?.data?.errors) {
+        // Handle validation errors
+        const errorMessages = Object.values(error.response.data.errors).flat();
+        toast.error(errorMessages.join(', '));
+      } else {
+        toast.error("Error al subir las imágenes");
+      }
     } finally {
       setIsUploading(false);
     }
@@ -154,19 +134,18 @@ export function AddBanner() {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Upload className="h-5 w-5" />
-            Carga las imágenes del producto
+            Carga las imágenes del banner
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
-          {/*  */}
+          {/* Status Switch */}
           <div className="flex items-center justify-between space-x-2 p-3 bg-gray-50 rounded-lg">
             <div className="space-y-1">
               <Label htmlFor="status-switch" className="text-sm font-medium">
                 Estado inicial
               </Label>
               <p className="text-xs text-muted-foreground">
-                {" "}
                 {status
                   ? "Los banners se crearán activos"
                   : "Los banners se crearán inactivos"}
@@ -179,6 +158,12 @@ export function AddBanner() {
               disabled={isUploading}
             />
           </div>
+
+          {/* File limit info */}
+          <div className="text-xs text-muted-foreground bg-blue-50 p-2 rounded border border-blue-200">
+            📝 Puedes subir hasta 12 imágenes a la vez. Solo se aceptan archivos JPG, JPEG, PNG y WebP.
+          </div>
+
           {/* Drag and Drop Area */}
           <div
             className={cn(
@@ -198,7 +183,7 @@ export function AddBanner() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground mb-2">
-                  Arrastra las imágenes aquí para subirlos
+                  Arrastra las imágenes aquí para subirlas
                 </p>
                 <p className="text-xs text-muted-foreground mb-4">
                   o haz clic para seleccionar archivos
@@ -227,7 +212,12 @@ export function AddBanner() {
           {/* File List */}
           {files.length > 0 && (
             <div className="space-y-2">
-              <h4 className="text-sm font-medium">Archivos seleccionados:</h4>
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium">Archivos seleccionados:</h4>
+                <span className="text-xs text-muted-foreground">
+                  {files.length}/12
+                </span>
+              </div>
               <div className="max-h-40 overflow-y-auto space-y-2">
                 {files.map((file, index) => (
                   <div
@@ -248,6 +238,7 @@ export function AddBanner() {
                       size="sm"
                       onClick={() => removeFile(index)}
                       className="h-6 w-6 p-0 flex-shrink-0"
+                      disabled={isUploading}
                     >
                       <X className="h-3 w-3" />
                     </Button>
@@ -261,7 +252,10 @@ export function AddBanner() {
           <div className="flex justify-end gap-2 pt-4">
             <Button
               variant="outline"
-              onClick={() => setIsOpen(false)}
+              onClick={() => {
+                setIsOpen(false);
+                setFiles([]);
+              }}
               disabled={isUploading}
             >
               Cancelar
@@ -276,7 +270,7 @@ export function AddBanner() {
                   Subiendo...
                 </>
               ) : (
-                `Añadir`
+                `Añadir ${files.length} banner${files.length > 1 ? 's' : ''}`
               )}
             </Button>
           </div>

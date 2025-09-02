@@ -57,6 +57,8 @@ export function DataTable<TData, TValue>({
     setReorderedData(data);
   }, [data]);
 
+  const hasData = reorderedData.length > 0;
+
   const updateDisplayOrders = (array: TData[]): TData[] => {
     return array.map(
       (item, index) =>
@@ -253,12 +255,12 @@ export function DataTable<TData, TValue>({
     <div className="w-full space-y-6">
       <div className="flex justify-between">
         <div className="flex gap-2 justify-end">
-          {!isEditMode ? (
+          {hasData && !isEditMode ? (
             <Button onClick={handleEditMode} variant="outline" size="sm">
               <Edit3 className="h-4 w-4 mr-2" />
               Editar orden
             </Button>
-          ) : (
+          ) : isEditMode ? (
             <>
               <Button onClick={handleSaveOrder} variant="default" size="sm">
                 <Save className="h-4 w-4 mr-2" />
@@ -269,7 +271,7 @@ export function DataTable<TData, TValue>({
                 Cancelar
               </Button>
             </>
-          )}
+          ) : null}
         </div>
 
         {!isEditMode && (
