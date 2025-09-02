@@ -119,8 +119,8 @@ export function FileUploadDialog({ id }: Props) {
       setPrimaryImageIndex(0);
 
       
-      if (typeof window !== "undefined" && (window as any).refreshBannersTable) {
-        (window as any).refreshBannersTable();
+      if (typeof window !== "undefined" && (window as any).refreshProductsTable) {
+        (window as any).refreshProductsTable();
       }
     } catch (error) {
       toast.error("Error al actualizar las imágenes");
