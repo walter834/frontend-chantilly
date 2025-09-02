@@ -1,22 +1,52 @@
-import { getProducts } from "@/service/product/customizeProductService";
+"use client"
+import {
+  getProducts,
+} from "@/service/product/customizeProductService";
 import { columns, Product } from "./columns";
 import { DataTable } from "./data-table";
+import { useEffect, useState } from "react";
 
+export default function Products() {
+  const [data, setData] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
-async function getData(): Promise<Product[]> {
- 
-  try{
-    return await getProducts();
-  }catch(error){
-    return[]
+  const getData = async (): Promise<Product[]> => {
+    try {
+      return await getProducts();
+    } catch (error) {
+      return [];
+    }
+  };
+
+  const loadData = async () => {
+    setLoading(true);
+    const products = await getData();
+    setData(products);
+    setLoading(false);
+  };
+
+  const refreshData = async () => {
+    const products = await getData();
+    setData(products);
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      (window as any).refreshProductsTable = refreshData;
+    }
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="container mx-auto py-10">
+        <div>Cargando...</div>
+      </div>
+    );
   }
-  
-}
-
-export default async function Products() {
-  const data = await getData();
- 
- 
   return (
     <div className="container mx-auto py-10">
       <DataTable columns={columns} data={data} />
