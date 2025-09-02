@@ -313,7 +313,7 @@ export function DataTable<TData, TValue>({
           </TableHeader>
           <TableBody ref={tableBodyRef}>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row, tableIndex) => {
+              table.getRowModel().rows.map((row) => {
                 const rowData = row.original as any;
                 const displayOrder = rowData.display_order;
 

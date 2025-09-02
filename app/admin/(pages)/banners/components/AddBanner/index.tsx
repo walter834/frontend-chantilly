@@ -15,12 +15,15 @@ import { Upload, X, File, Loader2, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { addBanner, addBannersWithLimit } from "@/service/bannerService";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 
 export function AddBanner() {
   const [isOpen, setIsOpen] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [status, setStatus] = useState(true);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -77,7 +80,7 @@ export function AddBanner() {
     }
     setIsUploading(true);
     try {
-      const results = await addBannersWithLimit(files, 3);
+      const results = await addBannersWithLimit(files, status, 3);
       const successCount = results.filter((r: any) => r.success).length;
       const errorCount = results.filter((r: any) => !r.success).length;
       const limitError = results.find((r: any) => r.isLimitError);
@@ -102,7 +105,7 @@ export function AddBanner() {
       } else {
         if (successCount > 0) {
           toast.success(
-            `${successCount} imagen${successCount > 1 ? "es" : ""}añadida${
+            `${successCount} imagen${successCount > 1 ? "es" : ""} añadida${
               successCount > 1 ? "s" : ""
             } correctamente`
           );
@@ -157,7 +160,25 @@ export function AddBanner() {
 
         <div className="space-y-4">
           {/*  */}
-
+          <div className="flex items-center justify-between space-x-2 p-3 bg-gray-50 rounded-lg">
+            <div className="space-y-1">
+              <Label htmlFor="status-switch" className="text-sm font-medium">
+                Estado inicial
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {" "}
+                {status
+                  ? "Los banners se crearán activos"
+                  : "Los banners se crearán inactivos"}
+              </p>
+            </div>
+            <Switch
+              id="status-switch"
+              checked={status}
+              onCheckedChange={setStatus}
+              disabled={isUploading}
+            />
+          </div>
           {/* Drag and Drop Area */}
           <div
             className={cn(

@@ -10,6 +10,7 @@ import { FileUploadDialog } from "./components/FileUploadDialog";
 import DeleteBanner from "./components/DeleteBanner";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
+import { StatusUpdateDialog } from "./components/StatusUpdateDialog";
 
 export const columns: ColumnDef<ApiBanner>[] = [
   {
@@ -35,14 +36,26 @@ export const columns: ColumnDef<ApiBanner>[] = [
   {
     accessorKey: "status",
     header: "Estado",
-    cell: ({ row }) => (
-      <Badge
-        variant="secondary"
-        className="bg-green-100 text-green-800 border-green-200"
-      >
-        {row.original.status}
-      </Badge>
-    ),
+    cell: ({ row }) => {
+       const status = row.original.status;
+      
+      // ✅ Convertir boolean a texto legible
+      const displayStatus = status ? 'Activo' : 'Inactivo';
+      
+      // ✅ Estilos dinámicos basados en el boolean
+      const statusClasses = status 
+        ? 'bg-green-100 text-green-800 border-green-200'
+        : 'bg-red-100 text-red-800 border-red-200';
+
+      return (
+        <Badge
+          variant="secondary"
+          className={statusClasses}
+        >
+          {displayStatus}
+        </Badge>
+      );
+    },
   },
 
   {
@@ -56,9 +69,14 @@ export const columns: ColumnDef<ApiBanner>[] = [
     cell: ({ row }) => {
       const banner = row.original;
       return (
-        <div className="flex gap-2 items-center justify-end px-5">
-          <FileUploadDialog id={banner.id} />
+         <div className="flex gap-2 items-center justify-end px-5">
+          
+          <FileUploadDialog id={banner.id} currentStatus={banner.status} />
           <DeleteBanner id={banner.id} />
+          <StatusUpdateDialog 
+            id={banner.id} 
+            currentStatus={banner.status} 
+          />
         </div>
       );
     },

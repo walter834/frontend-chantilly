@@ -15,6 +15,7 @@ export async function getBanner(): Promise<ApiBanner[]> {
   try {
     const endpoint = API_ROUTES.BANNER;
     const { data } = await api.get<ApiBanner[]>(endpoint);
+    console.log(data);
     return data;
   } catch (error) {
     console.error("Error fetching banner:", error);
@@ -39,10 +40,14 @@ export async function updateBannerImage(id: number, image: File): Promise<any> {
   }
 }
 
-export const addBanner = async (image: File): Promise<ApiBanner> => {
+export const addBanner = async (
+  image: File,
+  status: boolean
+): Promise<ApiBanner> => {
   try {
     const formData = new FormData();
     formData.append("image", image);
+    formData.append("status", status ? "1" : "0");
 
     const response = await api.post("/banner", formData, {
       headers: {
@@ -57,13 +62,14 @@ export const addBanner = async (image: File): Promise<ApiBanner> => {
 
 export async function addBannersWithLimit(
   images: File[],
+  status: boolean = true,
   maxSimultaneous: number = 3
 ): Promise<UploadResult[]> {
   const results: UploadResult[] = [];
 
   const uploadOneImage = async (image: File): Promise<UploadResult> => {
     try {
-      const response = await addBanner(image);
+      const response = await addBanner(image,status);
       return { success: true, data: response, fileName: image.name };
     } catch (error: any) {
       const status = error?.response?.status;
@@ -82,7 +88,6 @@ export async function addBannersWithLimit(
     }
   };
 
-  // Procesar en lotes
   for (let i = 0; i < images.length; i += maxSimultaneous) {
     const batch = images.slice(i, i + maxSimultaneous);
     const batchResults = await Promise.allSettled(batch.map(uploadOneImage));
@@ -153,5 +158,25 @@ export const deleteAllBanners = async (): Promise<void> => {
     await api.delete("/banners/all");
   } catch (err) {
     throw err;
+  }
+};
+
+export const updateBannerStatus = async (
+  id: number,
+  status: boolean
+): Promise<void> => {
+  try {
+    const formData = new FormData();
+    formData.append("status", status ? "1" : "0");
+
+    const response = await api.post(`/banner/${id}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    throw error;
   }
 };
