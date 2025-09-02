@@ -7,7 +7,7 @@ import 'swiper/css/pagination';
 import useBreakpointer from '@/hooks/useBreakpointer';
 import { ApiBanner } from '@/types/api';
 
-export default function HeroBanner({ slides , className = '', mobileSlides }: { slides: ApiBanner[]; className?: string; mobileSlides?: ApiBanner[] }) {
+export default function HeroBanner({ slides, className = '', mobileSlides }: { slides: ApiBanner[]; className?: string; mobileSlides?: ApiBanner[] }) {
   const width = useBreakpointer();
   const isSmall = width > 0 && width <= 1024;
 
@@ -24,12 +24,14 @@ export default function HeroBanner({ slides , className = '', mobileSlides }: { 
           loop={true}
           className="custom-pagination-swiper border-b-[10px] border-yellow-500"
         >
-          {(mobileSlides ?? slides).map((slide) => (
-            <SwiperSlide key={`${slide.id}-m`}>
-              <img
-                src={slide.image_url}
-                alt={slide.title}
-              />
+          {slides
+            .filter(slide => slide.status === true)
+            .map((slide) => (
+              <SwiperSlide key={`${slide.id}-m`}>
+                <img
+                  src={slide.image_url}
+                  alt={slide.title}
+                />
             </SwiperSlide>
           ))}
         </Swiper>
@@ -44,14 +46,17 @@ export default function HeroBanner({ slides , className = '', mobileSlides }: { 
           loop={true}
           className="custom-pagination-swiper border-b-[10px] border-yellow-500"
         >
-          {slides.map((slide) => (
-            <SwiperSlide key={slide.id}>
-              <img
-                src={slide.image_url}
-                alt={slide.title}
-              />
-            </SwiperSlide>            
-          ))}
+          {slides
+            .filter(slide => slide.status === true)
+            .map((slide) => (
+              <SwiperSlide key={slide.id}>
+                <img
+                  src={slide.image_url}
+                  alt={slide.title}
+                />
+              </SwiperSlide>
+            ))
+          }
         </Swiper>
       )}
     </div>

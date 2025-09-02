@@ -52,9 +52,7 @@ export default function Header() {
     <header className="bg-white shadow-sm border-b">
       <div className="overflow-x-auto flex justify-start gap-10 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 py-4 border-b border-gray-200 bg-white shadow-lg">
         {themes.map((theme) => {
-          // Detectar si la ruta actual coincide exactamente o si estamos en la temática
           const isActive = pathname === theme.link || pathname.startsWith(theme.link);
-          
           return (
             <Link
               key={theme.id}
@@ -67,7 +65,7 @@ export default function Header() {
                   alt={`Icono de ${theme.name}`}
                   width={45}
                   height={45}
-                  className={`w-[35px] h-[35px] sm:w-[45px] sm:h-[45px] transition duration-300 ${
+                  className={`w-[35px] h-[35px] sm:w-[45px] sm:h-[45px] transition duration-120 ${
                     isActive 
                       ? '[filter:sepia(77%)_brightness(42%)_hue-rotate(314deg)_saturate(1000%)_contrast(104%)]' 
                       : 'group-hover:[filter:sepia(77%)_brightness(42%)_hue-rotate(314deg)_saturate(1000%)_contrast(104%)]'
