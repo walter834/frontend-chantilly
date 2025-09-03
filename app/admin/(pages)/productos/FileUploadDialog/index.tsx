@@ -118,10 +118,10 @@ export function FileUploadDialog({ id }: Props) {
   const addNewImages = (files: File[]) => {
     setUnifiedImages((prev) => {
       const activeImages = prev.filter((img) => img.status !== "to_delete");
-      const availableSlots = 2 - activeImages.length;
+      const availableSlots = 3 - activeImages.length;
 
       if (availableSlots <= 0) {
-        toast.error("Solo puedes tener máximo 2 imágenes");
+        toast.error("Solo puedes tener máximo 3 imágenes");
         return prev;
       }
 
@@ -260,7 +260,7 @@ export function FileUploadDialog({ id }: Props) {
   const activeImages = unifiedImages.filter(
     (img) => img.status !== "to_delete"
   );
-  const canAddMore = activeImages.length < 2;
+  const canAddMore = activeImages.length < 3;
   const hasChanges =
     unifiedImages.some(
       (img) => img.status === "new" || img.status === "to_delete"
@@ -381,7 +381,7 @@ export function FileUploadDialog({ id }: Props) {
               {unifiedImages.length > 0 ? (
                 <div className="space-y-2">
                   <h4 className="text-sm font-medium">
-                    Imágenes ({activeImages.length}/2)
+                    Imágenes ({activeImages.length}/3)
                   </h4>
                   <div className="space-y-2">
                     {unifiedImages.map((image, index) =>
@@ -418,9 +418,9 @@ export function FileUploadDialog({ id }: Props) {
                     <div>
                       <p className="text-sm text-muted-foreground mb-2">
                         {activeImages.length === 0
-                          ? "Arrastra hasta 2 imágenes aquí"
-                          : `Agregar ${2 - activeImages.length} imagen${
-                              2 - activeImages.length > 1 ? "es" : ""
+                          ? "Arrastra hasta 3 imágenes aquí"
+                          : `Agregar ${3 - activeImages.length} imagen${
+                              3 - activeImages.length > 1 ? "es" : ""
                             } más`}
                       </p>
                       <input
@@ -448,7 +448,7 @@ export function FileUploadDialog({ id }: Props) {
 
               {!canAddMore && (
                 <p className="text-xs text-muted-foreground text-center">
-                  Máximo 2 imágenes alcanzado. Elimina una imagen para agregar
+                  Máximo 3 imágenes alcanzado. Elimina una imagen para agregar
                   otra.
                 </p>
               )}
