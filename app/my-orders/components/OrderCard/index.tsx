@@ -82,6 +82,7 @@ export function OrderCard({ order }: { order: Order }) {
 
               <div className="flex flex-col gap-6 sm:mb-8">
                 {order.items?.map((item) => (
+                  console.log("item", item),
                   <div
                     key={item.id}
                     className="flex flex-col sm:flex-row gap-6 group bg-gradient-to-br from-gray-50 to-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 hover:border-red-200"

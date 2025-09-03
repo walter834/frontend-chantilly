@@ -46,6 +46,7 @@ export default function OrdersList({
         } else {
           // ✅ Si no hay filtros, mostrar todas las órdenes del cliente
           data = await getCostumerOrders(customerId);
+          console.log("data", data);
         }
 
         if (active) setOrders(data);
