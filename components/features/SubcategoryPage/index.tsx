@@ -12,14 +12,6 @@ interface SubcategoryPageProps {
   totalResults?: number;
   currentResults?: number;
   categoryName?: string;
-  filters?: {
-    price?: { min: number; max: number };
-    ingredients?: string[];
-    size?: string[];
-  };
-  onAddToCart?: (productId: string) => void;
-  onToggleFavorite?: (productId: string) => void;
-  onFilterChange?: (filters: Record<string, unknown>) => void;
   pagination?: {
     currentPage: number;
     perPage: number;
@@ -39,10 +31,6 @@ export default function SubcategoryPage({
   totalResults = 0,
   currentResults = 0,
   categoryName,
-  filters,
-  onAddToCart,
-  onToggleFavorite,
-  onFilterChange,
   pagination,
   currentPage = 1,
   searchTerm = ''
