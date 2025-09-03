@@ -103,12 +103,6 @@ export default function ThemePage({ params, searchParams }: ThemePageProps) {
       products={products}
       totalResults={pagination.total}
       currentResults={products.length}
-      onAddToCart={(productId: string) => {
-        console.log('Agregar al carrito:', productId);
-      }}
-      onToggleFavorite={(productId: string) => {
-        console.log('Toggle favorito:', productId);
-      }}
       pagination={pagination}
       currentPage={parseInt(page) || 1}
       searchTerm={search}

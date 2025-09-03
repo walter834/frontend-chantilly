@@ -107,8 +107,6 @@ export default function CategoryPageComponent({ params }: CategoryPageProps) {
       products={products}
       totalResults={pagination.total}
       currentResults={products.length}
-      onAddToCart={handleAddToCart}
-      onToggleFavorite={handleToggleFavorite}
       pagination={pagination}
       currentPage={parseInt(page) || 1}
       searchTerm={search}

@@ -107,7 +107,7 @@ export default function ThematicCakes() {
       <div className="mt-6">
         <ProductGrid
           products={products}
-          onAddToCart={(id) => console.log('Add to cart:', id)}
+          ={(id) => console.log('Add to cart:', id)}
           onToggleFavorite={(id) => console.log('Toggle favorite:', id)}
         />
       </div>
