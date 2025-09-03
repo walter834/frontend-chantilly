@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,21 +11,76 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ImageIcon, Upload, X, File, Loader2, Star } from "lucide-react";
+import { ImageIcon, Upload, X, Loader2, Star, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { updateProductImages } from "@/service/product/customizeProductService";
+import {
+  Image,
+  updateProductImages,
+  setPrimaryImage,
+} from "@/service/product/customizeProductService";
+import { getProductById } from "@/service/productService";
 
 interface Props {
   id: number;
 }
 
+interface UnifiedImageItem {
+  // Identificación
+  id?: number; // ID del servidor si es imagen existente
+  tempId?: string; // ID temporal para imágenes nuevas
+
+  // Datos
+  file?: File; // Archivo nuevo
+  url?: string; // URL de imagen existente
+
+  // Estado
+  status: "existing" | "new" | "to_delete";
+  is_primary: boolean;
+  sort_order: number;
+}
+
 export function FileUploadDialog({ id }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [dragActive, setDragActive] = useState(false);
-  const [files, setFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-  const [primaryImageIndex, setPrimaryImageIndex] = useState(0); // Índice de imagen primaria
+  const [loadingExisting, setLoadingExisting] = useState(false);
+
+  // Estado unificado para todas las imágenes
+  const [unifiedImages, setUnifiedImages] = useState<UnifiedImageItem[]>([]);
+
+  const loadExistingImages = async () => {
+    setLoadingExisting(true);
+    try {
+      const product = await getProductById(id);
+      const existingImages = product?.images || [];
+
+      // Convertir imágenes existentes al formato unificado
+      const unified = existingImages.map(
+        (img): UnifiedImageItem => ({
+          id: img.id,
+          url: img.url,
+          status: "existing",
+          is_primary: img.is_primary === 1,
+          sort_order: img.sort_order,
+        })
+      );
+
+      setUnifiedImages(unified);
+    } catch (error) {
+      toast.error("Error al cargar imágenes existentes");
+    } finally {
+      setLoadingExisting(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      loadExistingImages();
+    } else {
+      setUnifiedImages([]);
+    }
+  }, [isOpen]);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -46,10 +101,7 @@ export function FileUploadDialog({ id }: Props) {
       const newFiles = Array.from(e.dataTransfer.files).filter((file) =>
         file.type.startsWith("image/")
       );
-      // Permitir máximo 2 imágenes (primaria y secundaria)
-      setFiles(newFiles.slice(0, 2));
-      // Si solo hay una imagen, será la primaria por defecto
-      setPrimaryImageIndex(0);
+      addNewImages(newFiles);
     }
   }, []);
 
@@ -58,28 +110,76 @@ export function FileUploadDialog({ id }: Props) {
       const newFiles = Array.from(e.target.files).filter((file) =>
         file.type.startsWith("image/")
       );
-      // Permitir máximo 2 imágenes (primaria y secundaria)
-      setFiles(newFiles.slice(0, 2));
-      // Si solo hay una imagen, será la primaria por defecto
-      setPrimaryImageIndex(0);
+      addNewImages(newFiles);
     }
   };
 
-  const removeFile = (index: number) => {
-    setFiles((prev) => {
-      const newFiles = prev.filter((_, i) => i !== index);
-      // Ajustar el índice de imagen primaria si es necesario
-      if (primaryImageIndex === index) {
-        setPrimaryImageIndex(0);
-      } else if (primaryImageIndex > index) {
-        setPrimaryImageIndex(primaryImageIndex - 1);
+  const addNewImages = (files: File[]) => {
+    setUnifiedImages((prev) => {
+      const activeImages = prev.filter((img) => img.status !== "to_delete");
+      const availableSlots = 2 - activeImages.length;
+
+      if (availableSlots <= 0) {
+        toast.error("Solo puedes tener máximo 2 imágenes");
+        return prev;
       }
-      return newFiles;
+
+      const filesToAdd = files.slice(0, availableSlots);
+      const newImages: UnifiedImageItem[] = filesToAdd.map((file, index) => ({
+        tempId: `temp_${Date.now()}_${index}`,
+        file,
+        status: "new",
+        is_primary: activeImages.length === 0 && index === 0,
+        sort_order: activeImages.length + index,
+      }));
+
+      return [...prev, ...newImages];
     });
   };
 
-  const setPrimaryImage = (index: number) => {
-    setPrimaryImageIndex(index);
+  const removeImage = (imageToRemove: UnifiedImageItem) => {
+    setUnifiedImages((prev) => {
+      let updated = [...prev];
+
+      if (imageToRemove.status === "existing") {
+        
+        updated = updated.map((img) =>
+          img.id === imageToRemove.id
+            ? { ...img, status: "to_delete" as const }
+            : img
+        );
+      } else {
+       
+        updated = updated.filter((img) => img.tempId !== imageToRemove.tempId);
+      }
+
+      
+      if (imageToRemove.is_primary) {
+        const activeImages = updated.filter(
+          (img) => img.status !== "to_delete"
+        );
+        if (activeImages.length > 0) {
+          updated = updated.map((img) =>
+            img === activeImages[0]
+              ? { ...img, is_primary: true }
+              : { ...img, is_primary: false }
+          );
+        }
+      }
+
+      return updated;
+    });
+  };
+
+  const setPrimaryImageHandler = (targetImage: UnifiedImageItem) => {
+    setUnifiedImages((prev: any) =>
+      prev.map((img: any) => ({
+        ...img,
+        is_primary:
+          (img.id && img.id === targetImage.id) ||
+          (img.tempId && img.tempId === targetImage.tempId),
+      }))
+    );
   };
 
   const formatFileSize = (bytes: number) => {
@@ -93,33 +193,61 @@ export function FileUploadDialog({ id }: Props) {
   };
 
   const handleUpload = async () => {
-    if (files.length === 0) {
-      toast.error("Selecciona al menos una imagen");
-      return;
-    }
-
     setIsUploading(true);
     try {
-      // OPCIÓN 1: Reordenar archivos para que la primaria vaya primera
-      // Tu backend establece la primera imagen como primaria automáticamente
-      const reorderedFiles = [...files];
-      if (primaryImageIndex !== 0) {
-        // Mover la imagen primaria al primer lugar
-        const primaryFile = reorderedFiles[primaryImageIndex];
-        reorderedFiles.splice(primaryImageIndex, 1);
-        reorderedFiles.unshift(primaryFile);
+      const activeImages = unifiedImages.filter(
+        (img) => img.status !== "to_delete"
+      );
+      const newImages = activeImages.filter((img) => img.status === "new");
+      const primaryImage = activeImages.find((img) => img.is_primary);
+
+      if (activeImages.length === 0) {
+        toast.error("Debe haber al menos una imagen");
+        return;
       }
 
-      // Usar tu función existente
-      const result = await updateProductImages(id, reorderedFiles);
+   
+      if (newImages.length > 0) {
+        const files = newImages.map((img) => img.file!);
+
+        
+        const primaryNewImage = newImages.find((img) => img.is_primary);
+        if (primaryNewImage) {
+          const primaryFile = primaryNewImage.file!;
+          const otherFiles = files.filter((f) => f !== primaryFile);
+          const orderedFiles = [primaryFile, ...otherFiles];
+
+          await updateProductImages(id, orderedFiles);
+        } else {
+          await updateProductImages(id, files);
+        }
+      }
+
+      
+      if (
+        primaryImage &&
+        primaryImage.status === "existing" &&
+        primaryImage.id
+      ) {
+        const existingImages = unifiedImages.filter(
+          (img) => img.status === "existing"
+        );
+        const primaryIndex = existingImages.findIndex(
+          (img) => img.id === primaryImage.id
+        );
+        if (primaryIndex !== -1) {
+          await setPrimaryImage(id, primaryIndex);
+        }
+      }
 
       toast.success("Imágenes actualizadas correctamente");
       setIsOpen(false);
-      setFiles([]);
-      setPrimaryImageIndex(0);
+      setUnifiedImages([]);
 
-      
-      if (typeof window !== "undefined" && (window as any).refreshProductsTable) {
+      if (
+        typeof window !== "undefined" &&
+        (window as any).refreshProductsTable
+      ) {
         (window as any).refreshProductsTable();
       }
     } catch (error) {
@@ -130,6 +258,134 @@ export function FileUploadDialog({ id }: Props) {
     }
   };
 
+  // Calcular estados para la UI
+  const activeImages = unifiedImages.filter(
+    (img) => img.status !== "to_delete"
+  );
+  const canAddMore = activeImages.length < 2;
+  const hasChanges =
+    unifiedImages.some(
+      (img) => img.status === "new" || img.status === "to_delete"
+    ) ||
+    unifiedImages.some(
+      (img) =>
+        img.status === "existing" &&
+        img.is_primary !==
+          (unifiedImages.find((original) => original.id === img.id)
+            ?.is_primary ?? false)
+    );
+
+  const renderImageItem = (image: UnifiedImageItem, index: number) => (
+    <div
+      key={image.id || image.tempId}
+      className={cn(
+        "flex items-center justify-between p-3 rounded-md border transition-colors",
+        image.is_primary
+          ? "bg-blue-50 border-blue-200"
+          : "bg-muted/50 border-muted",
+        image.status === "to_delete" && "opacity-50"
+      )}
+    >
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="relative">
+          <img
+            src={
+              image.url || (image.file ? URL.createObjectURL(image.file) : "")
+            }
+            alt="Preview"
+            className="w-12 h-12 object-cover rounded border"
+          />
+          {image.is_primary && image.status !== "to_delete" && (
+            <div className="absolute -top-1 -right-1 bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center">
+              <Star className="w-3 h-3 fill-current" />
+            </div>
+          )}
+          {image.status === "to_delete" && (
+            <div className="absolute inset-0 bg-red-500 bg-opacity-50 rounded flex items-center justify-center">
+              <X className="w-4 h-4 text-white" />
+            </div>
+          )}
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <p className="text-sm truncate font-medium">
+              {image.file?.name || `Imagen ${index + 1}`}
+            </p>
+            {image.is_primary && image.status !== "to_delete" && (
+              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                Principal
+              </span>
+            )}
+            {!image.is_primary && image.status !== "to_delete" && (
+              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                Secundaria
+              </span>
+            )}
+            {image.status === "new" && (
+              <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                Nueva
+              </span>
+            )}
+            {image.status === "to_delete" && (
+              <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">
+                A eliminar
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {image.file ? formatFileSize(image.file.size) : "Imagen existente"}
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-1">
+        {!image.is_primary && image.status !== "to_delete" && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setPrimaryImageHandler(image)}
+            className="h-8 w-8 p-0"
+            title="Establecer como imagen principal"
+          >
+            <Star className="h-3 w-3" />
+          </Button>
+        )}
+
+        {image.status === "to_delete" ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setUnifiedImages((prev) =>
+                prev.map((img) =>
+                  (img.id && img.id === image.id) ||
+                  (img.tempId && img.tempId === image.tempId)
+                    ? { ...img, status: "existing" as const }
+                    : img
+                )
+              );
+            }}
+            className="h-8 w-8 p-0 text-green-500 hover:text-green-700"
+            title="Restaurar imagen"
+          >
+            <Plus className="h-3 w-3" />
+          </Button>
+        ) : (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => removeImage(image)}
+            className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+            title="Eliminar imagen"
+          >
+            <X className="h-3 w-3" />
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -137,159 +393,109 @@ export function FileUploadDialog({ id }: Props) {
           <ImageIcon className="h-8 w-8 text-green-600" />
         </button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Upload className="h-5 w-5" />
-            Actualizar imágenes del producto
+            Gestionar imágenes del producto
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Drag and Drop Area */}
-          <div
-            className={cn(
-              "border-2 border-dashed rounded-lg p-8 text-center transition-colors",
-              dragActive
-                ? "border-primary bg-primary/5"
-                : "border-muted-foreground/25 hover:border-muted-foreground/50"
-            )}
-            onDragEnter={handleDrag}
-            onDragLeave={handleDrag}
-            onDragOver={handleDrag}
-            onDrop={handleDrop}
-          >
-            <div className="space-y-4">
-              <div className="mx-auto w-12 h-12 bg-muted rounded-full flex items-center justify-center">
-                <Upload className="h-6 w-6 text-muted-foreground" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Arrastra hasta 2 imágenes aquí
-                </p>
-                <p className="text-xs text-muted-foreground mb-4">
-                  o haz clic para seleccionar archivos (Imagen primaria y
-                  secundaria)
-                </p>
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={handleFileInput}
-                  className="hidden"
-                  id="file-upload"
-                />
-                <label htmlFor="file-upload">
-                  <Button
-                    variant="outline"
-                    className="cursor-pointer bg-transparent"
-                    asChild
-                  >
-                    <span>Seleccionar imágenes</span>
-                  </Button>
-                </label>
-              </div>
+          {loadingExisting ? (
+            <div className="flex items-center justify-center py-4">
+              <Loader2 className="h-6 w-6 animate-spin" />
+              <span className="ml-2 text-sm text-muted-foreground">
+                Cargando imágenes...
+              </span>
             </div>
-          </div>
-
-          {/* File List with Primary Selection */}
-          {files.length > 0 && (
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium">Imágenes seleccionadas:</h4>
-              <div className="max-h-40 overflow-y-auto space-y-2">
-                {files.map((file, index) => (
-                  <div
-                    key={index}
-                    className={cn(
-                      "flex items-center justify-between p-3 rounded-md border transition-colors",
-                      index === primaryImageIndex
-                        ? "bg-blue-50 border-blue-200"
-                        : "bg-muted/50 border-muted"
+          ) : (
+            <>
+              {/* Lista unificada de imágenes */}
+              {unifiedImages.length > 0 ? (
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium">
+                    Imágenes ({activeImages.length}/2)
+                  </h4>
+                  <div className="space-y-2">
+                    {unifiedImages.map((image, index) =>
+                      renderImageItem(image, index)
                     )}
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      {/* Preview de la imagen */}
-                      <div className="relative">
-                        <img
-                          src={URL.createObjectURL(file)}
-                          alt="Preview"
-                          className="w-12 h-12 object-cover rounded border"
-                        />
-                        {index === primaryImageIndex && (
-                          <div className="absolute -top-1 -right-1 bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center">
-                            <Star className="w-3 h-3 fill-current" />
-                          </div>
-                        )}
-                      </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-sm text-muted-foreground">
+                    Este producto no tiene imágenes
+                  </p>
+                </div>
+              )}
 
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm truncate font-medium">
-                            {file.name}
-                          </p>
-                          {index === primaryImageIndex && (
-                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                              Principal
-                            </span>
-                          )}
-                          {index !== primaryImageIndex && (
-                            <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                              Secundaria
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          {formatFileSize(file.size)}
-                        </p>
-                      </div>
+              {/* Área de drag and drop - solo mostrar si se pueden agregar más */}
+              {canAddMore && (
+                <div
+                  className={cn(
+                    "border-2 border-dashed rounded-lg p-6 text-center transition-colors",
+                    dragActive
+                      ? "border-primary bg-primary/5"
+                      : "border-muted-foreground/25 hover:border-muted-foreground/50"
+                  )}
+                  onDragEnter={handleDrag}
+                  onDragLeave={handleDrag}
+                  onDragOver={handleDrag}
+                  onDrop={handleDrop}
+                >
+                  <div className="space-y-3">
+                    <div className="mx-auto w-10 h-10 bg-muted rounded-full flex items-center justify-center">
+                      <Upload className="h-5 w-5 text-muted-foreground" />
                     </div>
-
-                    <div className="flex items-center gap-1">
-                      {/* Botón para establecer como primaria */}
-                      {index !== primaryImageIndex && (
+                    <div>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        {activeImages.length === 0
+                          ? "Arrastra hasta 2 imágenes aquí"
+                          : `Agregar ${2 - activeImages.length} imagen${
+                              2 - activeImages.length > 1 ? "es" : ""
+                            } más`}
+                      </p>
+                      <input
+                        type="file"
+                        multiple={activeImages.length === 0}
+                        accept="image/*"
+                        onChange={handleFileInput}
+                        className="hidden"
+                        id="file-upload"
+                      />
+                      <label htmlFor="file-upload">
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
-                          onClick={() => setPrimaryImage(index)}
-                          className="h-8 w-8 p-0"
-                          title="Establecer como imagen principal"
+                          className="cursor-pointer bg-transparent"
+                          asChild
                         >
-                          <Star className="h-3 w-3" />
+                          <span>Seleccionar imágenes</span>
                         </Button>
-                      )}
-
-                      {/* Botón para eliminar */}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeFile(index)}
-                        className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
-                        title="Eliminar imagen"
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
+                      </label>
                     </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
 
-              {files.length < 2 && (
-                <p className="text-xs text-muted-foreground">
-                  Puedes agregar {2 - files.length} imagen
-                  {files.length === 1 ? "" : "es"} más
+              {!canAddMore && (
+                <p className="text-xs text-muted-foreground text-center">
+                  Máximo 2 imágenes alcanzado. Elimina una imagen para agregar
+                  otra.
                 </p>
               )}
-            </div>
+            </>
           )}
 
-          {/* Action Buttons */}
-          <div className="flex justify-end gap-2 pt-4">
+          {/* Botones de acción */}
+          <div className="flex justify-end gap-2 pt-4 border-t">
             <Button
               variant="outline"
               onClick={() => {
                 setIsOpen(false);
-                setFiles([]);
-                setPrimaryImageIndex(0);
+                setUnifiedImages([]);
               }}
               disabled={isUploading}
             >
@@ -297,17 +503,15 @@ export function FileUploadDialog({ id }: Props) {
             </Button>
             <Button
               onClick={handleUpload}
-              disabled={files.length === 0 || isUploading}
+              disabled={!hasChanges || isUploading || activeImages.length === 0}
             >
               {isUploading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Actualizando...
+                  Guardando...
                 </>
               ) : (
-                `Actualizar imagen${files.length > 1 ? "es" : ""} (${
-                  files.length
-                })`
+                "Guardar cambios"
               )}
             </Button>
           </div>

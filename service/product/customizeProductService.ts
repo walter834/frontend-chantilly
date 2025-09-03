@@ -95,7 +95,7 @@ export async function updateProductImages(
   try {
     const formData = new FormData();
 
-    images.forEach((image,index) => {
+    images.forEach((image, index) => {
       formData.append(`images[${index}]`, image);
     });
 
@@ -110,13 +110,25 @@ export async function updateProductImages(
   }
 }
 
-export async function setPrimaryImage(id:number,imageId:number):Promise<{message:string;product:ApiProduct}> {
+export async function setPrimaryImage(
+  id: number,
+  image_index: number
+): Promise<{ message: string; product: ApiProduct }> {
   try {
-    const response = await api.post(`/products/${id}/set-primary-image`,{
-      image_id: imageId
+    const response = await api.post(`/products/${id}/set-primary-image`, {
+      image_index: image_index,
     });
     return response.data;
   } catch (error) {
-    throw error
+    throw error;
+  }
+}
+
+export async function getProductById(id: number): Promise<Product> {
+  try {
+    const response = await api.get(`/products/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error;
   }
 }
