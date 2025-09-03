@@ -18,6 +18,7 @@ import {
   Image,
   updateProductImages,
   setPrimaryImage,
+  deleteImage,
 } from "@/service/product/customizeProductService";
 import { getProductById } from "@/service/productService";
 
@@ -137,38 +138,20 @@ export function FileUploadDialog({ id }: Props) {
     });
   };
 
-  const removeImage = (imageToRemove: UnifiedImageItem) => {
-    setUnifiedImages((prev) => {
-      let updated = [...prev];
-
-      if (imageToRemove.status === "existing") {
-        
-        updated = updated.map((img) =>
-          img.id === imageToRemove.id
-            ? { ...img, status: "to_delete" as const }
-            : img
+  const removeImage = async (image: UnifiedImageItem, index: number) => {
+    try {
+      if (image.status === "existing" && image.id) {
+        await deleteImage(id, index);
+        toast.success("Imagen eliminada correctamente");
+        await loadExistingImages();
+      } else if (image.status === "new") {
+        setUnifiedImages((prev) =>
+          prev.filter((img) => !(img.tempId && img.tempId === image.tempId))
         );
-      } else {
-       
-        updated = updated.filter((img) => img.tempId !== imageToRemove.tempId);
       }
-
-      
-      if (imageToRemove.is_primary) {
-        const activeImages = updated.filter(
-          (img) => img.status !== "to_delete"
-        );
-        if (activeImages.length > 0) {
-          updated = updated.map((img) =>
-            img === activeImages[0]
-              ? { ...img, is_primary: true }
-              : { ...img, is_primary: false }
-          );
-        }
-      }
-
-      return updated;
-    });
+    } catch (error) {
+      toast.error("Error al eliminar la imagen");
+    }
   };
 
   const setPrimaryImageHandler = (targetImage: UnifiedImageItem) => {
@@ -206,11 +189,9 @@ export function FileUploadDialog({ id }: Props) {
         return;
       }
 
-   
       if (newImages.length > 0) {
         const files = newImages.map((img) => img.file!);
 
-        
         const primaryNewImage = newImages.find((img) => img.is_primary);
         if (primaryNewImage) {
           const primaryFile = primaryNewImage.file!;
@@ -223,7 +204,6 @@ export function FileUploadDialog({ id }: Props) {
         }
       }
 
-      
       if (
         primaryImage &&
         primaryImage.status === "existing" &&
@@ -282,8 +262,7 @@ export function FileUploadDialog({ id }: Props) {
         "flex items-center justify-between p-3 rounded-md border transition-colors",
         image.is_primary
           ? "bg-blue-50 border-blue-200"
-          : "bg-muted/50 border-muted",
-        image.status === "to_delete" && "opacity-50"
+          : "bg-muted/50 border-muted"
       )}
     >
       <div className="flex items-center gap-3 min-w-0">
@@ -295,14 +274,9 @@ export function FileUploadDialog({ id }: Props) {
             alt="Preview"
             className="w-12 h-12 object-cover rounded border"
           />
-          {image.is_primary && image.status !== "to_delete" && (
+          {image.is_primary && (
             <div className="absolute -top-1 -right-1 bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center">
               <Star className="w-3 h-3 fill-current" />
-            </div>
-          )}
-          {image.status === "to_delete" && (
-            <div className="absolute inset-0 bg-red-500 bg-opacity-50 rounded flex items-center justify-center">
-              <X className="w-4 h-4 text-white" />
             </div>
           )}
         </div>
@@ -312,12 +286,12 @@ export function FileUploadDialog({ id }: Props) {
             <p className="text-sm truncate font-medium">
               {image.file?.name || `Imagen ${index + 1}`}
             </p>
-            {image.is_primary && image.status !== "to_delete" && (
+            {image.is_primary && (
               <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
                 Principal
               </span>
             )}
-            {!image.is_primary && image.status !== "to_delete" && (
+            {!image.is_primary && (
               <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
                 Secundaria
               </span>
@@ -325,11 +299,6 @@ export function FileUploadDialog({ id }: Props) {
             {image.status === "new" && (
               <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
                 Nueva
-              </span>
-            )}
-            {image.status === "to_delete" && (
-              <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">
-                A eliminar
               </span>
             )}
           </div>
@@ -340,7 +309,7 @@ export function FileUploadDialog({ id }: Props) {
       </div>
 
       <div className="flex items-center gap-1">
-        {!image.is_primary && image.status !== "to_delete" && (
+        {!image.is_primary && (
           <Button
             variant="ghost"
             size="sm"
@@ -352,36 +321,15 @@ export function FileUploadDialog({ id }: Props) {
           </Button>
         )}
 
-        {image.status === "to_delete" ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setUnifiedImages((prev) =>
-                prev.map((img) =>
-                  (img.id && img.id === image.id) ||
-                  (img.tempId && img.tempId === image.tempId)
-                    ? { ...img, status: "existing" as const }
-                    : img
-                )
-              );
-            }}
-            className="h-8 w-8 p-0 text-green-500 hover:text-green-700"
-            title="Restaurar imagen"
-          >
-            <Plus className="h-3 w-3" />
-          </Button>
-        ) : (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => removeImage(image)}
-            className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
-            title="Eliminar imagen"
-          >
-            <X className="h-3 w-3" />
-          </Button>
-        )}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => removeImage(image, index)}
+          className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+          title="Eliminar imagen"
+        >
+          <X className="h-3 w-3" />
+        </Button>
       </div>
     </div>
   );
