@@ -112,7 +112,6 @@ const ProductDetail = ({ id, name, price, originalPrice, theme, image, productTy
     quantity: number;
     price: number | string;
   }
-
   const handleAddToCart = (product: TransformedProduct | TransformedProductAccessory, isAccessory = false) => {
     const currentCart = JSON.parse(localStorage.getItem('chantilly-cart') || '{"items":[],"total":0,"itemCount":0}');
     const productType = isAccessory ? 'accessory' : 'bocadito';
@@ -334,7 +333,7 @@ const ProductDetail = ({ id, name, price, originalPrice, theme, image, productTy
             onPortionChange={handlePortionChange}
             theme={theme}
             imageProduct={imageProduct[0]}
-            initialImage={image[0]}
+            initialImage={image.find((img: any) => img.is_primary === 1)?.url || image[0]?.url}
             productType={productType}
             hour={hour}
           />

@@ -39,7 +39,6 @@ const FormCart: React.FC<FormCartProps> = ({
   const [fillings, setFillings] = useState<Array<{id: number, name: string, status: boolean}>>([]);
   const [pickupDate, setPickupDate] = useState('');
   const [dedication, setDedication] = useState('');
-  
 
   // Cart item shape used in localStorage
   interface LocalCartItem {
@@ -108,6 +107,9 @@ const FormCart: React.FC<FormCartProps> = ({
         price: parseFloat(productVariant?.price || initialPrice.toString())
       };
     } else {
+      console.log('initialImage',initialImage);
+      console.log('imageProduct',imageProduct);
+
       const selectedDiameter = (portionsOptions.find((p: any) => p.name === selectedPortion)?.size) || '';
       const selectedCakeName = cakeFlavors.find(c => c.id.toString() === selectedCake)?.name || '';
       const selectedFillingName = fillings.find(f => f.id.toString() === selectedFilling)?.name || '';

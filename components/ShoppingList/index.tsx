@@ -16,7 +16,7 @@ interface CartItem {
         name: string;
         description?: string;
         price: number;
-        image: string;
+        image: any;
         portion: string;
         diameter?: string;
         cakeFlavorName: string;
@@ -135,7 +135,7 @@ const ShoppingList = () => {
                             <div className="relative w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden">
                                 {item.product.image ? (
                                     <Image
-                                        src={item.product.image}
+                                        src={item.product.image.url || item.product.image}
                                         alt={item.product.name}
                                         fill
                                         className="object-cover"
