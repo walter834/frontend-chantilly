@@ -319,7 +319,11 @@ const ProductDetail = ({ id, name, price, originalPrice, theme, image, productTy
             </div>
             <p className="text-sm text-black mb-4 text-[16px]">
               {capitalizeFirstLetter(description)}<br />
-              <FaClock size={20} className="inline mr-1 text-[#c41c1a]" /> Tiempo elaboración: {hour} horas
+              {productType === '2' && (
+                <span>
+                  <FaClock size={20} className="inline mr-1 text-[#c41c1a]" /> Tiempo elaboración: {hour} horas
+                </span>
+              )}
             </p>
             {/* Diámetro visible solo en carrito */}
           </div>
