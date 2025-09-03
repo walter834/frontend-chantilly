@@ -99,7 +99,7 @@ export async function updateProductImages(
       formData.append(`images[${index}]`, image);
     });
 
-    const response = await api.post(`/products/${id}`, formData, {
+    const response = await api.post(`/products/${id}/images`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -131,4 +131,16 @@ export async function getProductById(id: number): Promise<Product> {
   } catch (error) {
     throw error;
   }
+}
+
+export async function deleteImage(id:number,image_index:number) {
+ try {
+  await api.delete(`/products/${id}/images`,{
+    data:{
+      image_index:image_index,
+    }
+  })
+ } catch (error) {
+  throw error 
+ } 
 }
