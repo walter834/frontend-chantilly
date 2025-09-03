@@ -1,8 +1,5 @@
 export const portionsOptions = [
-    {
-        name: "Elige una opción",
-        valor: 0
-    },
+
     {
         name: "8 porciones",
         size: "(Diámetro 18cm)",

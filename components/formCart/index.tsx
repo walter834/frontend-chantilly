@@ -173,12 +173,12 @@ const FormCart: React.FC<FormCartProps> = ({
       setSelectedFilling('');
     }
   }, [selectedCake, cakeFlavors]);
-
+  console.log('productType',productType);
   return (
     <form onSubmit={arrayDataToCart} className="space-y-4">
       <input type="hidden" name="imageProduct" value={imageProduct || ''} />
       <input type="hidden" name="cakeName" value={cakeName || ''} />
-  
+      
       {(productType === '1' || productType === '2') && (
         <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
           <label className="text-sm font-medium text-black sm:w-32 sm:flex-shrink-0">Porciones</label>
@@ -192,6 +192,7 @@ const FormCart: React.FC<FormCartProps> = ({
             }}
             className="w-full sm:flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#c41c1a] focus:border-[#c41c1a]"
           >
+            <option value="">Elige una opción</option>
             {Object.entries(portionsOptions).map(([key, value]) => (
               <option key={key} value={value.name}>{value.name} {value.size}</option>
             ))}
