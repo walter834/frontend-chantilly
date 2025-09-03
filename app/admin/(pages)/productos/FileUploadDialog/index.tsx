@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ImageIcon, Upload, X, Loader2, Star, Plus } from "lucide-react";
+import { ImageIcon, Upload, X, Loader2, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import {
@@ -154,15 +154,33 @@ export function FileUploadDialog({ id }: Props) {
     }
   };
 
-  const setPrimaryImageHandler = (targetImage: UnifiedImageItem) => {
-    setUnifiedImages((prev: any) =>
-      prev.map((img: any) => ({
-        ...img,
-        is_primary:
-          (img.id && img.id === targetImage.id) ||
-          (img.tempId && img.tempId === targetImage.tempId),
-      }))
-    );
+  const setPrimaryImageHandler = async (
+    targetImage: UnifiedImageItem,
+    imageIndex: number
+  ) => {
+    try {
+      if (targetImage.status === "existing" && targetImage.id) {
+        await setPrimaryImage(id, imageIndex);
+        toast.success("Imagen principal actualizada");
+        await loadExistingImages();
+      } else if (targetImage.status === "new") {
+        setUnifiedImages((prev) =>
+          prev.map((img) => ({
+            ...img,
+            is_primary: img.tempId === targetImage.tempId,
+          }))
+        );
+      }
+
+      if (
+        typeof window !== "undefined" &&
+        (window as any).refreshProductsTable
+      ) {
+        (window as any).refreshProductsTable();
+      }
+    } catch (error) {
+      toast.error("Error al establecer imagen principal");
+    }
   };
 
   const formatFileSize = (bytes: number) => {
@@ -313,7 +331,7 @@ export function FileUploadDialog({ id }: Props) {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setPrimaryImageHandler(image)}
+            onClick={() => setPrimaryImageHandler(image, index)}
             className="h-8 w-8 p-0"
             title="Establecer como imagen principal"
           >

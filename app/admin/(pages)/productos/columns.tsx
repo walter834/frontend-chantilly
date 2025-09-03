@@ -1,7 +1,8 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-
+import { toast } from "sonner";
+import { setPrimaryImage } from "@/service/product/customizeProductService";
 import { FileUploadDialog } from "./FileUploadDialog";
 
 export interface Product {
@@ -10,8 +11,8 @@ export interface Product {
   description: string;
   product_type_id: number;
   product_type_name: string;
-  image: string; // imagen principal
-  images: Image[]; // todas las imágenes
+  image: string; 
+  images: Image[]; 
 }
 
 export interface Image {
@@ -37,6 +38,26 @@ export const columns: ColumnDef<Product>[] = [
         return <div className="text-gray-400">Sin imágenes</div>;
       }
 
+      const handleSetPrimary = async (imageIndex: number, currentPrimary: boolean) => {
+        if (currentPrimary) {
+
+          return;
+        }
+
+        try {
+          await setPrimaryImage(row.original.id, imageIndex);
+          toast.success("Imagen principal actualizada");
+          
+          // Refrescar la tabla si existe la función global
+          if (typeof window !== "undefined" && (window as any).refreshProductsTable) {
+            (window as any).refreshProductsTable();
+          }
+        } catch (error) {
+          toast.error("Error al establecer imagen principal");
+          console.error("Error:", error);
+        }
+      };
+      
       return (
         <div className="flex gap-1 overflow-x-auto max-w-xs py-2">
           {images
@@ -46,10 +67,20 @@ export const columns: ColumnDef<Product>[] = [
                 <img
                   src={image.url}
                   alt={`Imagen ${index + 1}`}
-                  className="w-12 h-12 object-cover rounded border-2 border-transparent hover:border-blue-300 transition-colors"
+                  className={`w-12 h-12 object-cover rounded border-2 transition-all cursor-pointer ${
+                    image.is_primary === 1
+                      ? "border-red-700"
+                      : "border-transparent hover:border-red-500 hover:scale-105"
+                  }`}
+                  onClick={() => handleSetPrimary(index, image.is_primary === 1)}
+                  title={
+                    image.is_primary === 1
+                      ? "Imagen principal actual"
+                      : "Click para establecer como principal"
+                  }
                 />
                 {image.is_primary === 1 && (
-                  <div className="absolute -top-1 -right-1 bg-red-700 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                  <div className="absolute -top-1 -right-1 bg-red-700 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center pointer-events-none">
                     ★
                   </div>
                 )}
