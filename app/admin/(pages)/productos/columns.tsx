@@ -4,6 +4,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { toast } from "sonner";
 import { setPrimaryImage } from "@/service/product/customizeProductService";
 import { FileUploadDialog } from "./FileUploadDialog";
+import Image from "next/image";
 
 export interface Product {
   id: number;
@@ -22,12 +23,33 @@ export interface Image {
   sort_order: number;
 }
 
+export interface Variant {
+  id: number;
+  product_id: number;
+  description: string;
+  portions: string;
+  price: string;
+  hours: number;
+  images: VariantImage[];
+  primaryImage?: string;
+}
+
+export interface VariantImage {
+  id: number;
+  url: string;
+  is_primary: number;
+}
+
 export interface TypeProduct {
   id: number;
   name: string;
 }
 
+
+
+
 export const columns: ColumnDef<Product>[] = [
+  
   {
     accessorKey: "image",
     header: "Imagenes",
@@ -64,7 +86,9 @@ export const columns: ColumnDef<Product>[] = [
             .sort((a, b) => a.sort_order - b.sort_order)
             .map((image, index) => (
               <div key={image.id} className="relative flex-shrink-0">
-                <img
+                <Image
+                width={30}
+                height={30}
                   src={image.url}
                   alt={`Imagen ${index + 1}`}
                   className={`w-12 h-12 object-cover rounded border-2 transition-all cursor-pointer ${
@@ -94,6 +118,14 @@ export const columns: ColumnDef<Product>[] = [
   {
     accessorKey: "name",
     header: "Nombre",
+    cell: ({row}) => {
+      return (
+        <div>
+           <div className="font-medium">{row.original.name}</div>
+           
+        </div>
+      )
+    }
   },
   {
     accessorKey: "description",

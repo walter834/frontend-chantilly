@@ -81,7 +81,7 @@ export async function getProducts(): Promise<Product[]> {
         };
       }
     );
-
+ console.log(transformedProducts);
     return transformedProducts;
   } catch (err) {
     throw err;
@@ -104,6 +104,8 @@ export async function updateProductImages(
         "Content-Type": "multipart/form-data",
       },
     });
+   
+    
     return response.data;
   } catch (err) {
     throw err;

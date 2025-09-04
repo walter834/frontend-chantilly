@@ -33,18 +33,180 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import React, { useState, useEffect } from "react";
+import { getVariantsByProduct } from "@/service/variant/costumizeVariantService";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
 
+interface Variant {
+  id: number;
+  product_id: number;
+  description: string;
+  portions?: string;
+  price?: string;
+  hours?: number;
+  image: VariantImage[]; 
+  primaryImage?: string;
+}
+
+interface VariantImage {
+  id: number;
+  url: string;
+  is_primary: number;
+}
+
+const VariantRows = ({ 
+  productId, 
+  isExpanded,
+  columnsCount 
+}: { 
+  productId: number;
+  isExpanded: boolean;
+  columnsCount: number;
+}) => {
+  const [variants, setVariants] = useState<Variant[]>([]);
+  const [loading, setLoading] = useState(false); 
+  const [hasLoaded, setHasLoaded] = useState(false); 
+
+  useEffect(() => {
+    if (isExpanded && !hasLoaded) {
+      loadVariants();
+    }
+  }, [isExpanded, productId, hasLoaded]);
+
+  const loadVariants = async () => {
+    setLoading(true);
+    try {
+      const productVariants = await getVariantsByProduct(productId);
+      setVariants(productVariants);
+      setHasLoaded(true);
+    } catch (error) {
+      setVariants([]);
+      setHasLoaded(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Si no está expandido, no renderizar nada
+  if (!isExpanded) {
+    return null;
+  }
+
+  if (loading) {
+    return (
+      <TableRow className="bg-blue-50/30">
+        <TableCell colSpan={columnsCount} className="h-16">
+          <div className="flex items-center justify-center gap-2 text-gray-500">
+            <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
+            Cargando variantes...
+          </div>
+        </TableCell>
+      </TableRow>
+    );
+  }
+
+  if (hasLoaded && variants.length === 0) {
+    return (
+      <TableRow className="bg-blue-50/30">
+        <TableCell colSpan={columnsCount} className="h-16 text-center text-gray-500">
+          No hay variantes disponibles para este producto
+        </TableCell>
+      </TableRow>
+    );
+  }
+
+  return (
+    <>
+      {variants.map((variant, index) => (
+        <TableRow
+          key={`variant-${variant.id}`}
+          className={`bg-blue-50/30 border-l-4 border-l-blue-200 ${
+            index === variants.length - 1 ? "border-b-2 border-b-blue-100" : ""
+          }`}
+        >
+          {/* Columna de imágenes de variante */}
+          <TableCell className="py-3">
+            <div className="flex flex-wrap gap-2 max-w-xs">
+              {variant.image && variant.image.length > 0 ? (
+                variant.image.map((image) => (
+                  <div key={image.id} className="relative">
+                    <img
+                      src={image.url}
+                      alt={`Variante ${variant.description}`}
+                      className={`w-12 h-12 object-cover rounded border-2 ${
+                        image.is_primary === 1
+                          ? "border-green-500"
+                          : "border-gray-300"
+                      }`}
+                    />
+                    {image.is_primary === 1 && (
+                      <div className="absolute -top-1 -right-1 bg-green-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                        ★
+                      </div>
+                    )}
+                  </div>
+                ))
+              ) : variant.primaryImage ? (
+                <div className="relative">
+                  <img
+                    src={variant.primaryImage}
+                    alt={`Variante ${variant.description}`}
+                    className="w-12 h-12 object-cover rounded border-2 border-green-500"
+                  />
+                  <div className="absolute -top-1 -right-1 bg-green-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                    ★
+                  </div>
+                </div>
+              ) : (
+                <div className="text-xs text-gray-400">Sin imágenes</div>
+              )}
+            </div>
+          </TableCell>
+
+          {/* Columna de descripción de variante */}
+          <TableCell className="py-3">
+            <div className="font-medium text-sm text-blue-800">
+              {variant.description}
+            </div>
+          </TableCell>
+
+          {/* Columna de descripción (vacía para variantes) */}
+          <TableCell className="py-3">
+            <span className="text-xs text-gray-400 italic">
+              Variante del producto
+            </span>
+          </TableCell>
+
+          {/* Columna de tipo (vacía para variantes) */}
+          <TableCell className="py-3">
+            <span className="text-xs text-gray-400">-</span>
+          </TableCell>
+
+          {/* Columna de acciones de variante */}
+          <TableCell className="py-3">
+            {/* Aquí puedes agregar acciones específicas para variantes */}
+            <div className="text-xs text-gray-400">-</div>
+          </TableCell>
+        </TableRow>
+      ))}
+    </>
+  );
+};
+
 export function DataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+
   const table = useReactTable({
     data,
     columns,
@@ -57,19 +219,28 @@ export function DataTable<TData, TValue>({
       },
     },
   });
+
   const uniqueProductsTypes = [
     ...new Map(
       data.map((item: any) => [item.product_type_id, item.product_type_name])
     ).entries(),
   ].map(([id, name]) => ({ id, name }));
 
-  console.log("uniqueProductsTypes", uniqueProductsTypes);
+  const toggleRowExpansion = (rowId: string) => {
+    const newExpandedRows = new Set(expandedRows);
+    if (newExpandedRows.has(rowId)) {
+      newExpandedRows.delete(rowId);
+    } else {
+      newExpandedRows.add(rowId);
+    }
+    setExpandedRows(newExpandedRows);
+  };
+
   return (
     <div className="w-full space-y-6">
-      <div className="w-full flex flex-col sm:flex-row gap-2 justify-between ">
+      <div className="w-full flex flex-col sm:flex-row gap-2 justify-between">
         <Input
           placeholder="Filtrar por nombre..."
-          
           value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("name")?.setFilterValue(event.target.value)
@@ -106,6 +277,7 @@ export function DataTable<TData, TValue>({
           </SelectContent>
         </Select>
       </div>
+
       <div className="overflow-hidden rounded-md border">
         <Table>
           <TableHeader>
@@ -128,21 +300,60 @@ export function DataTable<TData, TValue>({
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+              <>
+                {table.getRowModel().rows.map((row) => {
+                  const rowId = `product-${row.id}`;
+                  const isExpanded = expandedRows.has(rowId);
+                  
+                  return (
+                    <React.Fragment key={rowId}>
+                      {/* Fila principal del producto */}
+                      <TableRow className="hover:bg-gray-50">
+                        {row.getVisibleCells().map((cell, index) => (
+                          <TableCell key={cell.id}>
+                            {/* Si es la última celda (acciones), agregamos el botón de expansión */}
+                            {index === row.getVisibleCells().length - 1 ? (
+                              <div className="flex items-center gap-2">
+                                {flexRender(
+                                  cell.column.columnDef.cell,
+                                  cell.getContext()
+                                )}
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => toggleRowExpansion(rowId)}
+                                  className="h-8 w-8 p-0"
+                                >
+                                  {isExpanded ? (
+                                    <ChevronUp className="h-4 w-4" />
+                                  ) : (
+                                    <ChevronDown className="h-4 w-4" />
+                                  )}
+                                  <span className="sr-only">
+                                    {isExpanded ? "Ocultar variantes" : "Ver variantes"}
+                                  </span>
+                                </Button>
+                              </div>
+                            ) : (
+                              flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext()
+                              )
+                            )}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+
+                      {/* Filas de variantes */}
+                      <VariantRows 
+                        productId={(row.original as any).id}
+                        isExpanded={isExpanded}
+                        columnsCount={columns.length}
+                      />
+                    </React.Fragment>
+                  );
+                })}
+              </>
             ) : (
               <TableRow>
                 <TableCell
@@ -156,13 +367,13 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
+
       <div className="flex items-center space-x-6 lg:space-x-8 justify-end pt-4">
         <div className="flex w-[100px] items-center justify-center text-sm font-medium">
           Página {table.getState().pagination.pageIndex + 1} de{" "}
           {table.getPageCount()}
         </div>
 
-        {/* Botones de navegación */}
         <div className="flex items-center space-x-2">
           <Button
             variant="outline"
