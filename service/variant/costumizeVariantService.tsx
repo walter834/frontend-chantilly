@@ -8,7 +8,6 @@ export interface ApiVariant {
   price: string;
   hours: number;
   status: null;
-
   images: VariantImage[];
 }
 
@@ -24,7 +23,7 @@ export interface Variant {
   portions: string;
   price: string;
   hours: number;
-  image: VariantImage[];
+  images: VariantImage[];
   primaryImage?: string;
 }
 
@@ -52,7 +51,7 @@ export async function getVariants(): Promise<Variant[]> {
   }
 }
 
-export async function updateVariantImage(
+export async function updateVariantImages(
   id: number,
   images: File[]
 ): Promise<{ message: string; product: ApiVariant }> {
@@ -62,7 +61,7 @@ export async function updateVariantImage(
       formData.append(`images[${index}]`, image);
     });
 
-    const response = await api.post(`/products-variant/${id}`, formData, {
+    const response = await api.post(`/products-variant/${id}/images`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
@@ -84,15 +83,48 @@ export async function getVariantsByProduct(
         product_id: apiVariant.product_id,
 
         description: apiVariant.description,
-        image: apiVariant.images,
+        images: apiVariant.images,
         primaryImage:
           apiVariant.images.find((img) => img.is_primary === 1)?.url ||
           apiVariant.images[0]?.url ||
           null,
       })
     );
-    console.log(transformedVariant)
+    console.log(transformedVariant);
     return transformedVariant;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function getVariantById(id: number): Promise<Variant> {
+  try {
+    const response = await api.get(`/products-variant/show/${id}`);
+    return response.data.productVariant;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function deleteVariantImage(id: number, image_index: number) {
+  try {
+    await api.delete(`/products-variant/${id}/images`, {
+      data: {
+        image_index: image_index,
+      },
+    });
+  } catch (error) {
+    throw error;
+  }
+}
+
+export async function setPrimaryImageVariant(id:number,image_index:number) {
+  try {
+    const response = await api.post(`/products-variant/${id}/set-primary-image`,{
+      image_index: image_index
+    })
+    
+    return response.data
   } catch (error) {
     throw error;
   }

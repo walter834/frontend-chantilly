@@ -35,10 +35,12 @@ import {
   ChevronsRight,
   ChevronDown,
   ChevronUp,
+  Image,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import React, { useState, useEffect } from "react";
 import { getVariantsByProduct } from "@/service/variant/costumizeVariantService";
+import { VariantFileUploadDialog } from "./VariantFileUpdateDialog";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -52,7 +54,7 @@ interface Variant {
   portions?: string;
   price?: string;
   hours?: number;
-  image: VariantImage[]; 
+  images: VariantImage[]; 
   primaryImage?: string;
 }
 
@@ -135,8 +137,8 @@ const VariantRows = ({
           {/* Columna de imágenes de variante */}
           <TableCell className="py-3">
             <div className="flex flex-wrap gap-2 max-w-xs">
-              {variant.image && variant.image.length > 0 ? (
-                variant.image.map((image) => (
+              {variant.images && variant.images.length > 0 ? (
+                variant.images.map((image) => (
                   <div key={image.id} className="relative">
                     <img
                       src={image.url}
@@ -193,7 +195,7 @@ const VariantRows = ({
           {/* Columna de acciones de variante */}
           <TableCell className="py-3">
             {/* Aquí puedes agregar acciones específicas para variantes */}
-            <div className="text-xs text-gray-400">-</div>
+            <VariantFileUploadDialog id={variant.id}/>
           </TableCell>
         </TableRow>
       ))}
