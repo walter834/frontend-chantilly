@@ -11,11 +11,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ImageIcon, Upload, X, Loader2, Star } from "lucide-react";
+import { ImageIcon, Upload, X, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import {
-  Image,
   updateProductImages,
   setPrimaryImage,
   deleteImage,
@@ -27,17 +26,14 @@ interface Props {
 }
 
 interface UnifiedImageItem {
-  // Identificación
-  id?: number; // ID del servidor si es imagen existente
-  tempId?: string; // ID temporal para imágenes nuevas
+  id?: number;
+  tempId?: string;
 
-  // Datos
-  file?: File; // Archivo nuevo
-  url?: string; // URL de imagen existente
+  file?: File;
+  url?: string;
 
-  // Estado
   status: "existing" | "new" | "to_delete";
-  is_primary: boolean;
+
   sort_order: number;
 }
 
@@ -47,7 +43,6 @@ export function FileUploadDialog({ id }: Props) {
   const [isUploading, setIsUploading] = useState(false);
   const [loadingExisting, setLoadingExisting] = useState(false);
 
-  // Estado unificado para todas las imágenes
   const [unifiedImages, setUnifiedImages] = useState<UnifiedImageItem[]>([]);
 
   const loadExistingImages = async () => {
@@ -62,12 +57,14 @@ export function FileUploadDialog({ id }: Props) {
           id: img.id,
           url: img.url,
           status: "existing",
-          is_primary: img.is_primary === 1,
           sort_order: img.sort_order,
         })
       );
 
-      setUnifiedImages(unified);
+      setUnifiedImages((prev) => {
+        const newImages = prev.filter((img) => img.status === "new");
+        return [...unified, ...newImages];
+      });
     } catch (error) {
       toast.error("Error al cargar imágenes existentes");
     } finally {
@@ -141,9 +138,18 @@ export function FileUploadDialog({ id }: Props) {
   const removeImage = async (image: UnifiedImageItem, index: number) => {
     try {
       if (image.status === "existing" && image.id) {
-        await deleteImage(id, index);
-        toast.success("Imagen eliminada correctamente");
-        await loadExistingImages();
+        const existingImages = unifiedImages.filter(
+          (img) => img.status === "existing"
+        );
+        const realIndex = existingImages.findIndex(
+          (img) => img.id === image.id
+        );
+        if (realIndex !== -1) {
+          await deleteImage(id, realIndex);
+          toast.success("Imagen eliminada correctamente");
+          await loadExistingImages();
+          // Dispatch custom event to refresh variants
+        }
       } else if (image.status === "new") {
         setUnifiedImages((prev) =>
           prev.filter((img) => !(img.tempId && img.tempId === image.tempId))
@@ -151,35 +157,6 @@ export function FileUploadDialog({ id }: Props) {
       }
     } catch (error) {
       toast.error("Error al eliminar la imagen");
-    }
-  };
-
-  const setPrimaryImageHandler = async (
-    targetImage: UnifiedImageItem,
-    imageIndex: number
-  ) => {
-    try {
-      if (targetImage.status === "existing" && targetImage.id) {
-        await setPrimaryImage(id, imageIndex);
-        toast.success("Imagen principal actualizada");
-        await loadExistingImages();
-      } else if (targetImage.status === "new") {
-        setUnifiedImages((prev) =>
-          prev.map((img) => ({
-            ...img,
-            is_primary: img.tempId === targetImage.tempId,
-          }))
-        );
-      }
-
-      if (
-        typeof window !== "undefined" &&
-        (window as any).refreshProductsTable
-      ) {
-        (window as any).refreshProductsTable();
-      }
-    } catch (error) {
-      toast.error("Error al establecer imagen principal");
     }
   };
 
@@ -200,54 +177,21 @@ export function FileUploadDialog({ id }: Props) {
         (img) => img.status !== "to_delete"
       );
       const newImages = activeImages.filter((img) => img.status === "new");
-      const primaryImage = activeImages.find((img) => img.is_primary);
 
       if (activeImages.length === 0) {
         toast.error("Debe haber al menos una imagen");
         return;
       }
 
-      if (newImages.length > 0) {
-        const files = newImages.map((img) => img.file!);
+      const files = newImages.map((img) => img.file!);
 
-        const primaryNewImage = newImages.find((img) => img.is_primary);
-        if (primaryNewImage) {
-          const primaryFile = primaryNewImage.file!;
-          const otherFiles = files.filter((f) => f !== primaryFile);
-          const orderedFiles = [primaryFile, ...otherFiles];
-
-          await updateProductImages(id, orderedFiles);
-        } else {
-          await updateProductImages(id, files);
-        }
-      }
-
-      if (
-        primaryImage &&
-        primaryImage.status === "existing" &&
-        primaryImage.id
-      ) {
-        const existingImages = unifiedImages.filter(
-          (img) => img.status === "existing"
-        );
-        const primaryIndex = existingImages.findIndex(
-          (img) => img.id === primaryImage.id
-        );
-        if (primaryIndex !== -1) {
-          await setPrimaryImage(id, primaryIndex);
-        }
-      }
+      await updateProductImages(id, files);
 
       toast.success("Imágenes actualizadas correctamente");
       setIsOpen(false);
       setUnifiedImages([]);
-
-      if (
-        typeof window !== "undefined" &&
-        (window as any).refreshProductsTable
-      ) {
-        (window as any).refreshProductsTable();
-      }
+      window.dispatchEvent(new CustomEvent("productUpdated"));
+     
     } catch (error) {
       toast.error("Error al actualizar las imágenes");
       console.error("Error:", error);
@@ -261,27 +205,14 @@ export function FileUploadDialog({ id }: Props) {
     (img) => img.status !== "to_delete"
   );
   const canAddMore = activeImages.length < 3;
-  const hasChanges =
-    unifiedImages.some(
-      (img) => img.status === "new" || img.status === "to_delete"
-    ) ||
-    unifiedImages.some(
-      (img) =>
-        img.status === "existing" &&
-        img.is_primary !==
-          (unifiedImages.find((original) => original.id === img.id)
-            ?.is_primary ?? false)
-    );
+  const hasChanges = unifiedImages.some(
+    (img) => img.status === "new" || img.status === "to_delete"
+  );
 
   const renderImageItem = (image: UnifiedImageItem, index: number) => (
     <div
       key={image.id || image.tempId}
-      className={cn(
-        "flex items-center justify-between p-3 rounded-md border transition-colors",
-        image.is_primary
-          ? "bg-blue-50 border-blue-200"
-          : "bg-muted/50 border-muted"
-      )}
+      className="flex items-center justify-between p-3 rounded-md border transition-colors"
     >
       <div className="flex items-center gap-3 min-w-0">
         <div className="relative">
@@ -292,11 +223,6 @@ export function FileUploadDialog({ id }: Props) {
             alt="Preview"
             className="w-12 h-12 object-cover rounded border"
           />
-          {image.is_primary && (
-            <div className="absolute -top-1 -right-1 bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center">
-              <Star className="w-3 h-3 fill-current" />
-            </div>
-          )}
         </div>
 
         <div className="min-w-0 flex-1">
@@ -304,16 +230,7 @@ export function FileUploadDialog({ id }: Props) {
             <p className="text-sm truncate font-medium">
               {image.file?.name || `Imagen ${index + 1}`}
             </p>
-            {image.is_primary && (
-              <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                Principal
-              </span>
-            )}
-            {!image.is_primary && (
-              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                Secundaria
-              </span>
-            )}
+
             {image.status === "new" && (
               <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
                 Nueva
@@ -327,18 +244,6 @@ export function FileUploadDialog({ id }: Props) {
       </div>
 
       <div className="flex items-center gap-1">
-        {!image.is_primary && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setPrimaryImageHandler(image, index)}
-            className="h-8 w-8 p-0"
-            title="Establecer como imagen principal"
-          >
-            <Star className="h-3 w-3" />
-          </Button>
-        )}
-
         <Button
           variant="ghost"
           size="sm"
@@ -425,7 +330,7 @@ export function FileUploadDialog({ id }: Props) {
                       </p>
                       <input
                         type="file"
-                        multiple={activeImages.length === 0}
+                        multiple={canAddMore && 3 - activeImages.length > 1}
                         accept="image/*"
                         onChange={handleFileInput}
                         className="hidden"

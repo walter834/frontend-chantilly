@@ -11,13 +11,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ImageIcon, Upload, X, Loader2, Star } from "lucide-react";
+import { ImageIcon, Upload, X, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import {
   deleteVariantImage,
   getVariantById,
-  setPrimaryImageVariant,
   updateVariantImages,
 } from "@/service/variant/costumizeVariantService";
 
@@ -46,8 +45,6 @@ export function VariantFileUploadDialog({ id }: Props) {
     setLoadingExisting(true);
     try {
       const variant = await getVariantById(id);
-      console.log("variant id", variant);
-
       const existingImages = variant?.images || [];
 
       const newExistingImages = existingImages.map(
@@ -120,15 +117,15 @@ export function VariantFileUploadDialog({ id }: Props) {
       }
 
       const filesToAdd = files.slice(0, availableSlots);
-      const hasExistingImages = activeImages.some(
+      /* const hasExistingImages = activeImages.some(
         (img) => img.status === "existing"
-      );
+      ); */
 
       const newImages: UnifiedImageItem[] = filesToAdd.map((file, index) => ({
         tempId: `temp_${Date.now()}_${index}`,
         file,
         status: "new",
-        sort_order: activeImages.length + index,
+       
       }));
 
       return [...prev, ...newImages];
