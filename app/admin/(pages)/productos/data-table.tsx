@@ -39,8 +39,12 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import React, { useState, useEffect } from "react";
-import { getVariantsByProduct } from "@/service/variant/costumizeVariantService";
+import {
+  getVariantsByProduct,
+  setPrimaryImageVariant,
+} from "@/service/variant/costumizeVariantService";
 import { VariantFileUploadDialog } from "./VariantFileUpdateDialog";
+import { toast } from "sonner";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -54,7 +58,7 @@ interface Variant {
   portions?: string;
   price?: string;
   hours?: number;
-  images: VariantImage[]; 
+  images: VariantImage[];
   primaryImage?: string;
 }
 
@@ -64,18 +68,18 @@ interface VariantImage {
   is_primary: number;
 }
 
-const VariantRows = ({ 
-  productId, 
+const VariantRows = ({
+  productId,
   isExpanded,
-  columnsCount 
-}: { 
+  columnsCount,
+}: {
   productId: number;
   isExpanded: boolean;
   columnsCount: number;
 }) => {
   const [variants, setVariants] = useState<Variant[]>([]);
-  const [loading, setLoading] = useState(false); 
-  const [hasLoaded, setHasLoaded] = useState(false); 
+  const [loading, setLoading] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
 
   useEffect(() => {
     if (isExpanded && !hasLoaded) {
@@ -100,10 +104,10 @@ const VariantRows = ({
     };
 
     // Listen for custom event
-    window.addEventListener('variantUpdated', handleVariantUpdate);
-    
+    window.addEventListener("variantUpdated", handleVariantUpdate);
+
     return () => {
-      window.removeEventListener('variantUpdated', handleVariantUpdate);
+      window.removeEventListener("variantUpdated", handleVariantUpdate);
     };
   }, [isExpanded]);
 
@@ -142,7 +146,10 @@ const VariantRows = ({
   if (hasLoaded && variants.length === 0) {
     return (
       <TableRow className="bg-blue-50/30">
-        <TableCell colSpan={columnsCount} className="h-16 text-center text-gray-500">
+        <TableCell
+          colSpan={columnsCount}
+          className="h-16 text-center text-gray-500"
+        >
           No hay variantes disponibles para este producto
         </TableCell>
       </TableRow>
@@ -159,35 +166,68 @@ const VariantRows = ({
           }`}
         >
           {/* Columna de imágenes de variante */}
+          {/* Columna de imágenes de variante */}
           <TableCell className="py-3">
             <div className="flex flex-wrap gap-2 max-w-xs">
               {variant.images && variant.images.length > 0 ? (
-                variant.images.map((image) => (
-                  <div key={image.id} className="relative">
-                    <img
-                      src={image.url}
-                      alt={`Variante ${variant.description}`}
-                      className={`w-12 h-12 object-cover rounded border-2 ${
-                        image.is_primary === 1
-                          ? "border-green-500"
-                          : "border-gray-300"
-                      }`}
-                    />
-                    {image.is_primary === 1 && (
-                      <div className="absolute -top-1 -right-1 bg-green-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                        ★
-                      </div>
-                    )}
-                  </div>
-                ))
+                variant.images.map((image, index) => {
+                  const handleSetPrimary = async (
+                    imageIndex: number,
+                    currentPrimary: boolean
+                  ) => {
+                    if (currentPrimary) {
+                      return;
+                    }
+
+                    try {
+                      await setPrimaryImageVariant(variant.id, imageIndex);
+                      toast.success("Imagen principal de variante actualizada");
+
+                      // Disparar evento para refrescar variantes
+                      window.dispatchEvent(new CustomEvent("variantUpdated"));
+                    } catch (error) {
+                      toast.error(
+                        "Error al establecer imagen principal de variante"
+                      );
+                      console.error("Error:", error);
+                    }
+                  };
+
+                  return (
+                    <div key={image.id} className="relative flex-shrink-0">
+                      <img
+                        src={image.url}
+                        alt={`Variante ${variant.description}`}
+                        className={`w-12 h-12 object-cover rounded border-2 transition-all cursor-pointer ${
+                          image.is_primary === 1
+                            ? "border-red-700"
+                            : "border-transparent hover:border-red-500 hover:scale-105"
+                        }`}
+                        onClick={() =>
+                          handleSetPrimary(index, image.is_primary === 1)
+                        }
+                        title={
+                          image.is_primary === 1
+                            ? "Imagen principal actual"
+                            : "Click para establecer como principal"
+                        }
+                      />
+                      {image.is_primary === 1 && (
+                        <div className="absolute -top-1 -right-1 bg-red-700 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center pointer-events-none">
+                          ★
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
               ) : variant.primaryImage ? (
                 <div className="relative">
                   <img
                     src={variant.primaryImage}
                     alt={`Variante ${variant.description}`}
-                    className="w-12 h-12 object-cover rounded border-2 border-green-500"
+                    className="w-12 h-12 object-cover rounded border-2 border-red-700"
                   />
-                  <div className="absolute -top-1 -right-1 bg-green-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                  <div className="absolute -top-1 -right-1 bg-red-700 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
                     ★
                   </div>
                 </div>
@@ -219,7 +259,7 @@ const VariantRows = ({
           {/* Columna de acciones de variante */}
           <TableCell className="py-3">
             {/* Aquí puedes agregar acciones específicas para variantes */}
-            <VariantFileUploadDialog id={variant.id}/>
+            <VariantFileUploadDialog id={variant.id} />
           </TableCell>
         </TableRow>
       ))}
@@ -330,7 +370,7 @@ export function DataTable<TData, TValue>({
                 {table.getRowModel().rows.map((row) => {
                   const rowId = `product-${row.id}`;
                   const isExpanded = expandedRows.has(rowId);
-                  
+
                   return (
                     <React.Fragment key={rowId}>
                       {/* Fila principal del producto */}
@@ -356,7 +396,9 @@ export function DataTable<TData, TValue>({
                                     <ChevronDown className="h-4 w-4" />
                                   )}
                                   <span className="sr-only">
-                                    {isExpanded ? "Ocultar variantes" : "Ver variantes"}
+                                    {isExpanded
+                                      ? "Ocultar variantes"
+                                      : "Ver variantes"}
                                   </span>
                                 </Button>
                               </div>
@@ -371,7 +413,7 @@ export function DataTable<TData, TValue>({
                       </TableRow>
 
                       {/* Filas de variantes */}
-                      <VariantRows 
+                      <VariantRows
                         productId={(row.original as any).id}
                         isExpanded={isExpanded}
                         columnsCount={columns.length}
