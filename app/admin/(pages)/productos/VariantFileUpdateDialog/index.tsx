@@ -137,9 +137,17 @@ export function VariantFileUploadDialog({ id }: Props) {
   const removeImage = async (image: UnifiedImageItem, index: number) => {
     try {
       if (image.status === "existing" && image.id) {
-        await deleteVariantImage(id, index);
-        toast.success("Imagen eliminada correctamente");
-        await loadExistingImages();
+        // Encontrar el índice real de la imagen existente en el array original
+        const existingImages = unifiedImages.filter(img => img.status === "existing");
+        const realIndex = existingImages.findIndex(img => img.id === image.id);
+        
+        if (realIndex !== -1) {
+          await deleteVariantImage(id, realIndex);
+          toast.success("Imagen eliminada correctamente");
+          await loadExistingImages();
+          // Dispatch custom event to refresh variants
+          window.dispatchEvent(new CustomEvent('variantUpdated'));
+        }
       } else if (image.status === "new") {
         setUnifiedImages((prev) =>
           prev.filter((img) => !(img.tempId && img.tempId === image.tempId))
@@ -156,9 +164,17 @@ export function VariantFileUploadDialog({ id }: Props) {
   ) => {
     try {
       if (targetImage.status === "existing" && targetImage.id) {
-        await setPrimaryImageVariant(id, imageIndex);
-        toast.success("Imagen principal actualizada");
-        await loadExistingImages();
+        // Encontrar el índice real de la imagen existente en el array original
+        const existingImages = unifiedImages.filter(img => img.status === "existing");
+        const realIndex = existingImages.findIndex(img => img.id === targetImage.id);
+        
+        if (realIndex !== -1) {
+          await setPrimaryImageVariant(id, realIndex);
+          toast.success("Imagen principal actualizada");
+          await loadExistingImages();
+          // Dispatch custom event to refresh variants
+          window.dispatchEvent(new CustomEvent('variantUpdated'));
+        }
       } else if (targetImage.status === "new") {
         setUnifiedImages((prev) =>
           prev.map((img) => ({
@@ -168,12 +184,7 @@ export function VariantFileUploadDialog({ id }: Props) {
         );
       }
 
-      if (
-        typeof window !== "undefined" &&
-        (window as any).refreshProductsTable
-      ) {
-        (window as any).refreshProductsTable();
-      }
+     
     } catch (error) {
       toast.error("Error al establecer imagen principal");
     }
@@ -237,6 +248,9 @@ export function VariantFileUploadDialog({ id }: Props) {
       toast.success("Imágenes actualizadas correctamente");
       setIsOpen(false);
       setUnifiedImages([]);
+
+      // Dispatch custom event to refresh variants
+      window.dispatchEvent(new CustomEvent('variantUpdated'));
 
       if (
         typeof window !== "undefined" &&

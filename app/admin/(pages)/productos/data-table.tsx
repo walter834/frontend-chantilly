@@ -83,6 +83,30 @@ const VariantRows = ({
     }
   }, [isExpanded, productId, hasLoaded]);
 
+  // Effect to refresh variants when productId changes or when explicitly requested
+  useEffect(() => {
+    if (isExpanded) {
+      // Reset hasLoaded to force refresh when productId changes
+      setHasLoaded(false);
+    }
+  }, [productId]);
+
+  // Effect to listen for variant updates
+  useEffect(() => {
+    const handleVariantUpdate = () => {
+      if (isExpanded) {
+        setHasLoaded(false);
+      }
+    };
+
+    // Listen for custom event
+    window.addEventListener('variantUpdated', handleVariantUpdate);
+    
+    return () => {
+      window.removeEventListener('variantUpdated', handleVariantUpdate);
+    };
+  }, [isExpanded]);
+
   const loadVariants = async () => {
     setLoading(true);
     try {
