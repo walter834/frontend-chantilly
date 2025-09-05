@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 export default function Products() {
   const [data, setData] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(0);
 
   const getData = async (): Promise<Product[]> => {
     try {
@@ -57,7 +58,8 @@ export default function Products() {
   
   return (
     <div className="container mx-auto py-10">
-      <DataTable columns={columns} data={data} />
+      <DataTable columns={columns} data={data}  onPageChange={setCurrentPage}
+        initialPageIndex={currentPage}/>
     </div>
   );
 }

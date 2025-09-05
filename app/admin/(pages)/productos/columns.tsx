@@ -71,9 +71,9 @@ export const columns: ColumnDef<Product>[] = [
           toast.success("Imagen principal actualizada");
           
           // Refrescar la tabla si existe la función global
-          if (typeof window !== "undefined" && (window as any).refreshProductsTable) {
-            (window as any).refreshProductsTable();
-          }
+      
+         window.dispatchEvent(new CustomEvent("productUpdated"));
+
         } catch (error) {
           toast.error("Error al establecer imagen principal");
           console.error("Error:", error);

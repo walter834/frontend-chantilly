@@ -49,6 +49,8 @@ import { toast } from "sonner";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  onPageChange?: (page: number) => void;
+  initialPageIndex?: number;
 }
 
 interface Variant {
@@ -270,6 +272,8 @@ const VariantRows = ({
 export function DataTable<TData, TValue>({
   columns,
   data,
+  onPageChange,
+  initialPageIndex = 0
 }: DataTableProps<TData, TValue>) {
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
@@ -282,8 +286,10 @@ export function DataTable<TData, TValue>({
     initialState: {
       pagination: {
         pageSize: 10,
+        pageIndex: initialPageIndex,
       },
     },
+  
   });
 
   const uniqueProductsTypes = [
