@@ -148,7 +148,7 @@ export function FileUploadDialog({ id }: Props) {
           await deleteImage(id, realIndex);
           toast.success("Imagen eliminada correctamente");
           await loadExistingImages();
-          // Dispatch custom event to refresh variants
+          window.dispatchEvent(new CustomEvent("productUpdated"));
         }
       } else if (image.status === "new") {
         setUnifiedImages((prev) =>
