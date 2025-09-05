@@ -31,10 +31,7 @@ const data = {
           title: "Banners",
           url: "/admin/banners",
         },
-        {
-          title: "Variantes",
-          url: "/admin/variantes",
-        },
+
         {
           title: "Banner Secundario",
           url: "/admin/banner-secondary",

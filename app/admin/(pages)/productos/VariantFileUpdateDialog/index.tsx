@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ImageIcon, Upload, X, Loader2 } from "lucide-react";
+import { ImageIcon, Upload, X, Loader2, Package } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import {
@@ -264,8 +264,8 @@ export function VariantFileUploadDialog({ id }: Props) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <button className="h-12 w-12 p-0 rounded-md border-gray-200 hover:bg-gray-50 transition-colors flex items-center justify-center cursor-pointer">
-          <ImageIcon className="h-8 w-8 text-red-600" />
+        <button className="h-12 w-12 p-0 rounded-md border-gray-200 hover:bg-gray-50 transition-colors flex items-center justify-center cursor-pointer" title="Cambiar imagen de la variante">
+          <Package className="h-8 w-8 text-red-600"/>
         </button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">

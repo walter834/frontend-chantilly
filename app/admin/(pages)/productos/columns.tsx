@@ -45,11 +45,7 @@ export interface TypeProduct {
   name: string;
 }
 
-
-
-
 export const columns: ColumnDef<Product>[] = [
-
   {
     accessorKey: "image",
     header: "Imagenes",
@@ -60,7 +56,10 @@ export const columns: ColumnDef<Product>[] = [
         return <div className="text-gray-400">Sin imágenes</div>;
       }
 
-      const handleSetPrimary = async (imageIndex: number, currentPrimary: boolean) => {
+      const handleSetPrimary = async (
+        imageIndex: number,
+        currentPrimary: boolean
+      ) => {
         if (currentPrimary) {
           return;
         }
@@ -72,7 +71,6 @@ export const columns: ColumnDef<Product>[] = [
           // Refrescar la tabla si existe la función global
 
           window.dispatchEvent(new CustomEvent("productUpdated"));
-
         } catch (error) {
           toast.error("Error al establecer imagen principal");
           console.error("Error:", error);
@@ -86,15 +84,17 @@ export const columns: ColumnDef<Product>[] = [
             .map((image, index) => (
               <div key={image.id} className="relative flex-shrink-0">
                 <Image
-                  width={130}
-                  height={130}
+                  width={30}
+                  height={30}
                   src={image.url}
                   alt={`Imagen ${index + 1}`}
                   className={`w-12 h-12 object-cover rounded border-2 transition-all cursor-pointer ${image.is_primary === 1
                       ? "border-red-700"
                       : "border-transparent hover:border-red-500 hover:scale-105"
-                    }`}
-                  onClick={() => handleSetPrimary(index, image.is_primary === 1)}
+                  }`}
+                  onClick={() =>
+                    handleSetPrimary(index, image.is_primary === 1)
+                  }
                   title={
                     image.is_primary === 1
                       ? "Imagen principal actual"
@@ -120,10 +120,9 @@ export const columns: ColumnDef<Product>[] = [
       return (
         <div>
           <div className="font-medium">{row.original.name}</div>
-
         </div>
-      )
-    }
+      );
+    },
   },
   {
     accessorKey: "description",
@@ -133,6 +132,64 @@ export const columns: ColumnDef<Product>[] = [
   {
     accessorKey: "product_type_name",
     header: "Tipo de producto",
+    cell: ({ row }) => {
+      const productType = row.original.product_type_name;
+
+      // Función para obtener los colores según el tipo de producto
+      const getTypeColors = (type: string) => {
+        const typeUpper = type.toUpperCase();
+
+        switch (typeUpper) {
+          case "BOCADITO":
+            return {
+              bg: "bg-red-100",
+              text: "text-red-800",
+              border: "border-red-200",
+            };
+          case "TORTA TEMATICA":
+            return {
+              bg: "bg-blue-100",
+              text: "text-blue-800",
+              border: "border-blue-200",
+            };
+          case "TORTA EN LINEA":
+            return {
+              bg: "bg-purple-100",
+              text: "text-purple-800",
+              border: "border-purple-200",
+            };
+          case "POSTRE":
+            return {
+              bg: "bg-pink-100",
+              text: "text-pink-800",
+              border: "border-pink-200",
+            };
+          case "ACCESORIO":
+            return {
+              bg: "bg-yellow-100",
+              text: "text-yellow-800",
+              border: "border-yellow-200",
+            };
+
+          default:
+            return {
+              bg: "bg-gray-100",
+              text: "text-gray-800",
+              border: "border-gray-200",
+            };
+        }
+      };
+
+      const colors = getTypeColors(productType);
+
+      return (
+        <div
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${colors.bg} ${colors.text} ${colors.border}`}
+        >
+          {productType}
+        </div>
+      );
+    },
   },
 
   {
