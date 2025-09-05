@@ -34,10 +34,17 @@ export default function Products() {
     loadData();
   }, []);
 
+
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      (window as any).refreshProductsTable = refreshData;
-    }
+    const handleProductUpdate = () => {
+      refreshData();
+    };
+
+    window.addEventListener("productUpdated", handleProductUpdate);
+
+    return () => {
+      window.removeEventListener("productUpdated", handleProductUpdate);
+    };
   }, []);
 
   if (loading) {
@@ -47,6 +54,7 @@ export default function Products() {
       </div>
     );
   }
+  
   return (
     <div className="container mx-auto py-10">
       <DataTable columns={columns} data={data} />

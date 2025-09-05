@@ -15,11 +15,10 @@ import { ImageIcon, Upload, X, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import {
-  updateProductImages,
-  setPrimaryImage,
-  deleteImage,
-} from "@/service/product/customizeProductService";
-import { getProductById } from "@/service/productService";
+  deleteVariantImage,
+  getVariantById,
+  updateVariantImages,
+} from "@/service/variant/costumizeVariantService";
 
 interface Props {
   id: number;
@@ -33,37 +32,32 @@ interface UnifiedImageItem {
   url?: string;
 
   status: "existing" | "new" | "to_delete";
-
-  sort_order: number;
 }
 
-export function FileUploadDialog({ id }: Props) {
+export function VariantFileUploadDialog({ id }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [loadingExisting, setLoadingExisting] = useState(false);
-
   const [unifiedImages, setUnifiedImages] = useState<UnifiedImageItem[]>([]);
 
   const loadExistingImages = async () => {
     setLoadingExisting(true);
     try {
-      const product = await getProductById(id);
-      const existingImages = product?.images || [];
+      const variant = await getVariantById(id);
+      const existingImages = variant?.images || [];
 
-      // Convertir imágenes existentes al formato unificado
-      const unified = existingImages.map(
+      const newExistingImages = existingImages.map(
         (img): UnifiedImageItem => ({
           id: img.id,
           url: img.url,
           status: "existing",
-          sort_order: img.sort_order,
         })
       );
 
       setUnifiedImages((prev) => {
         const newImages = prev.filter((img) => img.status === "new");
-        return [...unified, ...newImages];
+        return [...newExistingImages, ...newImages];
       });
     } catch (error) {
       toast.error("Error al cargar imágenes existentes");
@@ -123,12 +117,15 @@ export function FileUploadDialog({ id }: Props) {
       }
 
       const filesToAdd = files.slice(0, availableSlots);
+      /* const hasExistingImages = activeImages.some(
+        (img) => img.status === "existing"
+      ); */
+
       const newImages: UnifiedImageItem[] = filesToAdd.map((file, index) => ({
         tempId: `temp_${Date.now()}_${index}`,
         file,
         status: "new",
-        is_primary: activeImages.length === 0 && index === 0,
-        sort_order: activeImages.length + index,
+       
       }));
 
       return [...prev, ...newImages];
@@ -138,22 +135,27 @@ export function FileUploadDialog({ id }: Props) {
   const removeImage = async (image: UnifiedImageItem, index: number) => {
     try {
       if (image.status === "existing" && image.id) {
+        // Encontrar el índice real de la imagen existente en el array original
         const existingImages = unifiedImages.filter(
           (img) => img.status === "existing"
         );
         const realIndex = existingImages.findIndex(
           (img) => img.id === image.id
         );
+
         if (realIndex !== -1) {
-          await deleteImage(id, realIndex);
+          await deleteVariantImage(id, realIndex);
           toast.success("Imagen eliminada correctamente");
           await loadExistingImages();
           // Dispatch custom event to refresh variants
         }
       } else if (image.status === "new") {
-        setUnifiedImages((prev) =>
-          prev.filter((img) => !(img.tempId && img.tempId === image.tempId))
-        );
+        setUnifiedImages((prev) => {
+          const filtered = prev.filter(
+            (img) => !(img.tempId && img.tempId === image.tempId)
+          );
+          return filtered;
+        });
       }
     } catch (error) {
       toast.error("Error al eliminar la imagen");
@@ -183,15 +185,17 @@ export function FileUploadDialog({ id }: Props) {
         return;
       }
 
-      const files = newImages.map((img) => img.file!);
-
-      await updateProductImages(id, files);
+      if (newImages.length > 0) {
+        const files = newImages.map((img) => img.file!);
+ await updateVariantImages(id, files); 
+      
+      }
 
       toast.success("Imágenes actualizadas correctamente");
       setIsOpen(false);
       setUnifiedImages([]);
-      window.dispatchEvent(new CustomEvent("productUpdated"));
-     
+
+      window.dispatchEvent(new CustomEvent("variantUpdated"));
     } catch (error) {
       toast.error("Error al actualizar las imágenes");
       console.error("Error:", error);
