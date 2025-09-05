@@ -4,6 +4,7 @@ import { ColumnDef } from "@tanstack/react-table";
 
 import { FileUploadDialog } from "./FileUploadDialog";
 import { BannerSecondary } from "@/service/bannerFooter/bannerFooterService";
+import { truncateText } from "@/lib/utils";
 
 export const columns: ColumnDef<BannerSecondary>[] = [
   {
@@ -29,7 +30,7 @@ export const columns: ColumnDef<BannerSecondary>[] = [
         >
           {!description || description.trim() === ""
             ? "No tiene descripción"
-            : description}
+            : truncateText(description, 50)}
         </span>
       );
     },
@@ -40,7 +41,15 @@ export const columns: ColumnDef<BannerSecondary>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       const bannerSecondary = row.original;
-      return <FileUploadDialog id={bannerSecondary.id} />;
+      const banner = {
+        id: bannerSecondary.id,
+        title: bannerSecondary.title,
+        description: bannerSecondary.description,
+        image: bannerSecondary.image,
+        image_movil: bannerSecondary.image_movil,
+      }
+      console.log('banner', banner);
+      return <FileUploadDialog {...banner} />;
     },
   },
 ];

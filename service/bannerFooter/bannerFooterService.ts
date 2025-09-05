@@ -31,3 +31,12 @@ export async function updateBannerSecondaryImage(id: number, image: File) {
     throw err;
   }
 }
+
+export async function updateBannerSecondary(id: number, formData: FormData) {
+  try {
+    const response = await api.post(`/banner-secondary/${id}`, formData);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}

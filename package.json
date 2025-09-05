@@ -23,6 +23,7 @@
     "@radix-ui/react-tooltip": "^1.2.8",
     "@reduxjs/toolkit": "^2.8.2",
     "@tailwindcss/oxide": "^4.1.12",
+    "@tanstack/react-query": "^5.86.0",
     "@tanstack/react-table": "^8.21.3",
     "axios": "^1.11.0",
     "class-variance-authority": "^0.7.1",

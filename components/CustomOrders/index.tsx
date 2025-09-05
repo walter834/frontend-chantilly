@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { BsWhatsapp } from "react-icons/bs";
-import { getBanner } from "@/service/bannerService";
+import { getBannerSecondary } from "@/service/bannerFooter/bannerFooterService";
 
 export default function CustomOrders() {
   const [bannerTitle, setBannerTitle] = useState('');
@@ -11,14 +11,12 @@ export default function CustomOrders() {
 
   useEffect(() => {
     const fetchBanner = async () => {
-      const getBannerSlides = await getBanner();
-      let bannerCustom = getBannerSlides.find((banner) => banner.image_movil_url !== null);
-
-      console.log('bannerCustom', bannerCustom?.title);
-      setBannerTitle(bannerCustom?.title || '');
-      setBannerDescription(bannerCustom?.description || '');
-      setBannerImage(bannerCustom?.image_url || '');
-      setBannerImageMobile(bannerCustom?.image_movil_url || '');
+      const getBannerSlides = await getBannerSecondary();
+      console.log('bannerCustom', getBannerSlides[0]);
+      setBannerTitle(getBannerSlides[0].title || '');
+      setBannerDescription(getBannerSlides[0].description || '');
+      setBannerImage(getBannerSlides[0].image || '');
+      setBannerImageMobile(getBannerSlides[0].image_movil || '');
     };
     fetchBanner();
   }, []);

@@ -40,7 +40,6 @@ export const columns: ColumnDef<Product>[] = [
 
       const handleSetPrimary = async (imageIndex: number, currentPrimary: boolean) => {
         if (currentPrimary) {
-
           return;
         }
 
@@ -48,7 +47,6 @@ export const columns: ColumnDef<Product>[] = [
           await setPrimaryImage(row.original.id, imageIndex);
           toast.success("Imagen principal actualizada");
           
-          // Refrescar la tabla si existe la función global
           if (typeof window !== "undefined" && (window as any).refreshProductsTable) {
             (window as any).refreshProductsTable();
           }
