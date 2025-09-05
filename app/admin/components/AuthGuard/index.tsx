@@ -10,17 +10,17 @@ interface AuthGuardProps {
 }
 
 export function AuthGuard({ children }: AuthGuardProps) {
-  const { isAuthenticated, user } = useAuthAdmin();
+  const { isAuthenticated } = useAuthAdmin();
   const router = useRouter();
 
   useEffect(() => {
-    // Si no está autenticado, redirigir al login del admin
+
     if (!isAuthenticated) {
       router.push("/admin");
     }
   }, [isAuthenticated, router]);
 
-  // Mostrar loading mientras se verifica la autenticación
+ 
   if (!isAuthenticated) {
     return (
       <div className="container mx-auto py-10 space-y-4">
@@ -34,6 +34,6 @@ export function AuthGuard({ children }: AuthGuardProps) {
     );
   }
 
-  // Si está autenticado, mostrar el contenido protegido
+
   return <>{children}</>;
 }
