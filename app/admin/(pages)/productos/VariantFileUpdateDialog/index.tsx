@@ -265,7 +265,7 @@ export function VariantFileUploadDialog({ id }: Props) {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <button className="h-12 w-12 p-0 rounded-md border-gray-200 hover:bg-gray-50 transition-colors flex items-center justify-center cursor-pointer">
-          <ImageIcon className="h-8 w-8 text-green-600" />
+          <ImageIcon className="h-8 w-8 text-red-600" />
         </button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">

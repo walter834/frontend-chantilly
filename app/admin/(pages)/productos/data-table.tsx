@@ -159,13 +159,12 @@ const VariantRows = ({
       {variants.map((variant, index) => (
         <TableRow
           key={`variant-${variant.id}`}
-          className={`bg-blue-50/30 border-l-4 border-l-blue-200 ${
-            index === variants.length - 1 ? "border-b-2 border-b-blue-100" : ""
-          }`}
+          className="bg-red-50/30 border-b-2 [&>td]:border-b-2 [&>td]:border-b-red-100"
         >
           {/* Columna de imágenes de variante */}
           {/* Columna de imágenes de variante */}
-          <TableCell className="py-3">
+          
+          <TableCell className="py-3 border-l-4 border-l-red-300 ">
             <div className="flex flex-wrap gap-2 max-w-xs">
               {variant.images && variant.images.length > 0 ? (
                 variant.images.map((image, index) => {
@@ -237,7 +236,7 @@ const VariantRows = ({
 
           {/* Columna de descripción de variante */}
           <TableCell className="py-3">
-            <div className="font-medium text-sm text-blue-800">
+            <div className="font-medium text-sm text-red-800">
               {variant.description}
             </div>
           </TableCell>
