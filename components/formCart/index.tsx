@@ -2,7 +2,6 @@
 import React, { useState, useEffect, FormEvent } from 'react';
 import { TransformedCakeFlavor, TransformedProductVariant } from '@/types/api';
 import { portionsOptions } from '../features/ProductDetail/data';
-import { CustomAlert } from '@/components/ui/custom-alert';
 
 interface FormCartProps {
   productId: string;
@@ -16,7 +15,7 @@ interface FormCartProps {
   cakeName: string;
   initialImage: string;
   productType: string;
-  hour?: string;
+  hour?: number;
 }
 
 const FormCart: React.FC<FormCartProps> = ({ 

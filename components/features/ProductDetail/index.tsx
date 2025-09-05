@@ -103,7 +103,7 @@ const ProductDetail = ({ id, name, price, originalPrice, theme, image, productTy
   const [loadingBocaditos, setLoadingBocaditos] = useState(true);
   const [productVariant, setProductVariant] = useState<TransformedProductVariant | null>(null);
   const [imageProduct, setImageProduct] = useState<string[]>([]);
-  const [hour, setHour] = useState<string>('');
+  const [hour, setHour] = useState<number>(0);
   const [diameter, setDiameter] = useState<string>('');
 
   interface LocalCartItem {
@@ -177,11 +177,10 @@ const ProductDetail = ({ id, name, price, originalPrice, theme, image, productTy
     setDiameter(d);
     try {
       const variant = await getProductVariantById(id, portion);
-      console.log('variant', variant);
       if (variant) {
         setProductVariant(variant);
         setImageProduct(variant.images.map((img: any) => img.url));
-        setHour(variant.hours.toString());
+        setHour(variant.hours);
       }
     } catch (error) {
       console.error('Error fetching product variant:', error);

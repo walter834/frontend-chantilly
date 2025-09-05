@@ -12,8 +12,8 @@ export interface Product {
   description: string;
   product_type_id: number;
   product_type_name: string;
-  image: string; 
-  images: Image[]; 
+  image: string;
+  images: Image[];
 }
 
 export interface Image {
@@ -49,7 +49,7 @@ export interface TypeProduct {
 
 
 export const columns: ColumnDef<Product>[] = [
-  
+
   {
     accessorKey: "image",
     header: "Imagenes",
@@ -68,17 +68,17 @@ export const columns: ColumnDef<Product>[] = [
         try {
           await setPrimaryImage(row.original.id, imageIndex);
           toast.success("Imagen principal actualizada");
-          
+
           // Refrescar la tabla si existe la función global
-      
-         window.dispatchEvent(new CustomEvent("productUpdated"));
+
+          window.dispatchEvent(new CustomEvent("productUpdated"));
 
         } catch (error) {
           toast.error("Error al establecer imagen principal");
           console.error("Error:", error);
         }
       };
-      
+
       return (
         <div className="flex gap-1 overflow-x-auto max-w-xs py-2">
           {images
@@ -86,15 +86,14 @@ export const columns: ColumnDef<Product>[] = [
             .map((image, index) => (
               <div key={image.id} className="relative flex-shrink-0">
                 <Image
-                width={30}
-                height={30}
+                  width={130}
+                  height={130}
                   src={image.url}
                   alt={`Imagen ${index + 1}`}
-                  className={`w-12 h-12 object-cover rounded border-2 transition-all cursor-pointer ${
-                    image.is_primary === 1
+                  className={`w-12 h-12 object-cover rounded border-2 transition-all cursor-pointer ${image.is_primary === 1
                       ? "border-red-700"
                       : "border-transparent hover:border-red-500 hover:scale-105"
-                  }`}
+                    }`}
                   onClick={() => handleSetPrimary(index, image.is_primary === 1)}
                   title={
                     image.is_primary === 1
@@ -117,11 +116,11 @@ export const columns: ColumnDef<Product>[] = [
   {
     accessorKey: "name",
     header: "Nombre",
-    cell: ({row}) => {
+    cell: ({ row }) => {
       return (
         <div>
-           <div className="font-medium">{row.original.name}</div>
-           
+          <div className="font-medium">{row.original.name}</div>
+
         </div>
       )
     }
