@@ -89,14 +89,11 @@ const VariantRows = ({
     }
   }, [isExpanded, productId, hasLoaded]);
 
-
   useEffect(() => {
     if (isExpanded) {
-    
       setHasLoaded(false);
     }
   }, [productId]);
-
 
   useEffect(() => {
     const handleVariantUpdate = () => {
@@ -104,7 +101,6 @@ const VariantRows = ({
         setHasLoaded(false);
       }
     };
-
 
     window.addEventListener("variantUpdated", handleVariantUpdate);
 
@@ -273,7 +269,7 @@ export function DataTable<TData, TValue>({
   columns,
   data,
   onPageChange,
-  initialPageIndex = 0
+  initialPageIndex = 0,
 }: DataTableProps<TData, TValue>) {
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
@@ -289,8 +285,35 @@ export function DataTable<TData, TValue>({
         pageIndex: initialPageIndex,
       },
     },
-  
   });
+
+  useEffect(() => {
+    if (onPageChange) {
+      const currentPageIndex = table.getState().pagination.pageIndex;
+      const maxPage = table.getPageCount() - 1;
+      
+      // Si la página actual es mayor que el máximo disponible, ir a la última página válida
+      if (currentPageIndex > maxPage && maxPage >= 0) {
+        table.setPageIndex(maxPage);
+        onPageChange(maxPage);
+      } else if (initialPageIndex !== currentPageIndex) {
+        table.setPageIndex(initialPageIndex);
+      }
+    }
+  }, [data, initialPageIndex, table, onPageChange]);
+
+   useEffect(() => {
+    const currentPage = table.getState().pagination.pageIndex;
+    if (onPageChange && currentPage !== initialPageIndex) {
+      onPageChange(currentPage);
+    }
+  }, [table.getState().pagination.pageIndex]);
+  
+  useEffect(() => {
+    if (initialPageIndex !== undefined) {
+      table.setPageIndex(initialPageIndex);
+    }
+  }, [initialPageIndex]);
 
   const uniqueProductsTypes = [
     ...new Map(
