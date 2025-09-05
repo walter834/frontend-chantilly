@@ -36,3 +36,10 @@ export function formatDate(date: Date) {
   return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
 }
 
+export function truncateText(texto: string, longitudMax: number) {
+  if (texto.length > longitudMax) {
+    return texto.substring(0, longitudMax) + "...";
+  }
+  return texto;
+}
+

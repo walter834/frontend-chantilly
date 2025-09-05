@@ -62,7 +62,6 @@ export const columns: ColumnDef<Product>[] = [
 
       const handleSetPrimary = async (imageIndex: number, currentPrimary: boolean) => {
         if (currentPrimary) {
-
           return;
         }
 

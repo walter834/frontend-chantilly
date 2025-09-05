@@ -1,24 +1,34 @@
+"use client";
+
 import { columns } from "./columns";
 import { DataTable } from "./data-table";
-import {
-  BannerSecondary,
-  getBannerSecondary,
-} from "@/service/bannerFooter/bannerFooterService";
+import { useBannerSecondary } from "@/hooks/useBannerSecondary";
+import { Skeleton } from "@/components/ui/skeleton";
 
-async function getData(): Promise<BannerSecondary[]> {
-  try {
-    return await getBannerSecondary();
-  } catch (error) {
-    return [];
+export default function BannerFooter() {
+  const { data, isLoading, error } = useBannerSecondary();
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto py-10 space-y-4">
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-12 w-full" />
+        <Skeleton className="h-12 w-full" />
+      </div>
+    );
   }
-}
 
-export default async function BannerFooter() {
-  const data = await getData();
+  if (error) {
+    return (
+      <div className="container mx-auto py-10">
+        <div className="text-red-500">Error al cargar los banners</div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-10">
-      <DataTable columns={columns} data={data} />
+      <DataTable columns={columns} data={data || []} />
     </div>
   );
 }

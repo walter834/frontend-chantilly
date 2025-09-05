@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import {  Poppins } from "next/font/google";
 import "./globals.css";
 import { StoreProvider } from "@/components/Providers";
+import { Providers } from "./providers";
 import LayoutShell from "@/components/layout/LayoutShell";
 
 const poppins = Poppins({
@@ -25,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={`${poppins.className}`}>
+    <html lang="es" className={`${poppins.className}`} suppressHydrationWarning>
       <head>
         <script
           src="https://static-content-qas.vnforapps.com/v2/js/checkout.js"
@@ -78,10 +79,12 @@ export default function RootLayout({
           async
         ></script>
       </head>
-       <body className={`${poppins.className} antialiased overflow-x-hidden min-h-screen flex flex-col min-w-[350px]`}>
-        <StoreProvider>
-          <LayoutShell>{children}</LayoutShell>
-        </StoreProvider>
+      <body className={`${poppins.className} antialiased overflow-x-hidden min-h-screen flex flex-col min-w-[350px]`}>
+        <Providers>
+          <StoreProvider>
+            <LayoutShell>{children}</LayoutShell>
+          </StoreProvider>
+        </Providers>
       </body>
     </html>
   );
