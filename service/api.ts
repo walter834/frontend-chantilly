@@ -1,7 +1,7 @@
 import axios from "axios";
 import { store } from "@/store/store";
 import { logout } from "@/store/slices/authSlice";
-import Cookies from 'js-cookie';
+import { getCookie } from "@/lib/cookies";
 
 export const API_ROUTES = {
   PAGES: "/pages",
@@ -31,10 +31,7 @@ const api = axios.create({
 
 // Obtener el token de las cookies si existe
 const getTokenFromCookies = () => {
-  if (typeof window !== 'undefined') {
-    return Cookies.get('auth_token') || null;
-  }
-  return null;
+  return getCookie('auth_token') || null;
 };
 
 // Interceptor para incluir token automáticamente en todas las peticiones
@@ -67,12 +64,12 @@ api.interceptors.request.use(
   (error) => {
     // Si el error es de autenticación (401), forzar cierre de sesión
     if (error.response && error.response.status === 401) {
-      // Limpiar cookies
-      if (typeof window !== 'undefined') {
-        Cookies.remove('auth_token');
-        Cookies.remove('user_data');
+      // Si hay un error 401, redirigir al login
+      if (error.response?.status === 401) {
+        // Las cookies se limpiarán en el próximo render
+        store.dispatch(logout());
+        window.location.href = '/admin/login';
       }
-      // Despachar acción de logout
       store.dispatch(logout());
       // Redirigir a la página de login
       if (typeof window !== 'undefined') {

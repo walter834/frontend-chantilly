@@ -3,7 +3,7 @@
 import { RootState } from "@/store/store";
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
-import Cookies from 'js-cookie';
+import { getCookie, deleteCookie } from "@/lib/cookies";
 
 interface User {
   id: number;
@@ -23,21 +23,23 @@ export const useAuthAdmin = () => {
     setIsClient(true);
   }, []);
   
-  // Obtener datos de las cookies si estamos en el cliente
+  // Obtener datos de las cookies
   const getAuthFromCookies = () => {
     if (!isClient) return { token: null, user: null };
     
-    const token = Cookies.get('auth_token') || null;
-    const userStr = Cookies.get('user_data');
-    let user = null;
+    const token = getCookie('auth_token') || null;
+    const userStr = getCookie('user_data');
     
-    try {
-      user = userStr ? JSON.parse(userStr) : null;
-    } catch (error) {
-      console.error('Error al analizar los datos del usuario desde cookies:', error);
-      // Limpiar cookies inválidas
-      Cookies.remove('auth_token');
-      Cookies.remove('user_data');
+    let user = null;
+    if (userStr) {
+      try {
+        user = JSON.parse(userStr);
+      } catch (error) {
+        console.error('Error al analizar los datos del usuario desde cookies:', error);
+        // Limpiar cookies inválidas
+        deleteCookie('auth_token');
+        deleteCookie('user_data');
+      }
     }
     
     return { token, user };
@@ -59,14 +61,29 @@ export const useAuthAdmin = () => {
     };
   };
   
-  const { isAuthenticated, token, user } = getAuthState();
+  const [authState, setAuthState] = useState({
+    isAuthenticated: false,
+    token: null as string | null,
+    user: null as User | null
+  });
+
+  useEffect(() => {
+    if (isClient) {
+      const state = getAuthState();
+      setAuthState({
+        isAuthenticated: state.isAuthenticated,
+        token: state.token,
+        user: state.user
+      });
+    }
+  }, [isClient]);
 
   return {
-    isAuthenticated,
-    token,
-    user,
-    id: user?.id,
-    username: user?.username,
-    email: user?.email,
+    isAuthenticated: authState.isAuthenticated,
+    token: authState.token,
+    user: authState.user,
+    id: authState.user?.id,
+    username: authState.user?.username,
+    email: authState.user?.email,
   };
 };

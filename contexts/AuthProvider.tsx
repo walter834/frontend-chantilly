@@ -21,20 +21,35 @@ export function AuthProvider({
   const isAuthPage = pathname === '/admin' || pathname === '/admin/login';
 
   useEffect(() => {
-    const verifyAuth = async () => {
-      const { isAuthenticated } = checkAuth();
-      
-      if (requireAuth && !isAuthenticated && !isAuthPage) {
-        router.push(redirectTo);
-        return;
-      }
+    let isMounted = true;
 
-      if (isAuthenticated && isAuthPage) {
-        router.push('/admin/productos');
+    const verifyAuth = async () => {
+      try {
+        const { isAuthenticated } = await checkAuth();
+        
+        if (!isMounted) return;
+        
+        if (requireAuth && !isAuthenticated && !isAuthPage) {
+          router.push(redirectTo);
+          return;
+        }
+
+        if (isAuthenticated && isAuthPage) {
+          router.push('/admin/productos');
+        }
+      } catch (error) {
+        console.error('Error verifying authentication:', error);
+        if (requireAuth && !isAuthPage) {
+          router.push(redirectTo);
+        }
       }
     };
 
     verifyAuth();
+
+    return () => {
+      isMounted = false;
+    };
   }, [pathname, requireAuth, redirectTo, router, isAuthPage]);
 
   return <>{children}</>;

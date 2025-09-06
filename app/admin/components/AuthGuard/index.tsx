@@ -19,10 +19,14 @@ export function AuthGuard({ children, requireAuth = true }: AuthGuardProps) {
   const isLoginPage = pathname === '/admin' || pathname === '/admin/login';
 
   useEffect(() => {
+    let isMounted = true;
+
     const verifyAuth = async () => {
       try {
         // Verificar autenticación con las cookies
-        const { isAuthenticated: isAuth } = checkAuth();
+        const { isAuthenticated: isAuth } = await checkAuth();
+        
+        if (!isMounted) return;
         
         // Si la página requiere autenticación y el usuario no está autenticado
         if (requireAuth && !isAuth && !isLoginPage) {
@@ -41,11 +45,17 @@ export function AuthGuard({ children, requireAuth = true }: AuthGuardProps) {
           router.push('/admin');
         }
       } finally {
-        setIsCheckingAuth(false);
+        if (isMounted) {
+          setIsCheckingAuth(false);
+        }
       }
     };
 
     verifyAuth();
+
+    return () => {
+      isMounted = false;
+    };
   }, [isAuthenticated, pathname, requireAuth, isLoginPage, router]);
 
   // Mostrar un indicador de carga mientras se verifica la autenticación
