@@ -21,6 +21,9 @@ import {
 } from "@/components/ui/sidebar";
 import { AppSidebar } from "../components/Sidebar";
 import { AuthGuard } from "../components/AuthGuard";
+import { AuthProvider } from "@/contexts/AuthProvider";
+import { useEffect } from "react";
+import { checkAuth } from "@/service/authAdmin/authAdminService";
 
 export default function AdminLayout({
   children,
@@ -30,10 +33,11 @@ export default function AdminLayout({
   const pathname = usePathname();
 
   return (
-    <AuthGuard>
-      <SidebarProvider >
-        <AppSidebar />
-        <SidebarInset>
+    <AuthProvider>
+      <AuthGuard>
+        <SidebarProvider>
+          <AppSidebar />
+          <SidebarInset>
           <header className="flex h-16 shrink-0 items-center gap-2 bg-white shadow-md">
             <div className="flex items-center gap-2 px-4">
               <SidebarTrigger className="-ml-1" />
@@ -65,5 +69,6 @@ export default function AdminLayout({
         <Toaster />
       </SidebarProvider>
     </AuthGuard>
+    </AuthProvider>
   );
 }

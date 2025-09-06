@@ -1,6 +1,7 @@
 import axios from "axios";
 import { store } from "@/store/store";
-import { logout } from "@/store/slices/authSlice"; // Cambia la importación
+import { logout } from "@/store/slices/authSlice";
+import Cookies from 'js-cookie';
 
 export const API_ROUTES = {
   PAGES: "/pages",
@@ -28,21 +29,34 @@ const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
 });
 
+// Obtener el token de las cookies si existe
+const getTokenFromCookies = () => {
+  if (typeof window !== 'undefined') {
+    return Cookies.get('auth_token') || null;
+  }
+  return null;
+};
+
 // Interceptor para incluir token automáticamente en todas las peticiones
 api.interceptors.request.use(
   (config) => {
     const state = store.getState();
-
-    const token = state.auth.token;
-    const tokenAdmin = state.authAdmin.token;
-
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    
+    // Primero intentar obtener el token de las cookies
+    const tokenFromCookies = getTokenFromCookies();
+    
+    // Si hay un token en las cookies, usarlo
+    if (tokenFromCookies) {
+      config.headers.Authorization = `Bearer ${tokenFromCookies}`;
+    } else {
+      // Si no hay token en cookies, usar el del estado de Redux (para compatibilidad)
+      const token = state.auth.token || state.authAdmin.token;
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
-    if (tokenAdmin) {
-      config.headers.Authorization = `Bearer ${tokenAdmin}`;
-    }
 
+    // Configurar headers para JSON a menos que sea FormData
     if (!(config.data instanceof FormData)) {
       config.headers["Content-Type"] = "application/json";
       config.headers["Accept"] = "application/json";
@@ -51,6 +65,20 @@ api.interceptors.request.use(
     return config;
   },
   (error) => {
+    // Si el error es de autenticación (401), forzar cierre de sesión
+    if (error.response && error.response.status === 401) {
+      // Limpiar cookies
+      if (typeof window !== 'undefined') {
+        Cookies.remove('auth_token');
+        Cookies.remove('user_data');
+      }
+      // Despachar acción de logout
+      store.dispatch(logout());
+      // Redirigir a la página de login
+      if (typeof window !== 'undefined') {
+        window.location.href = '/admin';
+      }
+    }
     return Promise.reject(error);
   }
 );

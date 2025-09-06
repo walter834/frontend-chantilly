@@ -85,7 +85,7 @@ export const columns: ColumnDef<Product>[] = [
               <div key={image.id} className="relative flex-shrink-0">
                 <Image
                   width={30}
-                  height={30}
+                  height={130}
                   src={image.url}
                   alt={`Imagen ${index + 1}`}
                   className={`w-12 h-12 object-cover rounded border-2 transition-all cursor-pointer ${image.is_primary === 1
